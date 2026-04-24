@@ -610,28 +610,43 @@ comparison, we quote the DLT passage in which the packaging and
 the final arithmetic live side by side.
 
 \begin{quote}\small
-\textbf{DLT \cite[\S3.2, Step~2]{DLT13}.}
-We apply Lemma~3.1 to conclude the existence of a family
-$\{\partial \Omega_{i,t}\}$ with: $\Omega_{i,t} = \Omega_t$ if
-$t \notin (a_i, b_i)$ and $\Omega_{i,t} \setminus U_i' =
-\Omega_t \setminus U_i'$ if $t \in (a_i, b_i)$;
-$\mathcal{H}^n(\partial \Omega_{i,t}) \le
-\mathcal{H}^n(\partial \Omega_t) + 1/(4N)$ for every $t$;
-$\mathcal{H}^n(\partial \Omega_{i,t}) \le
-\mathcal{H}^n(\partial \Omega_t) - 1/(2N)$ if
-$t \in (a_i + \delta, b_i - \delta)$. If
-$t \in (a_i, b_i) \cap (a_j, b_j)$ then $j = i+1$ and
-$\mathrm{dist}(U_i', U_{i+1}') > 0$; define
-$\Omega'_t = \Omega_t$ outside $\bigcup J_i$,
-$\Omega'_t = \Omega_{i,t}$ inside a single $J_i$, and
-$\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')] \cup
-[\Omega_{i,t} \cap U_i'] \cup [\Omega_{i+1,t} \cap U_{i+1}']$
-on $J_i \cap J_{i+1}$. If $t \notin K$ then $\partial \Omega'_t$
-loses at most $2 \cdot (4N)^{-1}$ in area; if $t \in K$ then
-$\partial \Omega'_t$ gains at least $(2N)^{-1}$ in some $U_i'$
-and loses at most $(4N)^{-1}$ in at most one $U_l'$, so
-$\mathcal{H}^n(\partial \Omega'_t) \le \mathcal{H}^n(\partial
-\Omega_t) - (4N)^{-1}$.
+\textbf{DLT \cite[\S3.2, Step~2]{DLT13}.}\ \
+Lemma~3.1 produces a family $\{\partial \Omega_{i,t}\}$ with
+\begin{itemize}\setlength{\itemsep}{1pt}\small
+\item $\Omega_{i,t} = \Omega_t$ if $t \notin (a_i, b_i)$, and
+      $\Omega_{i,t} \setminus U_i' = \Omega_t \setminus U_i'$
+      if $t \in (a_i, b_i)$;
+\item $\mathcal{H}^n(\partial \Omega_{i,t}) \le
+      \mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{4N}$
+      for every $t$;
+\item $\mathcal{H}^n(\partial \Omega_{i,t}) \le
+      \mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{2N}$
+      if $t \in (a_i + \delta, b_i - \delta)$.
+\end{itemize}
+If $t \in (a_i, b_i) \cap (a_j, b_j)$, then $j = i+1$ and
+$\mathrm{dist}(U_i', U_{i+1}') > 0$. Define the modified sweepout
+\begin{itemize}\setlength{\itemsep}{1pt}\small
+\item $\Omega'_t = \Omega_t$ if $t \notin \bigcup_i J_i$;
+\item $\Omega'_t = \Omega_{i,t}$ if $t$ is in a single $J_i$;
+\item $\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')]
+      \cup [\Omega_{i,t} \cap U_i']
+      \cup [\Omega_{i+1,t} \cap U_{i+1}']$
+      on $J_i \cap J_{i+1}$.
+\end{itemize}
+Bounding the area: for $t \notin K$ the point lies in at most
+two $J_i$'s, so
+\[
+\mathcal{H}^n(\partial \Omega'_t) \;\le\;
+\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{2N};
+\]
+for $t \in K$ the point lies in at least one
+$(a_i + \delta, b_i - \delta)$ and in at most one other $J_l$,
+so area gains $\ge \tfrac{1}{2N}$ inside some $U_i'$ and loses
+$\le \tfrac{1}{4N}$ inside $U_l'$, hence
+\[
+\mathcal{H}^n(\partial \Omega'_t) \;\le\;
+\mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{4N}.
+\]
 \end{quote}
 
 Our formalization splits DLT's passage along the structural
