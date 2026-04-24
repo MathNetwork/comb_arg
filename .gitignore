@@ -16,3 +16,5 @@ build/
 
 # Local reference PDFs (copyrighted; kept locally, not committed)
 resources/*.pdf
+# Local arXiv source snapshots
+resources/*-source/
