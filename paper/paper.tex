@@ -167,7 +167,7 @@ Then there exists $f' : [0,1] \to \mathbb{R}$ with
 \]
 \end{theorem}
 
-Translation from DLT's setting to Theorem~\ref{thm:intro-scalar}:
+Translation from the De~Lellis--Tasnady setting to Theorem~\ref{thm:intro-scalar}:
 the boundary $\partial \Omega_t$ becomes a continuous
 $f : [0,1] \to \mathbb{R}$; the Hausdorff-measure hypothesis
 becomes $m_0 = \sup f$; the nested pair $(A_t, B_t, U_t')$
@@ -243,9 +243,9 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
-In DLT's proof of Theorem~\ref{thm:AP-combinatorial},
-Lemma~3.1 supplies, for each near-critical parameter $t$, an
-$\mathcal{H}^n$-disjoint pair of open sets
+In the proof of Theorem~\ref{thm:AP-combinatorial}, the
+Lemma~3.1 of~\cite{DLT13} supplies, for each near-critical
+parameter $t$, an $\mathcal{H}^n$-disjoint pair of open sets
 $(U_{1,t}', U_{2,t}')$ in $M^{n+1}$ inside which a local
 replacement is performed. We abstract this pair as an instance of
 a class, stripped of its GMT content.
@@ -260,7 +260,7 @@ disjoint, and overlapping combined regions of diameter-comparable
 covers are ordered by inclusion.
 \end{definition}
 
-DLT's replacement family
+The replacement family
 $\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ at a near-critical
 $t$ has its Hausdorff measure decreased by at least $1/(4N)$
 inside $U_t'$. We keep only the scalar \emph{replacement energy}
@@ -276,9 +276,9 @@ continuous replacement energy $E : K \to \mathbb{R}$, and the
 inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 \end{definition}
 
-DLT's proof works on the set $K \subset [0,1]$ of parameters at
-which the sweepout is within $1/N$ of the min-max value. We use
-the same convention.
+The proof of the Claim works on the set $K \subset [0,1]$ of
+parameters at which the sweepout is within $1/N$ of the min-max
+value. We use the same convention.
 
 \begin{definition}[Near-critical set]
 \label{def:NC}
@@ -289,7 +289,7 @@ $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
 write $\NC$.
 \end{definition}
 
-At the end of DLT's construction the data is a refined family
+At the end of the refinement the data is a family
 $\{\overline{J_l}\}$ covering $K$, with each $J_l$ carrying a
 replacement whose energy saving is at least $1/(4N)$ and with
 two-fold overlap. We abstract this output: the near-critical
@@ -310,7 +310,7 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
 \end{definition}
 
-Before DLT's refinement, a Lebesgue-number argument on the
+Before the refinement, a Lebesgue-number argument on the
 compact set $K$ produces a finite covering $\{I_i\}$ of open
 intervals, each centered at a $t_i \in K$. In our formalization
 the interval center $c_i$ and the witness center $w_i$ are
@@ -328,10 +328,11 @@ subject to
 (a) spacing: $c_i + r_i < c_{i+2} - r_{i+2}$ for all valid $i$;
 (b) containment: $I_i \subseteq U_{w_i}$;
 (c) coverage: $\NC \subseteq \bigcup_i I_i$.\footnote{Conditions
-(a) and (b) transcribe DLT's spacing and subset conditions.}
+(a) and (b) transcribe the spacing and subset conditions of the
+original proof.}
 \end{definition}
 
-DLT's refinement is described as an iteration: each $I_j$ with
+The refinement is described as an iteration: each $I_j$ with
 $j \ge 2$ is either kept whole or split into two halves. The
 state of this iteration after $\ell$ moves is the following.
 
@@ -520,7 +521,7 @@ Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
 
-\begin{proof}[Construction]
+\begin{proof}
 Compactness of $\NC$ (Proposition~\ref{prop:NC-compact}) plus the
 open cover $\{U_t\}_{t \in \NC}$ afforded by the witness
 hypothesis admit a Lebesgue number $\lambda > 0$: every
@@ -586,7 +587,7 @@ partial refinement of some length $L$ with $\sigma$ injective
 and $I_i \subseteq \bigcup_k J_k$ for every $i$.
 \end{proposition}
 
-\begin{proof}[Argument]
+\begin{proof}
 Let $\mathrm{rem}(\mathrm{pr})$ be the finite set of indices
 $i$ with $I_i \not\subseteq \bigcup_k J_k$. One step of
 $\mathrm{step\_succ\_at}$ at $i^* \in \mathrm{rem}(\mathrm{pr})$
@@ -608,8 +609,8 @@ which the core theorem turns into the sup-reducing $f'$. We trace
 through \cite[\S3.2, Step~2]{DLT13} in sequence, indicating at
 each step where the content lands in the formalization.
 
-DLT start by applying Lemma~3.1 to produce, at each
-near-critical parameter $t$, a replacement family
+De~Lellis and Tasnady begin by applying Lemma~3.1 to produce, at
+each near-critical parameter $t$, a replacement family
 $\{\partial \Omega_{i,t}\}$ with three properties:
 $\Omega_{i,t} = \Omega_t$ outside $(a_i, b_i)$ and agrees with
 $\Omega_t$ outside $U_i'$ inside $(a_i, b_i)$; the global upper
@@ -622,23 +623,24 @@ $t \in (a_i + \delta, b_i - \delta)$. In our formalization this
 data is what a \texttt{LocalWitness} (Definition~\ref{def:witness})
 carries: the scalar $E_{\sigma(k)} : K \to \mathbb{R}$ plays the
 role of $\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood
-$U_t$ plays $(a_i, b_i)$, and we collapse DLT's separate
-``saving on the inner core'' bound $-\tfrac{1}{2N}$ and ``no-loss
-outside'' bound $+\tfrac{1}{4N}$ into a single uniform saving
-$\varepsilon = \tfrac{1}{4N}$ that holds everywhere on $U_t$.
+$U_t$ plays $(a_i, b_i)$, and the two separate bounds
+(``saving $-\tfrac{1}{2N}$ on the inner core'' and ``no-loss
+$+\tfrac{1}{4N}$ outside'') collapse to a single uniform saving
+$\varepsilon = \tfrac{1}{4N}$ on $U_t$.
 Stage~B has already handed us pieces $p_l$ on which this witness
 saving is valid (Proposition~\ref{prop:saving-bound}), so by
 Stage~C we have per-piece scalar savings $s_l \ge \varepsilon$
 directly.
 
-Next DLT observe that if $t \in (a_i, b_i) \cap (a_j, b_j)$, then
-$j = i+1$, and moreover $\mathrm{dist}(U_i', U_{i+1}') > 0$. This
+The next observation in the proof is that if $t \in (a_i, b_i)
+\cap (a_j, b_j)$, then $j = i+1$, and moreover
+$\mathrm{dist}(U_i', U_{i+1}') > 0$. This
 is the two-fold overlap of the refined covering, and in our
 formalization it is the \texttt{twoFold} field of
 \texttt{FiniteCoverWithWitnesses}, derived from the parity-gap
 spacing by Proposition~\ref{prop:twofold} below.
 
-DLT then define a modified sweepout $\{\partial \Omega'_t\}$
+The modified sweepout $\{\partial \Omega'_t\}$ is then defined
 piecewise: $\Omega'_t = \Omega_t$ outside all $J_i$; $\Omega'_t =
 \Omega_{i,t}$ if $t$ lies in a single $J_i$; and on
 $J_i \cap J_{i+1}$ the sweepout blends the two replacements,
@@ -650,7 +652,7 @@ savings over the pieces containing $t$: our reduced energy is
 f'(t) \;=\; f(t) \;-\; \sum_{l \,:\, t \in \overline{J_l}} s_l,
 \]
 and the two-fold invariant bounds the sum length by $2$, matching
-DLT's two-piece blend on overlaps.
+the two-piece blend on overlaps.
 
 The area accounting then splits on whether $t$ is near-critical.
 For $t \notin K$, the point lies in at most two $J_i$'s and each
@@ -675,9 +677,9 @@ of the cover, use the saving floor $s_l \ge \varepsilon$ in the
 positive branch and the covering condition
 $\{f \ge m_0 - \delta\} \subseteq \bigcup_l p_l$ in the negative
 branch. With $(\delta, \varepsilon) = (1/N, 1/(4N))$ this
-specializes to DLT's arithmetic; the abstract core reads off the
-same algebra for arbitrary $(\delta, \varepsilon)$ with
-$\varepsilon \le \delta$.
+specializes to the arithmetic of the original proof; the
+abstract core reads off the same algebra for arbitrary
+$(\delta, \varepsilon)$ with $\varepsilon \le \delta$.
 
 The rest of this subsection establishes the two propositions
 that Stage~B leaves open: the saving bound extends from open
@@ -692,7 +694,7 @@ $\sigma$ injective, every $t \in \unit$ lies in at most two of
 $\overline{J_1}, \ldots, \overline{J_L}$.
 \end{proposition}
 
-\begin{proof}[Argument]
+\begin{proof}
 From spacing condition~(a), iterated $m$ times, one obtains
 that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
 2$) have strict separation between $\overline{I_i}$ and
@@ -726,7 +728,7 @@ $E_{\sigma(k)}$ is the replacement energy of the $\sigma(k)$-th
 local witness.
 \end{proposition}
 
-\begin{proof}[Argument]
+\begin{proof}
 On $J_k \subseteq U_{w_{\sigma(k)}}$ the witness gives
 $f - E_{\sigma(k)} \ge 1/(4N)$. The function
 $g := f - E_{\sigma(k)}$ is continuous
@@ -749,7 +751,7 @@ $E_k := $ the replacement energy of the
 $\sigma(k)$-th witness.
 \end{lemma}
 
-\begin{proof}[Argument]
+\begin{proof}
 Invariant~(I) is Proposition~\ref{prop:saving-bound}.
 Invariant~(II) is Proposition~\ref{prop:twofold}.
 Invariant~(III) holds by construction ($s_k = 1/(4N)$).
