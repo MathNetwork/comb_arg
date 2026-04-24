@@ -22,6 +22,59 @@ namespace CombArg.Refinement
 open CombArg
 open scoped Classical
 
+/-! ## Auxiliary: grid rounding
+
+A uniform `1/(M+1)`-grid on `unitInterval` always has a grid
+point within distance `1/(2M)` of every `x ∈ unitInterval`.
+Extracted from `exists_initialCover` so the phase of the main
+construction that uses it can focus on the downstream
+Lebesgue-number interaction. -/
+
+/-- For any positive integer `M` and any grid function
+`c : Fin (M + 1) → unitInterval` satisfying
+`(c k).val = k.val / M`, every point of `unitInterval` is within
+distance `1/(2M)` of some grid point. -/
+private lemma exists_grid_round_bound
+    {M : ℕ} (hM_pos : 0 < M)
+    (c : Fin (M + 1) → unitInterval)
+    (hc : ∀ k : Fin (M + 1), (c k).val = (k.val : ℝ) / M) :
+    ∀ (x : unitInterval),
+      ∃ k : Fin (M + 1), dist (c k) x ≤ (1 : ℝ) / (2 * M) := by
+  have hM_real_pos : (0 : ℝ) < (M : ℝ) := by exact_mod_cast hM_pos
+  intro x
+  set y : ℝ := x.val * M + 1/2 with hy_def
+  have hy_nn : 0 ≤ y := by
+    have := mul_nonneg x.2.1 hM_real_pos.le
+    rw [hy_def]; linarith
+  let k0 : ℕ := Nat.floor y
+  have hk0_le_y : (k0 : ℝ) ≤ y := Nat.floor_le hy_nn
+  have hy_lt : y < (k0 : ℝ) + 1 := Nat.lt_floor_add_one y
+  have hk0_le_M : k0 ≤ M := by
+    have hy_le : y ≤ M + 1/2 := by
+      have := mul_le_mul_of_nonneg_right x.2.2 hM_real_pos.le
+      rw [hy_def]; linarith
+    have hk0_real : (k0 : ℝ) ≤ M + 1/2 := le_trans hk0_le_y hy_le
+    by_contra h_contra
+    have h_lt : M < k0 := not_le.mp h_contra
+    have : (M + 1 : ℝ) ≤ k0 := by exact_mod_cast h_lt
+    linarith
+  have hk0_lt : k0 < M + 1 := Nat.lt_succ_of_le hk0_le_M
+  refine ⟨⟨k0, hk0_lt⟩, ?_⟩
+  show |((c ⟨k0, hk0_lt⟩).val : ℝ) - x.val| ≤ _
+  rw [hc ⟨k0, hk0_lt⟩]
+  have h_rewrite : ((k0 : ℝ) / M - x.val) = ((k0 : ℝ) - x.val * M) / M := by
+    field_simp
+  rw [h_rewrite, abs_div, abs_of_pos hM_real_pos]
+  have h_abs_le : |(k0 : ℝ) - x.val * M| ≤ 1/2 := by
+    have hy1 : (k0 : ℝ) ≤ x.val * M + 1/2 := by rw [hy_def] at hk0_le_y; exact hk0_le_y
+    have hy2 : x.val * M + 1/2 < (k0 : ℝ) + 1 := by rw [hy_def] at hy_lt; exact hy_lt
+    rw [abs_le]
+    refine ⟨by linarith, by linarith⟩
+  have h_div_le : |(k0 : ℝ) - x.val * M| / M ≤ (1/2) / M :=
+    div_le_div_of_nonneg_right h_abs_le hM_real_pos.le
+  have hhalf : (1 : ℝ) / 2 / M = 1 / (2 * M) := by field_simp
+  linarith
+
 /-- **Existence of an `InitialCover`** from the witness hypothesis.
 
 Grid + Lebesgue construction using the `intervalCenter` /
@@ -53,7 +106,8 @@ lemma exists_initialCover
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
                  Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
     Nonempty (InitialCover (X := X) f m₀ N) := by
-  -- Setup: NC compact, nonempty; pick a witness at each NC point.
+  -- ---------- Phase 1: Lebesgue number + grid spacing ----------
+  -- NC compact, nonempty; pick a witness at each NC point.
   set NC := nearCritical f m₀ N with hNC_def
   have hNC_compact : IsCompact NC := isCompact_nearCritical hf
   have hNC_ne : NC.Nonempty := nearCritical_nonempty hf hm hN
@@ -80,46 +134,9 @@ lemma exists_initialCover
     refine ⟨by positivity, ?_⟩
     rw [div_le_one hM_real_pos]
     exact_mod_cast Nat.le_of_lt_succ k.isLt⟩
-  -- A helper: for each `x : unitInterval`, the rounded grid point is within
-  -- `1/(2M)` of x.
-  have round_bound : ∀ (x : unitInterval),
-      ∃ k : Fin (M + 1), dist (c k) x ≤ (1 : ℝ) / (2 * M) := by
-    intro x
-    set y : ℝ := x.val * M + 1/2 with hy_def
-    have hy_eq : y = x.val * M + 1/2 := hy_def
-    have hy_nn : 0 ≤ y := by
-      have := mul_nonneg x.2.1 hM_real_pos.le
-      rw [hy_eq]; linarith
-    let k0 : ℕ := Nat.floor y
-    have hk0_le_y : (k0 : ℝ) ≤ y := Nat.floor_le hy_nn
-    have hy_lt : y < (k0 : ℝ) + 1 := Nat.lt_floor_add_one y
-    have hk0_le_M : k0 ≤ M := by
-      have hy_le : y ≤ M + 1/2 := by
-        have := mul_le_mul_of_nonneg_right x.2.2 hM_real_pos.le
-        rw [hy_eq]; linarith
-      have hk0_real : (k0 : ℝ) ≤ M + 1/2 := le_trans hk0_le_y hy_le
-      by_contra h_contra
-      have h_lt : M < k0 := not_le.mp h_contra
-      have : (M + 1 : ℝ) ≤ k0 := by exact_mod_cast h_lt
-      linarith
-    have hk0_lt : k0 < M + 1 := Nat.lt_succ_of_le hk0_le_M
-    refine ⟨⟨k0, hk0_lt⟩, ?_⟩
-    show |((c ⟨k0, hk0_lt⟩).val : ℝ) - x.val| ≤ _
-    have hc_val : (c ⟨k0, hk0_lt⟩).val = (k0 : ℝ) / M := rfl
-    rw [hc_val]
-    have h_rewrite : ((k0 : ℝ) / M - x.val) = ((k0 : ℝ) - x.val * M) / M := by
-      field_simp
-    rw [h_rewrite, abs_div, abs_of_pos hM_real_pos]
-    have h_abs_le : |(k0 : ℝ) - x.val * M| ≤ 1/2 := by
-      have hy1 : (k0 : ℝ) ≤ x.val * M + 1/2 := by rw [hy_eq] at hk0_le_y; exact hk0_le_y
-      have hy2 : x.val * M + 1/2 < (k0 : ℝ) + 1 := by rw [hy_eq] at hy_lt; exact hy_lt
-      rw [abs_le]
-      refine ⟨by linarith, by linarith⟩
-    have h_div_le : |(k0 : ℝ) - x.val * M| / M ≤ (1/2) / M :=
-      div_le_div_of_nonneg_right h_abs_le hM_real_pos.le
-    have hhalf : (1 : ℝ) / 2 / M = 1 / (2 * M) := by field_simp
-    linarith
-  -- Step 4: keep grid indices within lam/4 of some NC point.
+  have round_bound :=
+    exists_grid_round_bound hM_pos c (fun _ => rfl)
+  -- ---------- Phase 2: kept grid + witness selection ----------
   let nearNC : Fin (M + 1) → Prop :=
     fun k => ∃ t : NC, dist (c k) t.val < lam / 4
   haveI : ∀ k, Decidable (nearNC k) := fun _ => Classical.dec _
@@ -160,7 +177,7 @@ lemma exists_initialCover
   have hr_lt_lam4 : r < lam / 4 := lt_trans hr_lt_inv_M h_inv_M
   let intCent : Fin n → unitInterval := fun i => c (e i)
   let wc : Fin n → unitInterval := fun i => (wcChoice i).val
-  -- Assemble.
+  -- ---------- Phase 3: assemble structure + verify invariants ----------
   refine ⟨{
     n := n
     n_pos := hn_pos
