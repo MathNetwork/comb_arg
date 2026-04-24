@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
 import CombArg.Refinement.InitialCover
+import CombArg.Util
 
 /-!
 # Step 1 — Disjointness via chain spacing and parity rescue
@@ -146,25 +147,17 @@ lemma not_three_overlap
     (ha : t ∈ closure (ic.I a)) (hb : t ∈ closure (ic.I b))
     (hc : t ∈ closure (ic.I c)) :
     False := by
-  by_cases h_ca_even : (c.val - a.val) % 2 = 0
-  · -- c.val - a.val even ≥ 2 → (a, c) disjoint
-    have h_gap_ge : 2 ≤ c.val - a.val := by omega
-    refine (Set.disjoint_iff.mp
-      (ic.closure_disjoint_of_even_gap a c ((c.val - a.val) / 2 - 1) ?_)) ⟨ha, hc⟩
-    omega
-  · have h_ca_ge_3 : 3 ≤ c.val - a.val := by omega
-    by_cases h_ab_even : (b.val - a.val) % 2 = 0
-    · -- (a, b) even ≥ 2
-      have h_ab_ge : 2 ≤ b.val - a.val := by omega
-      refine (Set.disjoint_iff.mp
-        (ic.closure_disjoint_of_even_gap a b ((b.val - a.val) / 2 - 1) ?_)) ⟨ha, hb⟩
-      omega
-    · -- (b, c) even ≥ 2
-      have h_bc_even : (c.val - b.val) % 2 = 0 := by omega
-      have h_bc_ge : 2 ≤ c.val - b.val := by omega
-      refine (Set.disjoint_iff.mp
-        (ic.closure_disjoint_of_even_gap b c ((c.val - b.val) / 2 - 1) ?_)) ⟨hb, hc⟩
-      omega
+  rcases exists_even_gap_of_three hab hbc with
+    ⟨hge, hmod⟩ | ⟨hge, hmod⟩ | ⟨hge, hmod⟩
+  · exact (Set.disjoint_iff.mp
+      (ic.closure_disjoint_of_even_gap a c ((c.val - a.val) / 2 - 1)
+        (by omega))) ⟨ha, hc⟩
+  · exact (Set.disjoint_iff.mp
+      (ic.closure_disjoint_of_even_gap a b ((b.val - a.val) / 2 - 1)
+        (by omega))) ⟨ha, hb⟩
+  · exact (Set.disjoint_iff.mp
+      (ic.closure_disjoint_of_even_gap b c ((c.val - b.val) / 2 - 1)
+        (by omega))) ⟨hb, hc⟩
 
 end InitialCover
 
