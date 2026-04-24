@@ -8,23 +8,23 @@ import Mathlib.Topology.Instances.Real.Lemmas
 import Mathlib.Topology.Order.Compact
 
 /-!
-# Core — abstract sup reduction from a finite cover with witnesses
+# Core — sup-reduction bookkeeping (corollary layer)
 
-Given a continuous energy `f : K → ℝ` on a compact nonempty space `K`
-with supremum `m₀`, suppose we have a **finite cover of the
-`δ`-near-critical set** `{t | f t ≥ m₀ − δ}` with per-piece savings
-at least `ε > 0` (`ε ≤ δ`) and multiplicity at most 2. Then a
-competitor `f' : K → ℝ` exists with `sSup (range f') ≤ m₀ − ε`.
+Given a `FiniteCoverWithWitnesses` of the `δ`-near-critical set
+`{t | f t ≥ m₀ − δ}` with per-piece savings at least `ε > 0`
+(`ε ≤ δ`) and multiplicity at most 2, this file derives a scalar
+competitor `f' : K → ℝ` with `sSup (range f') ≤ m₀ − ε`.
 
-This file isolates the **arithmetic core** of the combinatorial
-lemma, stripped of any parameter-space specifics (`unitInterval`, 1D
-covering, `LocalWitness`, `PairableCover`). Consumers with an
-application-specific cover construction feed it in; this file handles
-the scalar arithmetic uniformly in `(δ, ε)`.
+This is the **bookkeeping corollary** of the combinatorial main
+theorem `CombArg.Refinement.exists_refinement`, stripped of any
+parameter-space specifics (`unitInterval`, 1D covering,
+`LocalWitness`, `PairableCover`) and uniform in `(δ, ε)`.
+Consumers with an application-specific cover construction feed it
+in; this file handles the scalar arithmetic only.
 
 See `CombArg/SupReduction.lean` for the 1D application (`K = [0,1]`,
 `δ = 1/N`, `ε = 1/(4N)`) that composes the 1D cover construction
-(`CombArg/Refinement/`) with this core.
+(`CombArg/Refinement/`) with this corollary.
 -/
 
 namespace CombArg
@@ -249,8 +249,15 @@ lemma reducedEnergy_sSup_le [CompactSpace K] [Nonempty K]
 
 end FiniteCoverWithWitnesses
 
-/-- **Core theorem** — abstract sup reduction from a finite cover
-with witnesses.
+/-- **Corollary: sup reduction bookkeeping** — scalar competitor
+existence from a `FiniteCoverWithWitnesses`, generic `K`.
+
+This is a corollary of the combinatorial main theorem
+`CombArg.Refinement.exists_refinement` (which produces such a
+cover on the 1D case); the present declaration discharges the
+arithmetic bookkeeping that turns any such cover into a
+sup-reducing competitor, in a form that is independent of the
+1D cover-construction and applies to any compact `K`.
 
 Let `K` be a compact nonempty space, `f : K → ℝ` continuous with
 `m₀ = sSup (range f)`, and fix `0 < ε ≤ δ`. From a

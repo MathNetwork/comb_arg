@@ -10,9 +10,11 @@ import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Topology.Compactness.Compact
 
 /-!
-# Application — 1D sup reduction
+# One-parameter sup-reduction corollary
 
-The 1D application of the abstract core theorem
+The 1D composition of the combinatorial main theorem
+`CombArg.Refinement.exists_refinement` with the sup-reduction
+bookkeeping corollary
 `CombArg.exists_sup_reduction_of_cover` (in `CombArg/Core.lean`).
 
 Given a continuous energy `f : unitInterval → ℝ` with `m₀ = sSup
@@ -25,17 +27,18 @@ Given a continuous energy `f : unitInterval → ℝ` with `m₀ = sSup
 
 The theorem is the composition of two steps:
 
-1. **1D cover construction** — `Refinement.exists_refinement` consumes
-   the `LocalWitness` hypothesis and produces a
+1. **Combinatorial main theorem** — `Refinement.exists_refinement`
+   consumes the `LocalWitness` hypothesis and produces a
    `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` via
    the DLT §3.2 Step 1 interval-refinement induction.
 
-2. **Abstract core** — `exists_sup_reduction_of_cover` takes the
-   cover and produces the sup-reducing competitor by scalar
-   arithmetic.
+2. **Bookkeeping corollary** — `exists_sup_reduction_of_cover`
+   takes the cover and produces the sup-reducing competitor by
+   scalar arithmetic.
 
-Future applications (e.g. `K = [0,1]^m`) add a second cover-construction
-path into the same core; step 2 is unchanged.
+Future applications (e.g. `K = [0,1]^m`) add a second
+cover-construction path into the same bookkeeping corollary;
+step 2 is unchanged.
 
 ## Framing: reduction, not contradiction
 
@@ -50,9 +53,10 @@ contradiction on top.
 
 namespace CombArg
 
-/-- **1D sup reduction** — application of the abstract core theorem
-`exists_sup_reduction_of_cover` to `K = unitInterval` with
-`δ = 1/N`, `ε = 1/(4N)`.
+/-- **One-parameter sup-reduction corollary** — composition of
+the combinatorial main theorem `Refinement.exists_refinement`
+with the bookkeeping corollary `exists_sup_reduction_of_cover`
+on `K = unitInterval` with `δ = 1/N`, `ε = 1/(4N)`.
 
 Let `f : unitInterval → ℝ` be continuous with `m₀ = sSup (range f)`,
 `m₀ > 0`, and fix `N > 0`. Suppose every parameter `t` with

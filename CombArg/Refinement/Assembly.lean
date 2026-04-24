@@ -10,13 +10,16 @@ import CombArg.Refinement.Induction
 import CombArg.Util
 
 /-!
-# Step 1 — Assembly into `FiniteCoverWithWitnesses`
+# Combinatorial main theorem: Assembly into `FiniteCoverWithWitnesses`
 
-Chains the preceding infrastructure into the Phase 2 terminal target
-`exists_refinement`, packaging the 1D cover construction as a
-`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
-application-specific input to the abstract core theorem
-`CombArg.exists_sup_reduction_of_cover`.
+This file packages the 1D cover-construction infrastructure into
+the library's combinatorial main theorem `exists_refinement`: from
+the witness hypothesis on `unitInterval` it constructs a
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`. The
+scalar sup-reduction bookkeeping (downstream corollary
+`CombArg.exists_sup_reduction_of_cover` and its one-parameter
+specialization `CombArg.exists_sup_reduction`) is arithmetic over
+the output structure.
 
 * `terminal_twoFold` — if `σ` is injective then at most two pieces of
   a terminal `PartialRefinement` have `t` in their closure. Uses the
@@ -25,10 +28,11 @@ application-specific input to the abstract core theorem
 * `saving_bound_closure` — the `LocalWitness` saving bound on the
   open neighborhood extends to the closure, via continuity of
   `replacementEnergy` and a sequence-limit argument.
-* `exists_refinement` — from the witness hypothesis, assembles a
-  `FiniteCoverWithWitnesses` by taking `piece k := closure (pr.J k)`
-  and `saving k := 1/(4N)` uniform; `twoFold` via `terminal_twoFold`,
-  `saving_bound` via `saving_bound_closure`.
+* `exists_refinement` — **combinatorial main theorem**. From the
+  witness hypothesis, assembles a `FiniteCoverWithWitnesses` by
+  taking `piece k := closure (pr.J k)` and `saving k := 1/(4N)`
+  uniform; `twoFold` via `terminal_twoFold`, `saving_bound` via
+  `saving_bound_closure`.
 -/
 
 namespace CombArg.Refinement
@@ -97,13 +101,25 @@ lemma saving_bound_closure
 Specialized to `K = unitInterval` per `docs/design-notes.md §4`. The
 abstract-`K` generalization is left to future work. -/
 
-/-- **`exists_refinement`** — the terminal target of this file.
+/-- **Combinatorial main theorem** (combinatorial core of
+Almgren--Pitts for a 1D sweepout).
+
 Given continuous `f : unitInterval → ℝ`, the hypothesis
 `m₀ = sSup (range f)`, `N > 0`, and local witnesses at every
 `1/N`-near-critical parameter, produces a
-`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
-1D-specialized input for the abstract core theorem
-`CombArg.exists_sup_reduction_of_cover`.
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`: a
+finite family of closed pieces of `unitInterval` carrying
+per-piece replacement energies `E_l` and uniform savings
+`s_l = 1/(4N)`, satisfying
+(I) `f − E_l ≥ s_l` on each piece;
+(II) every `t` lies in at most two pieces (two-fold overlap);
+(III) `{t : f t ≥ m₀ − 1/N} ⊆ ⋃ pieces`.
+
+The existence of a scalar sup-reducing competitor `f'` follows
+as a three-line bookkeeping corollary
+(`CombArg.exists_sup_reduction_of_cover`,
+`CombArg.exists_sup_reduction`); the non-trivial content is the
+construction packaged here.
 
 Chains the preceding infrastructure:
 
