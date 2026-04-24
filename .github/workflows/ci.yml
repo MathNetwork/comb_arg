@@ -32,20 +32,20 @@ jobs:
       - name: Build
         run: lake build
 
-      - name: Build test
-        run: lake build test
+      - name: Build test + examples
+        run: lake build test examples
 
       - name: Sorry audit
         run: |
           echo "Checking for code `sorry` / `admit` / `sorryAx`..."
           # Match Lean syntactic `sorry` / `admit` tokens; tolerate
           # natural-English uses of `admit` / `admits` in docstrings.
-          if grep -rnE '(^|\s)(sorry|admit)(\s|$)' MinMaxCombinatorics/ | \
+          if grep -rnE '(^|\s)(sorry|admit)(\s|$)' CombArg/ | \
              grep -vE '(admits?|admit[a-z]|admitted|admittance)'; then
             echo "FAIL: code `sorry` or `admit` found."
             exit 1
           fi
-          if grep -rn 'sorryAx' MinMaxCombinatorics/; then
+          if grep -rn 'sorryAx' CombArg/; then
             echo "FAIL: sorryAx found."
             exit 1
           fi
@@ -53,22 +53,24 @@ jobs:
 
       - name: Axiom audit
         run: |
-          echo "Checking axioms of min_max_energy_reduction..."
+          echo "Checking axioms of the two public theorems..."
           cat > /tmp/axiom_audit.lean <<'EOF'
-          import MinMaxCombinatorics
-          #print axioms MinMaxCombinatorics.min_max_energy_reduction
+          import CombArg
+          #print axioms CombArg.exists_sup_reduction_of_cover
+          #print axioms CombArg.exists_sup_reduction
           EOF
           OUTPUT=$(lake env lean /tmp/axiom_audit.lean 2>&1)
           echo "$OUTPUT"
-          # Expected: only [propext, Classical.choice, Quot.sound].
+          # Expected: only [propext, Classical.choice, Quot.sound] for both.
           if echo "$OUTPUT" | grep -qE '(sorryAx|axioms: \[.*(sorryAx))'; then
             echo "FAIL: sorryAx detected in axiom list."
             exit 1
           fi
           EXPECTED_AXIOMS="propext, Classical.choice, Quot.sound"
-          if ! echo "$OUTPUT" | grep -q "\[$EXPECTED_AXIOMS\]"; then
-            echo "FAIL: axiom list does not exactly match the expected set."
-            echo "Expected: depends on axioms: [$EXPECTED_AXIOMS]"
+          EXPECTED_COUNT=2
+          MATCH_COUNT=$(echo "$OUTPUT" | grep -c "\[$EXPECTED_AXIOMS\]" || true)
+          if [ "$MATCH_COUNT" -ne "$EXPECTED_COUNT" ]; then
+            echo "FAIL: expected $EXPECTED_COUNT theorems with exactly [$EXPECTED_AXIOMS]; got $MATCH_COUNT."
             exit 1
           fi
           echo "Axiom audit: clean."
