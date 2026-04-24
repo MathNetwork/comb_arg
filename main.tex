@@ -359,20 +359,67 @@ $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 \subsection{Public API: abstract core}
 \label{sec:core-spec}
 
+The arithmetic heart of the abstract core is a short lemma
+independent of covers, pieces, or multiplicity: any competitor
+that saves a fixed amount on the relevant super-level set
+yields the same amount of supremum reduction.
+
+\begin{lemma}[Scalar sup reduction]
+\label{lem:scalar-sup-reduction}
+Let $K$ be a nonempty set and $f : K \to \mathbb{R}$ a bounded
+function with $m_0 = \sup f$. Let $g : K \to \mathbb{R}$ satisfy
+\begin{enumerate}
+\item[(i)] $g(t) \le f(t)$ for every $t \in K$;
+\item[(ii)] $f(t) - g(t) \ge \varepsilon$ whenever
+      $f(t) \ge m_0 - \delta$,
+\end{enumerate}
+where $0 < \varepsilon \le \delta$. Then
+$\sup g \le m_0 - \varepsilon$.
+\end{lemma}
+
+\begin{proof}
+Fix $t \in K$. If $f(t) \ge m_0 - \delta$, then (ii) gives
+$g(t) \le f(t) - \varepsilon \le m_0 - \varepsilon$. If
+$f(t) < m_0 - \delta$, then (i) gives $g(t) \le f(t) <
+m_0 - \delta \le m_0 - \varepsilon$. Taking the supremum over
+$t$ completes the proof.
+\end{proof}
+
+Lemma~\ref{lem:scalar-sup-reduction} is a general statement
+about lowering the supremum of a bounded real-valued function
+by exhibiting a competitor with a pointwise saving on the
+super-level set $\{f \ge m_0 - \delta\}$; no sweepout, cover, or
+multiplicity hypothesis enters. It applies verbatim whenever a
+pointwise saving can be established on the ``where it matters''
+super-level set. In the combinatorial argument, the competitor
+$g$ is constructed piecewise from per-parameter local witnesses;
+Theorem~\ref{thm:core} records how such data delivers the
+hypotheses of the lemma.
+
 \begin{theorem}[Abstract core]
 \label{thm:core}
 \leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
-\noindent
-\textbf{Input.} A compact, nonempty topological space $K$; a
-continuous $f : K \to \mathbb{R}$; $m_0 = \sup f$; scalars
-$0 < \varepsilon \le \delta$; a
+Let $K$ be a compact, nonempty topological space,
+$f : K \to \mathbb{R}$ continuous with $m_0 = \sup f$, and
+$0 < \varepsilon \le \delta$. Given a
 \texttt{FiniteCoverWithWitnesses}$(K, f, m_0, \delta, \varepsilon)$
-(Definition~\ref{def:ref}).
-
-\par\noindent
-\textbf{Output.} There exists $f' : K \to \mathbb{R}$ with
-$\sup f' \le m_0 - \varepsilon$.
+(Definition~\ref{def:ref}), there exists $f' : K \to \mathbb{R}$
+with
+\[
+\sup f' \;\le\; m_0 - \varepsilon.
+\]
 \end{theorem}
+
+\begin{proof}
+Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$ and verify the
+hypotheses of Lemma~\ref{lem:scalar-sup-reduction}. Condition~(i):
+each $s_l > 0$, so $f'(t) \le f(t)$. Condition~(ii): suppose
+$f(t) \ge m_0 - \delta$. By (IV) of Definition~\ref{def:ref},
+$t \in p_l$ for some $l$; by (III), $s_l \ge \varepsilon$. The
+remaining savings in the sum (at most one more, by the two-fold
+overlap (II)) are non-negative, so $f(t) - f'(t) \ge \varepsilon$.
+The lemma yields $\sup f' \le m_0 - \varepsilon$.
+\end{proof}
 
 \subsection{Public API: one-parameter application}
 \label{sec:app-spec}
@@ -380,22 +427,23 @@ $\sup f' \le m_0 - \varepsilon$.
 \begin{theorem}[One-parameter application]
 \label{thm:main}
 \leanmargin{exists\_sup\_reduction}{SupReduction.lean}
-\noindent
-\textbf{Input.} A pseudo-metric space $X$ with a
-\texttt{PairableCover X} instance (Definition~\ref{def:pcover});
-a continuous $f : \unit \to \mathbb{R}$; $m_0 \in \mathbb{R}$
-with $m_0 > 0$ and $m_0 = \sup f$; $N \in \mathbb{N}$ with
-$N > 0$; for every $t \in \NC$ a \texttt{LocalWitness} at $t$
-with saving $1/(4N)$ (Definition~\ref{def:witness}).
-
-\par\noindent
-\textbf{Output.} There exists $f' : \unit \to \mathbb{R}$ with
-$\sup f' \le m_0 - 1/(4N)$.
-
-\par\noindent
-Specializes Theorem~\ref{thm:core} to $K = \unit$,
-$\delta = 1/N$, $\varepsilon = 1/(4N)$.
+Let $X$ be a pseudo-metric space with a \texttt{PairableCover X}
+instance (Definition~\ref{def:pcover}). Let $f : \unit \to
+\mathbb{R}$ be continuous with $m_0 = \sup f$ and $m_0 > 0$, and
+$N \in \mathbb{N}$ with $N > 0$. Suppose every $t \in \NC$
+admits a \texttt{LocalWitness} at $t$ with saving $1/(4N)$
+(Definition~\ref{def:witness}). Then there exists $f' : \unit
+\to \mathbb{R}$ with
+\[
+\sup f' \;\le\; m_0 - \tfrac{1}{4N}.
+\]
 \end{theorem}
+
+Theorem~\ref{thm:main} is the specialization of
+Theorem~\ref{thm:core} to $K = \unit$, $\delta = 1/N$,
+$\varepsilon = 1/(4N)$; the 1D cover-refinement of
+\S\ref{sec:proof} turns the local-witness data into the
+\texttt{FiniteCoverWithWitnesses} required by the core.
 
 \subsection{Internal lemmas}
 \label{sec:internal}
