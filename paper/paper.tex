@@ -76,10 +76,12 @@
 \begin{document}
 
 \begin{abstract}
-The Almgren--Pitts combinatorial argument --- the cover-refinement
-plus bookkeeping backbone of Step~2 in min-max constructions of
-minimal hypersurfaces --- is a recurring technical step that each
-author re-derives in local notation. We extract it from the
+The Almgren--Pitts combinatorial argument is a recurring
+technical step in min-max constructions of embedded minimal
+hypersurfaces: a cover-refinement on the parameter interval,
+followed by a bookkeeping argument that turns local near-critical
+savings into a global supremum improvement. Each author
+re-derives it in local notation. We extract it from the
 literature as a standalone metric-combinatorial algorithm and
 formalize it in Lean~4 as the importable library \CombArg.
 \end{abstract}
@@ -106,9 +108,9 @@ singular set $\mathrm{Sing}\,\Sigma$ has Hausdorff dimension at
 most $n - 7$.
 \end{theorem}
 
-The core technical result of Pitts's proof --- used in every
-subsequent treatment~\cite{CDL03,DLT13,DLR17,DL12,MN14} --- is
-the Almgren--Pitts combinatorial argument, stated in the
+The core technical result of Pitts's proof, used in every
+subsequent treatment~\cite{CDL03,DLT13,DLR17,DL12,MN14}, is the
+Almgren--Pitts combinatorial argument, stated in the
 Colding--De~Lellis formulation as follows.
 
 \begin{proposition}[Almgren--Pitts combinatorial Argument,
@@ -137,20 +139,19 @@ The Claim is proved by contradiction: from its negation, every
 $t$ with $\mathcal{H}^n(\partial \Omega^N_t) \ge m_0 - 1/N$
 admits a \emph{local replacement} with saving $1/(4N)$
 \cite[Lemma~3.1]{DLT13}; a combinatorial cover-refinement and
-bookkeeping argument on $[0,1]$ (\cite[\S3.2]{DLT13}
-Steps~1--2) then assembles from these local replacements a
-modified sweepout with supremum strictly below $m_0$,
+bookkeeping argument on $[0,1]$ \cite[\S3.2]{DLT13} then assembles
+from these local replacements a modified sweepout with supremum
+strictly below $m_0$,
 contradicting $m_0 = \inf_\Lambda \mathcal{F}$. The combinatorial
 argument depends on no geometric measure theory, no admissible
 class, and no ambient regularity; it is a bookkeeping
 construction on continuous real-valued functions, yet has no
 canonical reference.
 
-Stripped of its GMT instantiation, the content of Steps~1--2 is
-the following scalar statement, which is the precise theorem we
-formalize.
+The scalar formulation of the proof of the Claim, which is the
+precise theorem we formalize, reads as follows.
 
-\begin{theorem}[Extracted scalar version of Steps 1--2]
+\begin{theorem}[Extracted scalar version]
 \label{thm:intro-scalar}
 Let $X$ be a pseudo-metric space with an abstract paired-cover
 structure. Let $f : [0,1] \to \mathbb{R}$ be continuous with
@@ -166,21 +167,23 @@ Then there exists $f' : [0,1] \to \mathbb{R}$ with
 \]
 \end{theorem}
 
-The boundary $\partial \Omega_t$ is replaced by a continuous
+Translation from DLT's setting to Theorem~\ref{thm:intro-scalar}:
+the boundary $\partial \Omega_t$ becomes a continuous
 $f : [0,1] \to \mathbb{R}$; the Hausdorff-measure hypothesis
 becomes $m_0 = \sup f$; the nested pair $(A_t, B_t, U_t')$
 collapses to a single neighborhood $U_t$; the replacement family
 $\{\partial \Omega_{t,\tau}\}$ collapses to a single continuous
-$E_t$; the almost-minimizing hypothesis disappears. What remains
-is the combinatorial bookkeeping. Theorem~\ref{thm:intro-scalar}
-reappears in \S\ref{sec:app-spec} as the library's public
-one-parameter API (Theorem~\ref{thm:main}); it is a specialization
-of an abstract core (Theorem~\ref{thm:core}) parametric in the
-sweepout space and in a pair $(\delta, \varepsilon)$ replacing the
-hardcoded $(1/N, 1/(4N))$.
+$E_t$; and the almost-minimizing hypothesis is no longer needed.
+Theorem~\ref{thm:intro-scalar} reappears in
+\S\ref{sec:app-spec} as the public one-parameter API of \CombArg\
+(Theorem~\ref{thm:main}); it is the specialization of an abstract
+core (Theorem~\ref{thm:core}) in which the pair $(1/N, 1/(4N))$
+becomes arbitrary scalars $(\delta, \varepsilon)$ with
+$\varepsilon \le \delta$.
 
-\paragraph{Scope.} This note formalizes Steps 1--2 of the proof
-of the Claim as a Lean 4 library, \CombArg. We do \emph{not}
+\paragraph{Scope.} This note formalizes the proof of the Claim
+(the combinatorial argument on $[0,1]$) as a Lean 4 library,
+\CombArg. We do \emph{not}
 formalize \cite[Lemma~3.1]{DLT13} (the replacement family), the
 $(U^1, U^2) \in \mathcal{CO}$ disjoint-pair structure, or the
 final contradiction against $m_0 = \inf_\Lambda \mathcal{F}$;
@@ -211,6 +214,13 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
+In DLT's proof of Proposition~\ref{prop:AP-combinatorial},
+\cite[Lemma~3.1]{DLT13} supplies, for each near-critical
+parameter $t$, an $\mathcal{H}^n$-disjoint pair of open sets
+$(U_{1,t}', U_{2,t}')$ in $M^{n+1}$ inside which a local
+replacement is performed. We abstract this pair as an instance of
+a class, stripped of its GMT content.
+
 \begin{definition}[\texttt{PairableCover} class]
 \label{def:pcover}
 \leanmargin{PairableCover}{Witness.lean}
@@ -221,6 +231,13 @@ disjoint, and overlapping combined regions of diameter-comparable
 covers are ordered by inclusion.
 \end{definition}
 
+DLT's replacement family
+$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ at a near-critical
+$t$ has its Hausdorff measure decreased by at least $1/(4N)$
+inside $U_t'$. We keep only the scalar \emph{replacement energy}
+$E : K \to \mathbb{R}$ and the uniform saving inequality; the
+geometric family is discarded.
+
 \begin{definition}[\texttt{LocalWitness} structure]
 \label{def:witness}
 \leanmargin{LocalWitness}{Witness.lean}
@@ -230,6 +247,10 @@ continuous replacement energy $E : K \to \mathbb{R}$, and the
 inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 \end{definition}
 
+DLT's proof works on the set $K \subset [0,1]$ of parameters at
+which the sweepout is within $1/N$ of the min-max value. We use
+the same convention.
+
 \begin{definition}[Near-critical set]
 \label{def:NC}
 \leanmargin{nearCritical}{Refinement/InitialCover.lean}
@@ -238,6 +259,13 @@ $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
 write $\NC$.
 \end{definition}
+
+At the end of DLT's construction the data is a refined family
+$\{\overline{J_l}\}$ covering $K$, with each $J_l$ carrying a
+replacement whose energy saving is at least $1/(4N)$ and with
+two-fold overlap. We abstract this output: the near-critical
+threshold $1/N$ becomes a parameter $\delta$ and the saving floor
+$1/(4N)$ a parameter $\varepsilon \le \delta$.
 
 \begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
 \label{def:ref}
@@ -253,6 +281,12 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
 \end{definition}
 
+Before DLT's refinement, a Lebesgue-number argument on the
+compact set $K$ produces a finite covering $\{I_i\}$ of open
+intervals, each centered at a $t_i \in K$. In our formalization
+the interval center $c_i$ and the witness center $w_i$ are
+recorded separately: grid points need not themselves lie in $K$.
+
 \begin{definition}[\texttt{InitialCover} structure]
 \label{def:ic}
 \leanmargin{InitialCover}{Refinement/InitialCover.lean}
@@ -266,10 +300,12 @@ subject to
 (b) containment: $I_i \subseteq U_{w_i}$;
 (c) coverage: $\NC \subseteq \bigcup_i I_i$.\footnote{Conditions
 (a) and (b) transcribe~\cite[\S3.2]{DLT13}'s spacing and subset
-conditions; the pair $(c_i, w_i)$ separates interval centers from
-witness centers, required because grid points need not themselves
-be near-critical.}
+conditions.}
 \end{definition}
+
+DLT's refinement is described as an iteration: each $I_j$ with
+$j \ge 2$ is either kept whole or split into two halves. The
+state of this iteration after $\ell$ moves is the following.
 
 \begin{definition}[\texttt{PartialRefinement} structure]
 \label{def:pr}
@@ -339,20 +375,20 @@ additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
 
 \begin{itemize}
 \item \lean{exists\_initialCover}{Refinement/CoverConstruction.lean}
---- existence of an \texttt{InitialCover} via a grid plus
+: existence of an \texttt{InitialCover} via a grid plus
 Lebesgue-number construction on the compact sublevel set $\NC$.
 \item \lean{exists\_terminal\_refinement}{Refinement/Induction.lean}
---- existence of a terminal \texttt{PartialRefinement} with
+: existence of a terminal \texttt{PartialRefinement} with
 injective $\sigma$ via bounded smallest-index induction with
 two-case dispatch.
 \item \lean{not\_three\_overlap}{Refinement/Disjointness.lean}
---- at most two among any three distinct \texttt{InitialCover}
+: at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
 \item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
---- the open-neighborhood saving bound in \texttt{LocalWitness}
+: the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
 \item \lean{exists\_refinement}{Refinement/Assembly.lean}
---- packages the 1D construction output as a
+: packages the 1D construction output as a
 \texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
 with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$; the input
 to Theorem~\ref{thm:core}.
