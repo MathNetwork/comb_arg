@@ -14,6 +14,8 @@
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{geometry}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,calc}
 \geometry{margin=1in}
 
 \lstset{
@@ -364,6 +366,85 @@ extends to the closure via continuity of $E$.
 \texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$,
 the input to Theorem~\ref{thm:core}.
 \end{itemize}
+
+Figure~\ref{fig:arch} shows the layered architecture.
+
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={align=center},
+  box/.style={draw=black, thin, rectangle, inner sep=3pt, minimum height=6mm},
+  pillar/.style={box, minimum width=34mm, minimum height=7mm},
+  decl/.style={box, font=\scriptsize\ttfamily, minimum width=34mm, minimum height=4.2mm, inner ysep=1.5pt},
+  note/.style={font=\scriptsize\itshape, text width=34mm, align=center, anchor=north},
+  tierlbl/.style={font=\sffamily\scriptsize, anchor=east, text=black!70},
+  arr/.style={-Latex, thin, black!70},
+  arrlab/.style={font=\scriptsize, midway, fill=white, inner sep=1pt, text=black!70}
+]
+
+% Tier 1: abstract core
+\node[box, minimum width=85mm] (core) at (0, 8) {%
+  \texttt{exists\_sup\_reduction\_of\_cover} \ (generic $K$)
+};
+\node[tierlbl] at (-7, 8) {Tier 1\\abstract core};
+
+% Tier 2: one-parameter application
+\node[box, minimum width=65mm] (app) at (0, 6) {%
+  \texttt{exists\_sup\_reduction} \ ($K = [0,1]$)
+};
+\node[tierlbl] at (-7, 6) {Tier 2\\application};
+\draw[arr] (app) -- node[arrlab] {specializes} (core);
+
+% Tier 3: three pillars
+\node[pillar] (P1) at (-5.2, 4) {cover construction};
+\node[pillar] (P2) at ( 0,   4) {refinement induction};
+\node[pillar] (P3) at ( 5.2, 4) {bookkeeping arithmetic};
+\node[tierlbl] at (-7, 4) {Tier 3\\pillars};
+\draw[arr] (P1.north) -- ++(0,0.15) -| (app.south west) ;
+\draw[arr] (P2.north) -- node[arrlab] {composes} (app.south);
+\draw[arr] (P3.north) -- ++(0,0.15) -| (app.south east) ;
+
+% Pillar annotations (italic, under each pillar)
+\node[note] at (-5.2, 3.5) {Lebesgue number on $\{f \geq m_0 - \delta\}$};
+\node[note] at ( 0,   3.5) {smallest-index two-case dispatch};
+\node[note] at ( 5.2, 3.5) {pointwise case split on near-criticality};
+
+% Tier 4: declarations under pillars
+\node[decl] (D1a) at (-5.2, 2.5) {exists\_initialCover};
+\node[decl] (D1b) at (-5.2, 2.0) {InitialCover};
+
+\node[decl] (D2a) at (0, 2.5) {step\_zero};
+\node[decl] (D2b) at (0, 2.0) {step\_succ};
+\node[decl] (D2c) at (0, 1.5) {exists\_terminal\_refinement};
+\node[decl] (D2d) at (0, 1.0) {PartialRefinement};
+
+\node[decl] (D3a) at (5.2, 2.5) {FiniteCoverWithWitnesses};
+\node[decl] (D3b) at (5.2, 2.0) {reducedEnergy};
+\node[decl] (D3c) at (5.2, 1.5) {reducedEnergy\_le};
+\node[tierlbl] at (-7, 2) {Tier 4\\declarations};
+
+% twoFold invariant — intermediate target between Tier 4 and Tier 5
+\node[decl] (TF) at (0, -0.3) {twoFold invariant};
+
+% Tier 5: disjointness sub-module
+\node[decl] (J1) at (-5.2, -1.5) {chain\_spacing};
+\node[decl] (J2) at ( 0,   -1.5) {I\_closure\_disj\_of\_even\_gap};
+\node[decl] (J3) at ( 5.2, -1.5) {not\_three\_overlap};
+\node[tierlbl] at (-7, -1.5) {Tier 5\\disjointness};
+\draw[arr] (J1.north) -- (TF.south west);
+\draw[arr] (J2.north) -- node[arrlab] {proves} (TF.south);
+\draw[arr] (J3.north) -- (TF.south east);
+
+\end{tikzpicture}
+\caption{\label{fig:arch}\CombArg{} v0.1 architecture. The abstract
+core (Tier 1) is parametric in the sweepout space; the
+one-parameter application (Tier 2) instantiates $K = [0,1]$ and
+composes three construction pillars (Tier 3). Each pillar's key
+declarations appear in Tier 4. The disjointness sub-module
+(Tier 5) supplies the two-fold overlap invariant consumed by
+bookkeeping.}
+\end{figure}
 
 \section{Proof structure}
 \label{sec:proof}
