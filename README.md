@@ -138,18 +138,23 @@ comb-arg/
 ├── lakefile.lean, lake-manifest.json, lean-toolchain
 ├── CombArg.lean               top-level module (re-exports)
 ├── CombArg/
+│   ├── Util.lean              reusable utilities
+│   │                          (ge_of_closure_of_ge, exists_even_gap_of_three)
 │   ├── Witness.lean           PairableCover class, LocalWitness structure
 │   ├── Core.lean              FiniteCoverWithWitnesses +
 │   │                          exists_sup_reduction_of_cover (abstract core)
 │   ├── EnergyBound.lean       re-export stub (subsumed by Core as of v0.2)
 │   ├── SupReduction.lean      exists_sup_reduction (one-parameter application)
-│   ├── Refinement.lean        facade re-exporting the 6 submodules
+│   ├── Refinement.lean        facade re-exporting the 7 submodules
 │   └── Refinement/
+│       ├── SpacedIntervals.lean     abstract skip-2 spaced intervals
+│       │                            (SkippedSpacedIntervals + geometry lemmas)
 │       ├── InitialCover.lean  nearCritical + InitialCover
 │       ├── CoverConstruction.lean   exists_initialCover (Lebesgue)
 │       ├── PartialRefinement.lean   mid-induction state + step_zero
 │       ├── Induction.lean     step_succ + exists_terminal_refinement
 │       ├── Disjointness.lean  spacing + parity-rescue lemmas
+│       │                      (thin wrappers over SpacedIntervals)
 │       └── Assembly.lean      terminal_twoFold, saving_bound_closure,
 │                              exists_refinement
 ├── docs/

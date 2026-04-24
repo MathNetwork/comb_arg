@@ -47,11 +47,26 @@ formalization.
   `exists_terminal_refinement` — bounded iteration via smallest-index
   selection with two-case dispatch, producing a terminal
   `PartialRefinement` with injective `σ`.
+- Abstract 1D geometry: `Refinement.SkippedSpacedIntervals`
+  (`CombArg/Refinement/SpacedIntervals.lean`) — a finite family of
+  open intervals on `unitInterval` specified by centers and positive
+  radii under the skip-2 spacing condition, carrying the purely
+  geometric content of DLT's spacing (a): `chain_spacing`,
+  `disjoint_of_even_gap`, `closure_disjoint_of_even_gap`,
+  `not_three_overlap`, `not_three_overlap_any_order`.
+  `InitialCover` projects to this via
+  `InitialCover.toSkippedSpacedIntervals`.
 - Disjointness structure: `InitialCover.chain_spacing`,
   `InitialCover.disjoint_of_even_gap`,
   `InitialCover.closure_disjoint_of_even_gap`,
-  `InitialCover.not_three_overlap` — the three-layer parity
-  argument documented in `docs/design-notes.md §11`.
+  `InitialCover.not_three_overlap` — thin wrappers over the
+  `SkippedSpacedIntervals` lemmas; the three-layer parity
+  argument is documented in `docs/design-notes.md §11`.
+- Reusable utilities (`CombArg/Util.lean`):
+  `ge_of_closure_of_ge` — extend a closed-half-line condition from
+  a set to its closure via continuity;
+  `exists_even_gap_of_three` — purely arithmetic three-indices →
+  even-gap pair lemma, discharged by `omega`.
 - 1D assembly: `terminal_twoFold`, `saving_bound_closure`,
   `exists_refinement` (output now a `FiniteCoverWithWitnesses`).
 
