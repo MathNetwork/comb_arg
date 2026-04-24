@@ -18,3 +18,4 @@ build/
 resources/*.pdf
 # Local arXiv source snapshots
 resources/*-source/
+.claude/skills/
