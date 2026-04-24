@@ -44,15 +44,11 @@
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
-% Inline, colored, clickable link to a verified Lean declaration.
-% #1 = Lean declaration name (as rendered)
-% #2 = file path inside CombArg/ (e.g. SupReduction.lean)
-\newcommand{\defref}[2]{%
-  \href{\leanrepo/#2}{%
-    \textcolor{green!45!black}{\ensuremath{\checkmark}}\hspace{0.15em}%
-    \textcolor{blue!55!black}{\texttt{#1}}%
-  }%
-}
+% Colored Lean declaration tag for theorem/definition/proposition
+% headers and inline proof-body references. Renders the Lean decl
+% path in a restrained blue typewriter font.
+\definecolor{leantag}{HTML}{2B6CB0}
+\newcommand{\lean}[1]{{\color{leantag}\texttt{#1}}}
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
 
@@ -165,35 +161,32 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
-\begin{definition}[\texttt{PairableCover} class]
+\begin{definition}[\texttt{PairableCover} class, \lean{CombArg.PairableCover}]
 \label{def:pcover}
 A \texttt{PairableCover X} instance declares, for each abstract
 \texttt{c : Cover}, a left region and a right region in $X$ and a
 scalar diameter, subject to two axioms: the two regions are
 disjoint, and overlapping combined regions of diameter-comparable
-covers are ordered by inclusion. Formal:
-\defref{PairableCover}{Witness.lean}.
+covers are ordered by inclusion.
 \end{definition}
 
-\begin{definition}[\texttt{LocalWitness} structure]
+\begin{definition}[\texttt{LocalWitness} structure, \lean{CombArg.LocalWitness}]
 \label{def:witness}
 A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
 neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
 continuous replacement energy $E : K \to \mathbb{R}$, and the
 inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
-Formal: \defref{LocalWitness}{Witness.lean}.
 \end{definition}
 
-\begin{definition}[Near-critical set]
+\begin{definition}[Near-critical set, \lean{CombArg.nearCritical}]
 \label{def:NC}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
 $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
-write $\NC$. Formal:
-\defref{nearCritical}{Refinement/InitialCover.lean}.
+write $\NC$.
 \end{definition}
 
-\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
+\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure, \lean{CombArg.FiniteCoverWithWitnesses}]
 \label{def:ref}
 A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
 carries a finite nonempty index type $\iota$, pieces
@@ -204,10 +197,9 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (II) each $t \in K$ lies in at most two pieces;
 (III) $s_l \ge \varepsilon$ for all $l$;
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
-Formal: \defref{FiniteCoverWithWitnesses}{Core.lean}.
 \end{definition}
 
-\begin{definition}[\texttt{InitialCover} structure]
+\begin{definition}[\texttt{InitialCover} structure, \lean{CombArg.Refinement.InitialCover}]
 \label{def:ic}
 Specialized to $K = \unit$. An
 \texttt{InitialCover X f m\textsubscript{0} N} carries a finite
@@ -221,11 +213,10 @@ subject to
 (a) and (b) transcribe~\cite[\S3.2]{DLT13}'s spacing and subset
 conditions; the pair $(c_i, w_i)$ separates interval centers from
 witness centers, required because grid points need not themselves
-be near-critical.} Formal:
-\defref{InitialCover}{Refinement/InitialCover.lean}.
+be near-critical.}
 \end{definition}
 
-\begin{definition}[\texttt{PartialRefinement} structure]
+\begin{definition}[\texttt{PartialRefinement} structure, \lean{CombArg.Refinement.PartialRefinement}]
 \label{def:pr}
 Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
 \texttt{PartialRefinement ic $\ell$} carries pieces
@@ -233,14 +224,12 @@ $J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
 $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 (i) $J_k \subseteq I_{\sigma(k)}$ for each $k$;
 (ii) $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each $k$.
-Formal:
-\defref{PartialRefinement}{Refinement/PartialRefinement.lean}.
 \end{definition}
 
 \subsection{Public API: abstract core}
 \label{sec:core-spec}
 
-\begin{theorem}[\texttt{exists\_sup\_reduction\_of\_cover}]
+\begin{theorem}[Abstract core, \lean{CombArg.exists\_sup\_reduction\_of\_cover}]
 \label{thm:core}
 \leavevmode\par\noindent
 \textbf{Input.} A compact, nonempty topological space $K$; a
@@ -252,15 +241,12 @@ $0 < \varepsilon \le \delta$; a
 \par\noindent
 \textbf{Output.} There exists $f' : K \to \mathbb{R}$ with
 $\sup f' \le m_0 - \varepsilon$.
-
-\par\noindent
-Formal: \defref{exists\_sup\_reduction\_of\_cover}{Core.lean}.
 \end{theorem}
 
 \subsection{Public API: one-parameter application}
 \label{sec:app-spec}
 
-\begin{theorem}[\texttt{exists\_sup\_reduction}]
+\begin{theorem}[One-parameter application, \lean{CombArg.exists\_sup\_reduction}]
 \label{thm:main}
 \leavevmode\par\noindent
 \textbf{Input.} A pseudo-metric space $X$ with a
@@ -276,8 +262,7 @@ $\sup f' \le m_0 - 1/(4N)$.
 
 \par\noindent
 Specializes Theorem~\ref{thm:core} to $K = \unit$,
-$\delta = 1/N$, $\varepsilon = 1/(4N)$. Formal:
-\defref{exists\_sup\_reduction}{SupReduction.lean}.
+$\delta = 1/N$, $\varepsilon = 1/(4N)$.
 \end{theorem}
 
 \subsection{Internal lemmas}
@@ -286,30 +271,27 @@ $\delta = 1/N$, $\varepsilon = 1/(4N)$. Formal:
 The declarations below are consumed by Theorem~\ref{thm:main};
 proofs are sketched in \S\ref{sec:proof}.
 
-\begin{proposition}[Compactness of $\NC$]
+\begin{proposition}[Compactness of $\NC$, \lean{CombArg.Refinement.isCompact\_nearCritical}, \lean{CombArg.Refinement.nearCritical\_nonempty}]
 \label{prop:NC-compact}
 If $K$ is compact and $f$ continuous, $\NC$ is compact. If
 additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
-Formal:
-\defref{isCompact\_nearCritical}{Refinement/InitialCover.lean},
-\defref{nearCritical\_nonempty}{Refinement/InitialCover.lean}.
 \end{proposition}
 
 \begin{itemize}
-\item \defref{exists\_initialCover}{Refinement/CoverConstruction.lean}
+\item \lean{CombArg.Refinement.exists\_initialCover}
 --- existence of an \texttt{InitialCover} via a grid plus
 Lebesgue-number construction on the compact sublevel set $\NC$.
-\item \defref{exists\_terminal\_refinement}{Refinement/Induction.lean}
+\item \lean{CombArg.Refinement.exists\_terminal\_refinement}
 --- existence of a terminal \texttt{PartialRefinement} with
 injective $\sigma$ via bounded smallest-index induction with
 two-case dispatch.
-\item \defref{InitialCover.not\_three\_overlap}{Refinement/Disjointness.lean}
+\item \lean{CombArg.Refinement.InitialCover.not\_three\_overlap}
 --- at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
-\item \defref{saving\_bound\_closure}{Refinement/Assembly.lean}
+\item \lean{CombArg.Refinement.saving\_bound\_closure}
 --- the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
-\item \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}
+\item \lean{CombArg.Refinement.exists\_refinement}
 --- packages the 1D cover construction output as a
 \texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$,
 the input to Theorem~\ref{thm:core}.
@@ -406,10 +388,10 @@ TwoFold. Theorem~\ref{thm:core} closes.
 
 \subsection{Stage A: existence of the initial cover}
 
-\begin{proposition}[Existence of an initial cover]
+\begin{proposition}[Existence of an initial cover, \lean{CombArg.Refinement.exists\_initialCover}]
 \label{prop:exists-ic}
 Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
-(Definition~\ref{def:ic}) exists \defref{exists\_initialCover}{Refinement/CoverConstruction.lean}.
+(Definition~\ref{def:ic}) exists.
 \end{proposition}
 
 \begin{proof}[Construction]
@@ -436,14 +418,14 @@ selected. Condition~(b) holds by the Lebesgue argument.
 
 Starting from an initial cover, one builds pieces inductively.
 
-\begin{definition}[Base case]
+\begin{definition}[Base case, \lean{CombArg.Refinement.step\_zero}]
 \label{def:step0}
 $\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
 refinement with
-$J_1 := I_1$ and $\sigma(1) := 1$ \defref{step\_zero}{Refinement/PartialRefinement.lean}.
+$J_1 := I_1$ and $\sigma(1) := 1$.
 \end{definition}
 
-\begin{definition}[Inductive step]
+\begin{definition}[Inductive step, \lean{CombArg.Refinement.step\_succ\_at}]
 \label{def:step-succ}
 Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
 an index $i^* \in \{1,\ldots,n\}$ with
@@ -460,16 +442,19 @@ $I_{i^*} \subseteq J_\ell \cup I_{\sigma(\ell)}$:
 In both cases set $\sigma(\ell+1) := i^*$. Both invariants of
 Definition~\ref{def:pr} are preserved; in Case~2 the preservation
 of (ii) uses the induction hypothesis on
-$I_{\sigma(\ell)} \subseteq \bigcup_k J_k$ \defref{step\_succ\_at}{Refinement/Induction.lean}.\footnote{A variant \texttt{step\_succ} chooses $i^*$ internally via $\mathrm{Finset.min'}$; \texttt{step\_succ\_at} takes $i^*$ as an explicit argument and returns the extension bundled with the ``$i^*$ is covered'' property, for termination.}
+$I_{\sigma(\ell)} \subseteq \bigcup_k J_k$.\footnote{A variant
+\texttt{step\_succ} chooses $i^*$ internally via
+$\mathrm{Finset.min'}$; \texttt{step\_succ\_at} takes $i^*$ as an
+explicit argument and returns the extension bundled with the
+``$i^*$ is covered'' property, for termination.}
 \end{definition}
 
-\begin{proposition}[Termination]
+\begin{proposition}[Termination, \lean{CombArg.Refinement.exists\_terminal\_refinement}]
 \label{prop:exists-terminal}
 Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
 $\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
 partial refinement of some length $L$ with $\sigma$ injective
-and $I_i \subseteq \bigcup_k J_k$ for every
-$i$ \defref{exists\_terminal\_refinement}{Refinement/Induction.lean}.
+and $I_i \subseteq \bigcup_k J_k$ for every $i$.
 \end{proposition}
 
 \begin{proof}[Argument]
@@ -491,11 +476,11 @@ $\sigma(k)$ correspond to already-covered indices.
 The final stage extends the saving bound from open $J_k$ to
 $\overline{J_k}$ and derives TwoFold from spacing~(a).
 
-\begin{proposition}[TwoFold via parity]
+\begin{proposition}[TwoFold via parity, \lean{CombArg.Refinement.terminal\_twoFold}]
 \label{prop:twofold}
 For a partial refinement $\mathrm{pr}$ of length $L$ with
 $\sigma$ injective, every $t \in \unit$ lies in at most two of
-$\overline{J_1}, \ldots, \overline{J_L}$ \defref{terminal\_twoFold}{Refinement/Assembly.lean}.
+$\overline{J_1}, \ldots, \overline{J_L}$.
 \end{proposition}
 
 \begin{proof}[Argument]
@@ -503,7 +488,9 @@ From spacing condition~(a), iterated $m$ times, one obtains
 that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
 2$) have strict separation between $\overline{I_i}$ and
 $\overline{I_j}$, hence
-$\overline{I_i} \cap \overline{I_j} = \emptyset$ \defref{InitialCover.chain\_spacing}{Refinement/Disjointness.lean}, \defref{InitialCover.closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}.
+$\overline{I_i} \cap \overline{I_j} = \emptyset$
+(\lean{CombArg.Refinement.InitialCover.chain\_spacing},
+\lean{CombArg.Refinement.InitialCover.closure\_disjoint\_of\_even\_gap}).
 
 Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
 admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
@@ -516,17 +503,17 @@ integers $a < b < c$ some pair has even gap $\ge 2$: either
 $c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
 and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
 parities and one of them is the even gap. The pair with even
-gap has disjoint closures, contradicting the common
-point \defref{InitialCover.not\_three\_overlap}{Refinement/Disjointness.lean}.
+gap has disjoint closures, contradicting the common point
+(\lean{CombArg.Refinement.InitialCover.not\_three\_overlap}).
 \end{proof}
 
-\begin{proposition}[Closure extension of saving bound]
+\begin{proposition}[Closure extension of saving bound, \lean{CombArg.Refinement.saving\_bound\_closure}]
 \label{prop:saving-bound}
 Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
 every $t \in \overline{J_k}$,
 $f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
 $E_{\sigma(k)}$ is the replacement energy of the $\sigma(k)$-th
-local witness \defref{saving\_bound\_closure}{Refinement/Assembly.lean}.
+local witness.
 \end{proposition}
 
 \begin{proof}[Argument]
@@ -539,7 +526,7 @@ a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
 limits.
 \end{proof}
 
-\begin{lemma}[Assembly]
+\begin{lemma}[Assembly, \lean{CombArg.Refinement.exists\_refinement}]
 \label{lem:assembly}
 A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
 injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
@@ -548,7 +535,7 @@ Definition~\ref{def:ref}, with
 $p_k := \overline{J_k}$, uniform saving
 $s_k := 1/(4N)$, and
 $E_k := $ the replacement energy of the
-$\sigma(k)$-th witness \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}.
+$\sigma(k)$-th witness.
 \end{lemma}
 
 \begin{proof}[Argument]
@@ -600,62 +587,6 @@ reference to be confirmed against the author's library.)
 \bibitem[MN14]{MN14}
 F.~Marques and A.~Neves, \emph{Min-max theory and the Willmore
 conjecture}, Ann.\ of Math.~(2) 179 (2014), no.~2, 683--782.
-
-\bibitem[Smi83]{Smi83}
-F.~Smith, \emph{On the existence of embedded minimal 2-spheres
-in the 3-sphere, endowed with an arbitrary Riemannian metric},
-PhD thesis, University of Melbourne, 1983.
-
-\bibitem[LZ17]{LZ17}
-M.~M.-C. Li and X.~Zhou, \emph{Min-max theory for free boundary
-minimal hypersurfaces I: Regularity theory}, J.\ Differential
-Geom.~118 (2021), no.~3, 487--553.
-
-\bibitem[Gua18]{Gua18}
-M.~A.~M. Guaraco, \emph{Min-max for phase transitions and the
-existence of embedded minimal hypersurfaces}, J.\ Differential
-Geom.~108 (2018), no.~1, 91--133.
-
-\bibitem[Ket16]{Ket16}
-D.~Ketover, \emph{Equivariant min-max theory}, arXiv:1612.08692
-(2016).
-
-\bibitem[CL16]{CL16}
-G.~R. Chambers and Y.~Liokumovich, \emph{Existence of minimal
-hypersurfaces in complete manifolds of finite volume},
-Invent.\ Math.~219 (2020), no.~1, 179--217.
-
-\bibitem[CL20]{CL20}
-G.~R. Chambers and Y.~Liokumovich, \emph{Monotonicity of sweepouts
-and minimal hypersurfaces}, arXiv preprint (2020).
-
-\bibitem[CLS22]{CLS22}
-O.~Chodosh, Y.~Liokumovich, and L.~Spolaor, \emph{Non-excessive
-sweepouts and the min-max minimal hypersurface problem},
-arXiv preprint (2022).
-
-\bibitem[Zho19]{Zho19}
-X.~Zhou, \emph{On the multiplicity one conjecture in min-max
-theory}, Ann.\ of Math.~(2) 192 (2020), no.~3, 767--820.
-
-\bibitem[LMN18]{LMN18}
-Y.~Liokumovich, F.~C. Marques, and A.~Neves, \emph{Weyl law for
-the volume spectrum}, Ann.\ of Math.~(2) 187 (2018), no.~3,
-933--961.
-
-\bibitem[IMN18]{IMN18}
-K.~Irie, F.~C. Marques, and A.~Neves, \emph{Density of minimal
-hypersurfaces for generic metrics}, Ann.\ of Math.~(2) 187 (2018),
-no.~3, 963--972.
-
-\bibitem[dMU21]{Lean4}
-L.~de~Moura and S.~Ullrich, \emph{The Lean~4 theorem prover and
-programming language}, in: CADE-28, Lecture Notes in Computer
-Science~12699, Springer, 2021, 625--635.
-
-\bibitem[MC20]{Mathlib}
-The \Mathlib~Community, \emph{The Lean Mathematical Library},
-in: CPP 2020, 367--381.
 
 \end{thebibliography}
 
