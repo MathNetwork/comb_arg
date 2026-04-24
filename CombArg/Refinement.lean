@@ -9,6 +9,7 @@ import CombArg.Refinement.Induction
 import CombArg.Refinement.InitialCover
 import CombArg.Refinement.Assembly
 import CombArg.Refinement.PartialRefinement
+import CombArg.Refinement.SpacedIntervals
 
 /-!
 # Step 1: Interval refinement construction — facade
@@ -27,8 +28,14 @@ Step 1 (De Lellis–Tasnady 2013,
 
 ## Module layout
 
+* [`Refinement.SpacedIntervals`](Refinement/SpacedIntervals.lean) —
+  abstract `SkippedSpacedIntervals` structure with its `chain_spacing`,
+  `disjoint_of_even_gap`, `closure_disjoint_of_even_gap`, and
+  `not_three_overlap` lemmas (pure 1D geometry, independent of
+  witnesses).
 * [`Refinement.InitialCover`](Refinement/InitialCover.lean) —
   `nearCritical`, `InitialCover` structure, `InitialCover.I`,
+  `toSkippedSpacedIntervals` projection,
   `exists_closedBall_subset_of_open`.
 * [`Refinement.CoverConstruction`](Refinement/CoverConstruction.lean) —
   `exists_initialCover` via a grid + Lebesgue-number construction.

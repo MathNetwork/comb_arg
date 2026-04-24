@@ -3,6 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
+import CombArg.Refinement.SpacedIntervals
 import CombArg.Witness
 import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.UnitInterval
@@ -155,6 +156,29 @@ def InitialCover.I
   Subtype.val ⁻¹'
     Set.Ioo ((ic.intervalCenter i).val - ic.radius i)
              ((ic.intervalCenter i).val + ic.radius i)
+
+/-- The geometric part of an `InitialCover`: the skip-2 spaced
+open intervals on `unitInterval`, forgetting the witness centers,
+local witnesses, and coverage of `nearCritical`. The disjointness
+lemmas in `CombArg.Refinement.Disjointness` delegate to this
+projection. -/
+def InitialCover.toSkippedSpacedIntervals
+    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
+    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+    (ic : InitialCover (X := X) f m₀ N) : SkippedSpacedIntervals where
+  n := ic.n
+  intervalCenter := ic.intervalCenter
+  radius := ic.radius
+  radius_pos := ic.radius_pos
+  two_fold_spacing := ic.two_fold_spacing
+
+/-- The `I`-field on `InitialCover` agrees with the `I`-field on
+its `SkippedSpacedIntervals` projection (definitional). -/
+lemma InitialCover.toSkippedSpacedIntervals_I
+    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
+    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+    (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) :
+    ic.toSkippedSpacedIntervals.I i = ic.I i := rfl
 
 /-! ## Auxiliary: closed ball inside an open set on `unitInterval` -/
 

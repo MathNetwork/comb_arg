@@ -319,26 +319,42 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
 \end{definition}
 
-Before the refinement, a Lebesgue-number argument on the
-compact set $K$ produces a finite covering $\{I_i\}$ of open
-intervals, each centered at a $t_i \in K$. In our formalization
-the interval center $c_i$ and the witness center $w_i$ are
-recorded separately: grid points need not themselves lie in $K$.
+The skip-2 spacing condition (a) of the original proof is a
+purely one-dimensional geometric condition on a family of open
+intervals. We isolate it in its own structure so the
+disjointness lemmas that depend only on spacing can be proved
+independently of the witness data.
+
+\begin{definition}[\texttt{SkippedSpacedIntervals} structure]
+\label{def:spaced}
+\leanmargin{SkippedSpacedIntervals}{Refinement/SpacedIntervals.lean}
+A \texttt{SkippedSpacedIntervals} records a natural number $n$,
+centers $c_1, \ldots, c_n \in \unit$, positive radii
+$r_1, \ldots, r_n > 0$, and the skip-2 spacing axiom
+$c_i + r_i < c_{i+2} - r_{i+2}$ whenever $i+2 \le n$. The
+$i$-th open interval $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
+is an abbreviation on this structure.
+\end{definition}
+
+On top of the geometric structure, the initial cover also
+carries a witness center $w_i \in \NC$ with an attached local
+witness for each interval, together with the containment of
+each $I_i$ inside the corresponding witness neighborhood. In our
+formalization the interval center $c_i$ and the witness center
+$w_i$ are recorded separately: grid points need not themselves
+lie in $\NC$.
 
 \begin{definition}[\texttt{InitialCover} structure]
 \label{def:ic}
 \leanmargin{InitialCover}{Refinement/InitialCover.lean}
 Specialized to $K = \unit$. An
-\texttt{InitialCover X f m\textsubscript{0} N} carries a finite
-family of open intervals $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
-for $i = 1, \ldots, n$, each paired with a witness center
-$w_i \in \NC$ and a local witness at $w_i$ with saving $1/(4N)$,
-subject to
-(a) spacing: $c_i + r_i < c_{i+2} - r_{i+2}$ for all valid $i$;
+\texttt{InitialCover X f m\textsubscript{0} N} carries the data
+of a \texttt{SkippedSpacedIntervals} (Definition~\ref{def:spaced},
+satisfying spacing condition (a)), plus, for each
+$i = 1, \ldots, n$, a witness center $w_i \in \NC$ and a local
+witness at $w_i$ with saving $1/(4N)$, subject to
 (b) containment: $I_i \subseteq U_{w_i}$;
-(c) coverage: $\NC \subseteq \bigcup_i I_i$.\footnote{Conditions
-(a) and (b) transcribe the spacing and subset conditions of the
-original proof.}
+(c) coverage: $\NC \subseteq \bigcup_i I_i$.
 \end{definition}
 
 The refinement is described as an iteration: each $I_j$ with
@@ -541,14 +557,16 @@ Figure~\ref{fig:arch} shows the layered architecture.
 % twoFold invariant — intermediate target between Tier 4 and Tier 5
 \node[decl] (TF) at (0, -0.3) {twoFold invariant};
 
-% Tier 5: disjointness sub-module
-\node[decl] (J1) at (-5.2, -1.5) {chain\_spacing};
-\node[decl] (J2) at ( 0,   -1.5) {I\_closure\_disj\_of\_even\_gap};
-\node[decl] (J3) at ( 5.2, -1.5) {not\_three\_overlap};
-\node[tierlbl] at (-7, -1.5) {Tier 5\\disjointness};
-\draw[arr] (J1.north) -- (TF.south west);
-\draw[arr] (J2.north) -- node[arrlab] {proves} (TF.south);
-\draw[arr] (J3.north) -- (TF.south east);
+% Tier 5: disjointness sub-module (on SkippedSpacedIntervals)
+\node[decl] (SP) at (0, -1.5) {SkippedSpacedIntervals};
+\node[decl] (J1) at (-5.2, -2.4) {chain\_spacing};
+\node[decl] (J2) at ( 0,   -2.4) {I\_closure\_disj\_of\_even\_gap};
+\node[decl] (J3) at ( 5.2, -2.4) {not\_three\_overlap};
+\node[tierlbl] at (-7, -1.95) {Tier 5\\disjointness};
+\draw[arr] (J1.north) -- (SP.south west);
+\draw[arr] (J2.north) -- (SP.south);
+\draw[arr] (J3.north) -- (SP.south east);
+\draw[arr] (SP.north) -- node[arrlab] {proves} (TF.south);
 
 \end{tikzpicture}
 \caption{\label{fig:arch}\CombArg{} v0.1 architecture. The abstract
@@ -556,8 +574,9 @@ core (Tier 1) is parametric in the sweepout space; the
 one-parameter application (Tier 2) instantiates $K = [0,1]$ and
 composes three construction pillars (Tier 3). Each pillar's key
 declarations appear in Tier 4. The disjointness sub-module
-(Tier 5) supplies the two-fold overlap invariant consumed by
-bookkeeping.}
+(Tier 5) is an abstract \texttt{SkippedSpacedIntervals} structure
+whose three lemmas combine into the two-fold overlap invariant
+consumed by bookkeeping.}
 \end{figure}
 
 \section{Proof structure}
@@ -700,11 +719,15 @@ directly.
 
 The next observation in the proof is that if $t \in (a_i, b_i)
 \cap (a_j, b_j)$, then $j = i+1$, and moreover
-$\mathrm{dist}(U_i', U_{i+1}') > 0$. This
-is the two-fold overlap of the refined covering, and in our
-formalization it is the \texttt{twoFold} field of
-\texttt{FiniteCoverWithWitnesses}, derived from the parity-gap
-spacing by Proposition~\ref{prop:twofold} below.
+$\mathrm{dist}(U_i', U_{i+1}') > 0$. This is the two-fold overlap
+of the refined covering, and in our formalization it is the
+\texttt{twoFold} field of \texttt{FiniteCoverWithWitnesses},
+derived from the parity-gap spacing by
+Proposition~\ref{prop:twofold}. The parity-gap lemmas themselves
+live on the abstract \texttt{SkippedSpacedIntervals}
+(Definition~\ref{def:spaced}) and are therefore independent of
+the witness data: \texttt{InitialCover} provides access to them
+by projecting out the underlying geometry.
 
 The modified sweepout $\{\partial \Omega'_t\}$ is then defined
 piecewise: $\Omega'_t = \Omega_t$ outside all $J_i$; $\Omega'_t =
