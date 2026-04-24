@@ -146,6 +146,39 @@ class, and no ambient regularity; it is a bookkeeping
 construction on continuous real-valued functions, yet has no
 canonical reference.
 
+Stripped of its GMT instantiation, the content of Steps~1--2 is
+the following scalar statement, which is the precise theorem we
+formalize.
+
+\begin{theorem}[Extracted scalar version of Steps 1--2]
+\label{thm:intro-scalar}
+Let $X$ be a pseudo-metric space with an abstract paired-cover
+structure. Let $f : [0,1] \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$ and $m_0 > 0$, and let $N \in \mathbb{N}$ with
+$N > 0$. Suppose that at every $t \in [0,1]$ with
+$f(t) \ge m_0 - 1/N$ there is a \emph{local witness}: an open
+neighborhood $U_t \ni t$, a paired cover $c_t$ in $X$, and a
+continuous replacement energy $E_t : [0,1] \to \mathbb{R}$
+satisfying $f(s) - E_t(s) \ge 1/(4N)$ for every $s \in U_t$.
+Then there exists $f' : [0,1] \to \mathbb{R}$ with
+\[
+\sup f' \;\le\; m_0 - \frac{1}{4N}.
+\]
+\end{theorem}
+
+The boundary $\partial \Omega_t$ is replaced by a continuous
+$f : [0,1] \to \mathbb{R}$; the Hausdorff-measure hypothesis
+becomes $m_0 = \sup f$; the nested pair $(A_t, B_t, U_t')$
+collapses to a single neighborhood $U_t$; the replacement family
+$\{\partial \Omega_{t,\tau}\}$ collapses to a single continuous
+$E_t$; the almost-minimizing hypothesis disappears. What remains
+is the combinatorial bookkeeping. Theorem~\ref{thm:intro-scalar}
+reappears in \S\ref{sec:app-spec} as the library's public
+one-parameter API (Theorem~\ref{thm:main}); it is a specialization
+of an abstract core (Theorem~\ref{thm:core}) parametric in the
+sweepout space and in a pair $(\delta, \varepsilon)$ replacing the
+hardcoded $(1/N, 1/(4N))$.
+
 \paragraph{Scope.} This note formalizes Steps 1--2 of the proof
 of the Claim as a Lean 4 library, \CombArg. We do \emph{not}
 formalize \cite[Lemma~3.1]{DLT13} (the replacement family), the
