@@ -16,10 +16,7 @@
 \usepackage{geometry}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
-\usepackage{marginnote}
 \geometry{margin=1in}
-\setlength{\marginparwidth}{1.4in}
-\setlength{\marginparsep}{4pt}
 
 \lstset{
   basicstyle=\small\ttfamily,
@@ -47,25 +44,23 @@
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
-% Clickable Lean declaration tags.
-% Lean community purple (logo colour) for all tags.
+% Clickable Lean declaration tags — Lean-logo purple, inline.
 \definecolor{leanpurple}{HTML}{6F2DA8}
-% Inline clickable tag (use in prose / bullet lists):
+% Inline clickable tag.
 %   \lean{short_name}{File/Path.lean}
-\newcommand{\lean}[2]{\href{\leanrepo/#2}{%
-  \color{leanpurple}\texttt{#1}}}
-% Margin tag (use right after \label{...} in theorem / def / prop):
+\newcommand{\lean}[2]{\href{\leanrepo/#2}{\color{leanpurple}\texttt{#1}}}
+% Header tag: small right-flushed bracketed name on its own line,
+% rendered right after the theorem/def/prop label.
 %   \leanmargin{short_name}{File/Path.lean}
 \newcommand{\leanmargin}[2]{%
-  \marginnote{\scriptsize\color{leanpurple}\ttfamily
-    \href{\leanrepo/#2}{#1}}%
+  \nopagebreak\hfill{\small\color{leanpurple}%
+    [\href{\leanrepo/#2}{\texttt{#1}}]}\par\nopagebreak
 }
-% Multi-decl margin tag (two decls, stacked):
-%   \leanmargintwo{a}{fileA}{b}{fileB}
+% Two-decl header tag, comma-separated on one line.
 \newcommand{\leanmargintwo}[4]{%
-  \marginnote{\scriptsize\color{leanpurple}\ttfamily
-    \href{\leanrepo/#2}{#1}\\[1pt]%
-    \href{\leanrepo/#4}{#3}}%
+  \nopagebreak\hfill{\small\color{leanpurple}%
+    [\href{\leanrepo/#2}{\texttt{#1}},
+     \href{\leanrepo/#4}{\texttt{#3}}]}\par\nopagebreak
 }
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
