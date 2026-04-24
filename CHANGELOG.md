@@ -1,31 +1,31 @@
 # Changelog
 
-All notable changes to CombLemma will be documented here.
+All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.1.0] — 2026-04-23
 
 ### Initial release
 
-First public release of the Almgren–Pitts combinatorial lemma
+First public release of the Almgren–Pitts combinatorial argument
 formalization.
 
 #### Added
 
-- **Abstract core theorem** `CombLemma.exists_sup_reduction_of_cover`
-  (`CombLemma/Core.lean`): given a continuous `f : K → ℝ` on a
+- **Abstract core theorem** `CombArg.exists_sup_reduction_of_cover`
+  (`CombArg/Core.lean`): given a continuous `f : K → ℝ` on a
   compact nonempty space `K` with `m₀ = sSup (range f)` and scalars
   `0 < ε ≤ δ`, from a `FiniteCoverWithWitnesses K f m₀ δ ε` produce
   a competitor `f'` with `sSup (range f') ≤ m₀ − ε`. Parameterizes
   the near-critical threshold `δ` and the per-piece saving floor `ε`.
-- **One-parameter application** `CombLemma.exists_sup_reduction`
-  (`CombLemma/SupReduction.lean`): specializes the core to
+- **One-parameter application** `CombArg.exists_sup_reduction`
+  (`CombArg/SupReduction.lean`): specializes the core to
   `K = unitInterval`, `δ = 1/N`, `ε = 1/(4N)`. Given a continuous
   `f : unitInterval → ℝ` with `m₀ = sSup (range f) > 0`, `N > 0`,
   and a `LocalWitness` with saving `1/(4N)` at every
   `1/N`-near-critical parameter, produce `f'` with
   `sSup (range f') ≤ m₀ − 1/(4N)`.
-- Cover structure `FiniteCoverWithWitnesses` (`CombLemma/Core.lean`):
+- Cover structure `FiniteCoverWithWitnesses` (`CombArg/Core.lean`):
   finite multiplicity-bounded cover of the `δ`-near-critical set,
   per-piece savings `≥ ε`, with replacement energies and the
   `twoFold` invariant. The abstract input to the core theorem.
@@ -58,7 +58,7 @@ formalization.
 #### Verified
 
 - Zero `sorry` across the entire library.
-- `#print axioms CombLemma.exists_sup_reduction` depends only
+- `#print axioms CombArg.exists_sup_reduction` depends only
   on `propext`, `Classical.choice`, `Quot.sound` — the three standard
   Lean 4 / Mathlib foundational axioms.
 - CI (GitHub Actions) runs `lake build`, `lake build test`, and

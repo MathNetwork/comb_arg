@@ -37,14 +37,14 @@
 \newtheorem{definition}[theorem]{Definition}
 \newtheorem{remark}[theorem]{Remark}
 
-\newcommand{\CombLemma}{\texttt{CombLemma}}
+\newcommand{\CombArg}{\texttt{CombArg}}
 \newcommand{\Mathlib}{\texttt{Mathlib}}
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
-\newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombLemma}
+\newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
 % Inline, colored, clickable link to a verified Lean declaration.
 % #1 = Lean declaration name (as rendered)
-% #2 = file path inside CombLemma/ (e.g. SupReduction.lean)
+% #2 = file path inside CombArg/ (e.g. SupReduction.lean)
 \newcommand{\defref}[2]{%
   \href{\leanrepo/#2}{%
     \textcolor{green!45!black}{\ensuremath{\checkmark}}\hspace{0.15em}%
@@ -52,7 +52,7 @@
   }%
 }
 
-\title{Compiling the Almgren--Pitts Combinatorial Lemma}
+\title{Compiling the Almgren--Pitts Combinatorial Argument}
 
 \author{Xinze Li}
 \address{\textit{Correspondence:} \texttt{lixinze@math.utoronto.ca}}
@@ -61,10 +61,12 @@
 \begin{document}
 
 \begin{abstract}
-The Almgren--Pitts combinatorial lemma is a recurring technical
-step in the min-max theory of minimal hypersurfaces. We extract it
-from the literature as a standalone metric-combinatorial algorithm
-and formalize it in Lean 4 as an importable library.
+The Almgren--Pitts combinatorial argument --- the cover-refinement
+plus bookkeeping backbone of Step~2 in min-max constructions of
+minimal hypersurfaces --- is a recurring technical step that each
+author re-derives in local notation. We extract it from the
+literature as a standalone metric-combinatorial algorithm and
+formalize it in Lean~4 as the importable library \CombArg.
 \end{abstract}
 
 \maketitle
@@ -105,90 +107,95 @@ and the min-max value
 \[
 m_0(\Lambda) \;=\; \inf_{\Lambda} \, \max_{t} \, \mathcal{H}^n(\Gamma_t),
 \]
-one produces an almost-minimizing sequence of varifolds. The
+one extracts an almost-minimizing sequence of varifolds. The
 second part is the regularity theory for the limiting varifold.
-Within the first part, one key technical step is a combinatorial
-assembly. In the formulation of De Lellis--Tasnady~\cite[\S3.2]{DLT13},
-it reads as follows.
+The core technical result of the first part is the
+Almgren--Pitts \emph{combinatorial lemma}, stated in
+Colding--De~Lellis's form as follows.
 
-\begin{theorem}[De Lellis--Tasnady~{\cite[\S3.2]{DLT13}}]
-\label{thm:comb-intro}
-Let $\{\partial \Omega_t\}_{t \in [0,1]}$ be a sweepout of
-$(M^{n+1}, g)$ with $\mathcal{H}^n(\partial \Omega_t)$
-continuous in $t$, let $m_0 = \sup_t \mathcal{H}^n(\partial
-\Omega_t)$, and let $N > 0$. Suppose that at each $t$ with
-$\mathcal{H}^n(\partial \Omega_t) \ge m_0 - 1/N$ there is a
-nested pair $A_t \subset\subset B_t \subset\subset U_t'$ in $M$
-such that $\partial \Omega_t$ is almost minimizing in
-$(A_t, B_t)$, and a replacement family
-$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ (given
-by~\cite[Lemma 3.1]{DLT13}) with $\partial \Omega_{t,0} =
-\partial \Omega_t$ and $\mathcal{H}^n(\partial \Omega_{t,1})
-\le \mathcal{H}^n(\partial \Omega_t) - 1/(4N)$ inside $U_t'$.
-Then there exists a modified sweepout $\{\partial \Omega_t'\}$
-with $\sup_t \mathcal{H}^n(\partial \Omega_t') \le m_0 - 1/(4N)$.
-\end{theorem}
+\begin{proposition}[Almgren--Pitts combinatorial Lemma,
+{\cite[Prop.~3.4]{CDL03}}]
+\label{prop:AP-combinatorial}
+Let $\Lambda$ be a homotopically closed family of sweepouts of
+$M^{n+1}$, and let $m_0 = \inf_{\Lambda} \mathcal{F}$ be the
+associated min-max value. There exists a min-max sequence
+$\{\Gamma^N\} = \{\partial \Omega^{k(N)}_{t_{k(N)}}\}$ such that
+\begin{itemize}
+\item $\Gamma^N$ converges, as varifolds, to a stationary integral
+  varifold of mass $m_0$;
+\item for every pair $(U^1, U^2) \in \mathcal{CO}$ of
+  $\mathcal{H}^n$-disjoint open sets, $\Gamma^N$ is
+  $1/N$-almost-minimizing in $(U^1, U^2)$ for all $N$ sufficiently
+  large.
+\end{itemize}
+\end{proposition}
 
-The combinatorial content of Theorem~\ref{thm:comb-intro} --- a
-one-parameter assembly turning local near-critical savings into a
-global supremum improvement --- recurs in Pitts's original proof
-of Theorem~\ref{thm:minmax}~\cite[proof of Thm.~4.10]{Pit81} and
-in the subsequent treatments~\cite[\S5]{CDL03},
+The proof of Proposition~\ref{prop:AP-combinatorial} proceeds by
+a one-parameter combinatorial claim on the sweepout. In the
+formulation of De~Lellis--Tasnady~\cite[\S3.2]{DLT13}, this claim
+reads:
+
+\begin{quote}
+\textbf{Claim.} For each $N \in \mathbb{N}$ sufficiently large,
+there exists $t_N \in [0,1]$ such that the slice
+$\Gamma^N := \Gamma^N_{t_N}$ is $1/N$-almost-minimizing in every
+$(U^1, U^2) \in \mathcal{CO}$ and satisfies
+$\mathcal{H}^n(\Gamma^N) \ge m_0 - 1/N$.
+\end{quote}
+
+The proof of the Claim is by contradiction. If no $t_N$ works,
+every $t$ with $\mathcal{H}^n(\partial \Omega^N_t) \ge m_0 - 1/N$
+admits a pair in which the slice is not $1/N$-a.m., hence admits a
+\emph{local replacement} with saving $1/(4N)$
+(\cite[Lemma~3.1]{DLT13}). From the family of local replacements
+one assembles, by the DLT \S3.2 Steps~1--2 combinatorial argument
+on $[0,1]$, a modified sweepout $\{\partial \Omega^{N\prime}_t\}$
+with $\sup_t \mathcal{H}^n(\partial \Omega^{N\prime}_t) \le m_0 -
+1/(8N)$, contradicting $m_0 = \inf_\Lambda \mathcal{F}$.
+
+The combinatorial argument itself --- Step~1 (cover refinement
+on $[0,1]$ with a two-fold overlap invariant) and Step~2 (scalar
+bookkeeping turning per-piece savings into a global supremum
+reduction) --- depends on no geometric measure theory, no
+admissible class, no ambient regularity. Its content is a
+bookkeeping construction on continuous real-valued functions,
+free of the geometric material that varies between
+papers. The same two-step pattern recurs in
+\cite[proof of Thm.~4.10]{Pit81}, \cite[\S5]{CDL03},
 \cite[Prop.~4.8]{DLR17}, \cite[Prop.~5.8]{DL12}, and
-\cite[\S4]{MN14}, each time formulated in the geometric
-language of the paper at hand.
+\cite[\S4]{MN14}, each time formulated in the geometric language
+of the paper at hand; yet it has no canonical reference.
 
-The recurrence is structural. The statement of
-Theorem~\ref{thm:comb-intro} is paper-agnostic: it depends on no
-geometric measure theory, no admissible class, no ambient
-regularity. Its content is a bookkeeping argument on continuous
-real-valued functions, free of the geometric material that
-varies between papers. Yet the statement has no canonical
-reference, so each author re-derives it in local notation.
+\paragraph{Scope of the present work.}
 
-This note takes a different approach. We extract
-Theorem~\ref{thm:comb-intro} as an independent statement and
-formalize it in Lean 4 as the library \CombLemma. Informally,
-the extracted form is the following.
+\CombArg\ formalizes \emph{Steps~1--2 of the proof of the Claim}:
+the cover refinement on $[0,1]$ and the bookkeeping arithmetic.
+We do \emph{not} formalize:
+\begin{itemize}
+\item \cite[Lemma~3.1]{DLT13} --- existence of the local
+  replacement family with saving $1/(4N)$;
+\item the $(U^1, U^2) \in \mathcal{CO}$ disjoint-pair structure
+  and the $1/N$-a.m.\ property;
+\item the final contradiction against $m_0 = \inf_\Lambda
+  \mathcal{F}$.
+\end{itemize}
+These components depend on the GMT content of the ambient
+construction and on the chosen admissible-class framework; they
+remain the consumer's responsibility. What the library supplies
+is the metric-combinatorial backbone: a single theorem with
+$\sup f' \le m_0 - \varepsilon$ conclusion, parametric in the
+sweepout space and in the pair $(\delta, \varepsilon)$, together
+with a one-parameter specialization to $[0,1]$ ready for direct
+invocation. The formal statements appear as
+Theorems~\ref{thm:core} and~\ref{thm:main} in
+\S\S\ref{sec:core-spec}--\ref{sec:app-spec}; the library is
+machine-verified against \Mathlib, declares no custom axioms, and
+contains no \texttt{sorry}.
 
-\begin{theorem}[Extracted combinatorial lemma; formalized as \defref{exists\_sup\_reduction}{SupReduction.lean}]
-\label{thm:comb-extracted}
-Let $X$ be a pseudo-metric space equipped with an abstract
-paired-cover structure. Let $f : [0,1] \to \mathbb{R}$ be
-continuous with $m_0 = \sup f$ and $m_0 > 0$, and let $N > 0$.
-Assume that at every $t \in [0,1]$ with $f(t) \ge m_0 - 1/N$
-there is a \emph{local witness}: an open neighborhood $U_t \ni t$,
-a paired cover $c_t$ in $X$, and a continuous replacement energy
-$E_t : [0,1] \to \mathbb{R}$ satisfying $f(s) - E_t(s) \ge 1/(4N)$
-for all $s \in U_t$. Then there exists $f' : [0,1] \to \mathbb{R}$
-with $\sup f' \le m_0 - 1/(4N)$.
-\end{theorem}
-
-Theorem~\ref{thm:comb-extracted} is the scalar skeleton of
-Theorem~\ref{thm:comb-intro}. The geometric content has been
-stripped: the boundary $\partial \Omega_t$ is replaced by a
-continuous function $f : [0,1] \to \mathbb{R}$; the
-Hausdorff-measure hypothesis becomes $m_0 = \sup f$; the nested
-pair $(A_t, B_t, U_t')$ collapses to a single open neighborhood
-$U_t$; the replacement family
-$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ collapses to a
-single continuous $E_t$; the almost-minimizing assumption on
-the varifold disappears. What remains is the combinatorial
-bookkeeping: a near-critical cover, uniform saving bounds, and
-the assembly of a globally improved $f'$. The abstract
-paired-cover class on $X$ is a scaffolding parameter that
-would, in a GMT instantiation, carry the geometric data of the
-replacement; it is not load-bearing in the present proof (see
-\S\ref{sec:discussion}). The formalization is machine-verified
-against \Mathlib; it declares no custom axioms and contains no
-\texttt{sorry}. A subsequent min-max paper that establishes its
-own local-replacement lemma can then invoke the combinatorial
-step as a one-line import, with the verification following
-along.
-
-\S\ref{sec:spec} gives the library specification (interface, public API, internal lemmas);
-\S\ref{sec:proof} sketches the proof; \S\ref{sec:discussion}
-records the structural details the formalization makes explicit.
+\S\ref{sec:spec} gives the library specification (interface,
+public API, internal lemmas); \S\ref{sec:proof} sketches the
+proof; \S\ref{sec:discussion} records the structural details the
+formalization makes explicit.
 
 \section{Specification}
 \label{sec:spec}
@@ -608,7 +615,7 @@ release defers the decision.
 
 \subsection{What is and is not in the repository}
 
-\CombLemma~v0.1.0 contains the mathematics described above and
+\CombArg~v0.1.0 contains the mathematics described above and
 nothing else. In particular:
 \begin{itemize}
 \item It does \emph{not} construct local witnesses. The
@@ -628,12 +635,12 @@ nothing else. In particular:
 \subsection{Coverage across the min-max literature}
 \label{ss:coverage}
 
-The formalization of \CombLemma~v0.1 specializes the sweepout
+The formalization of \CombArg~v0.1 specializes the sweepout
 parameter space to $K = [0,1]$. Every min-max construction of
 minimal hypersurfaces that operates on a one-parameter sweepout
 consumes the same combinatorial assembly, and its scalar content
-is what Theorem~\ref{thm:comb-extracted} formalizes. The list of
-one-parameter constructions that \CombLemma~covers (as a
+is what Theorem~\ref{thm:main} formalizes. The list of
+one-parameter constructions that \CombArg~covers (as a
 citation replacing the paper's internal re-derivation of the
 combinatorial step) is summarized in Table~\ref{tab:coverage}.
 
@@ -669,11 +676,11 @@ Zhou~\cite{Zho19}
 \bottomrule
 \end{tabular}
 \caption{One-parameter min-max works whose combinatorial step
-is covered by \CombLemma~v0.1. In each, the paper's
+is covered by \CombArg~v0.1. In each, the paper's
 local-replacement lemma supplies the hypothesis of
-Theorem~\ref{thm:comb-extracted}; the combinatorial assembly
+Theorem~\ref{thm:main}; the combinatorial assembly
 becomes a one-line invocation of
-\texttt{CombLemma.exists\_sup\_reduction}.}
+\texttt{CombArg.exists\_sup\_reduction}.}
 \label{tab:coverage}
 \end{table}
 
@@ -690,7 +697,7 @@ A multi-parameter generalization is planned; see
 \subsection{Library roadmap}
 \label{ss:roadmap}
 
-Because \CombLemma's deliverable is a program and its public
+Because \CombArg's deliverable is a program and its public
 interface (the \texttt{LocalWitness} structure, the statement of
 \texttt{exists\_sup\_reduction}) is what downstream papers
 consume, a ``future work'' list for this paper is a versioning
@@ -731,7 +738,7 @@ as follows.
   Selection between~(a) and~(b) will be driven by whichever form
   a concrete downstream consumer establishes first.
 
-\item \textbf{\texttt{Mathlib} integration.} \CombLemma~is
+\item \textbf{\texttt{Mathlib} integration.} \CombArg~is
   currently a standalone project with its own package name.
   If the material is suitable for upstreaming, a future version
   will adapt naming to Mathlib conventions (namespace layout,
@@ -845,13 +852,13 @@ in: CPP 2020, 367--381.
 \section{Repository structure}
 \label{app:structure}
 
-\CombLemma~is a Lean 4 \texttt{lake} project with a pinned
+\CombArg~is a Lean 4 \texttt{lake} project with a pinned
 \Mathlib~dependency (commit recorded in
 \texttt{lake-manifest.json}). The source layout is:
 
 \begin{lstlisting}
-CombLemma.lean          top-level re-export
-CombLemma/
+CombArg.lean          top-level re-export
+CombArg/
   Witness.lean          PairableCover, LocalWitness
   Core.lean             FiniteCoverWithWitnesses, exists_sup_reduction_of_cover
   EnergyBound.lean      re-export stub (subsumed by Core as of v0.2)
@@ -881,13 +888,13 @@ that composes the 1D cover construction in
 The library builds with
 \begin{lstlisting}
 lake exe cache get   # fetch Mathlib oleans (first run)
-lake build           # build CombLemma
+lake build           # build CombArg
 lake build test      # build smoke test
 lake build examples  # build examples
 \end{lstlisting}
 No custom axioms are declared. The axiom audit
 \begin{lstlisting}
-#print axioms CombLemma.exists_sup_reduction
+#print axioms CombArg.exists_sup_reduction
 \end{lstlisting}
 reports dependence on three axioms: \texttt{propext},
 \texttt{Classical.choice}, \texttt{Quot.sound}. These are
@@ -901,7 +908,7 @@ Lean 4's foundational axioms; all three are used throughout
 \small
 \begin{tabular}{@{}p{0.38\textwidth}p{0.56\textwidth}@{}}
 \toprule
-\textbf{GMT / min-max term} & \textbf{\CombLemma~correspondence} \\
+\textbf{GMT / min-max term} & \textbf{\CombArg~correspondence} \\
 \midrule
 Sweepout & Continuous $f : K \to \mathbb{R}$ \\
 Sweepout parameter space & $K$ (specialized to $\unit$) \\
@@ -921,28 +928,28 @@ Min-max contradiction & Downstream consumer responsibility \\
 \section{Installation and invocation}
 \label{app:install}
 
-To consume \CombLemma~in a downstream Lean 4 project, add to
+To consume \CombArg~in a downstream Lean 4 project, add to
 the project's \texttt{lakefile}:
 \begin{lstlisting}
-require CombLemma from git
+require CombArg from git
   "https://github.com/MathNetwork/comb_arg.git" @ "v0.1.0"
 \end{lstlisting}
 Run \texttt{lake exe cache get} and \texttt{lake build}. In
 consumer code:
 \begin{lstlisting}
-import CombLemma
+import CombArg
 
 example
-    {X : Type*} [PseudoMetricSpace X] [CombLemma.PairableCover X]
+    {X : Type*} [PseudoMetricSpace X] [CombArg.PairableCover X]
     {f : unitInterval -> R} (hf : Continuous f)
     {m0 : R} (hm_pos : 0 < m0) (hm : m0 = sSup (Set.range f))
     {N : N} (hN : 0 < N)
     (witness : forall t : unitInterval, f t >= m0 - 1/(N:R) ->
-        Nonempty (CombLemma.LocalWitness unitInterval X f t
+        Nonempty (CombArg.LocalWitness unitInterval X f t
                     (1 / (4 * (N : R))))) :
     exists f' : unitInterval -> R,
         sSup (Set.range f') <= m0 - 1/(4 * (N : R)) :=
-  CombLemma.exists_sup_reduction hf hm_pos hm hN witness
+  CombArg.exists_sup_reduction hf hm_pos hm hN witness
 \end{lstlisting}
 (ASCII substitutions for Unicode in the Lean 4 source:
 \texttt{R}~$= \mathbb{R}$, \texttt{N}~$= \mathbb{N}$,

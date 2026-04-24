@@ -16,7 +16,7 @@ geometric-measure-theory content.
 
 ## Top-level theorem
 
-[`CombLemma/SupReduction.lean`](../CombLemma/SupReduction.lean):
+[`CombArg/SupReduction.lean`](../CombArg/SupReduction.lean):
 
 ```lean
 theorem exists_sup_reduction
@@ -207,8 +207,8 @@ lake build           # zero sorries, zero warnings
 lake build test      # smoke test
 
 # Axiom audit:
-echo 'import CombLemma
-#print axioms CombLemma.exists_sup_reduction' > /tmp/audit.lean
+echo 'import CombArg
+#print axioms CombArg.exists_sup_reduction' > /tmp/audit.lean
 lake env lean /tmp/audit.lean
 # Expected: depends on axioms: [propext, Classical.choice, Quot.sound]
 ```

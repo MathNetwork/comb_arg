@@ -1,12 +1,12 @@
-# CombLemma: The Almgren-Pitts Combinatorial Lemma, Formalized in Lean 4
+# CombArg: The Almgren-Pitts Combinatorial Argument, Formalized in Lean 4
 
-A Lean 4 formalization of the **Almgren–Pitts combinatorial lemma** — the
+A Lean 4 formalization of the **Almgren–Pitts combinatorial argument** — the
 quantitative covering-refinement argument underlying min-max constructions
 of minimal hypersurfaces.
 
 ## What this library provides
 
-A single main theorem, `CombLemma.exists_sup_reduction`: given a
+A single main theorem, `CombArg.exists_sup_reduction`: given a
 continuous function `f : unitInterval → ℝ` on the unit interval, a
 supremum `m₀ = sSup (range f)`, a near-criticality parameter `N > 0`, and
 at every `1/N`-near-critical parameter a `LocalWitness` with saving
@@ -40,8 +40,8 @@ lake build test      # smoke test
 Axiom audit:
 
 ```bash
-echo 'import CombLemma
-#print axioms CombLemma.exists_sup_reduction' > /tmp/audit.lean
+echo 'import CombArg
+#print axioms CombArg.exists_sup_reduction' > /tmp/audit.lean
 lake env lean /tmp/audit.lean
 # Expected: depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
@@ -94,14 +94,14 @@ tour of the definitions and proof structure.
 The following names are considered stable public API and will not change
 without a major version bump:
 
-- `CombLemma.exists_sup_reduction` — main theorem
-- `CombLemma.LocalWitness` (structure + fields)
-- `CombLemma.PairableCover` (class + fields)
-- `CombLemma.EnergyBound.Refinement` (structure + fields)
-- `CombLemma.Refinement.InitialCover` (structure + fields)
-- `CombLemma.Refinement.PartialRefinement` (structure + fields)
-- `CombLemma.Refinement.nearCritical`
-- `CombLemma.Refinement.exists_refinement`
+- `CombArg.exists_sup_reduction` — main theorem
+- `CombArg.LocalWitness` (structure + fields)
+- `CombArg.PairableCover` (class + fields)
+- `CombArg.EnergyBound.Refinement` (structure + fields)
+- `CombArg.Refinement.InitialCover` (structure + fields)
+- `CombArg.Refinement.PartialRefinement` (structure + fields)
+- `CombArg.Refinement.nearCritical`
+- `CombArg.Refinement.exists_refinement`
 
 Internal definitions (`step_succ`, `step_succ_at`, `terminal_twoFold`,
 chain-spacing lemmas, etc.) may change in minor releases. Consumers
@@ -116,8 +116,8 @@ comb-arg/
 ├── CITATION.cff
 ├── CHANGELOG.md
 ├── lakefile.lean, lake-manifest.json, lean-toolchain
-├── CombLemma.lean             top-level module (re-exports)
-├── CombLemma/
+├── CombArg.lean             top-level module (re-exports)
+├── CombArg/
 │   ├── Witness.lean           PairableCover class, LocalWitness structure
 │   ├── EnergyBound.lean       arithmetic: Refinement → quantitative bound
 │   ├── SupReduction.lean      top-level exists_sup_reduction
@@ -145,13 +145,13 @@ Reading order:
 
 1. [`docs/project-overview.md`](docs/project-overview.md) — current
    status and definition tour.
-2. [`CombLemma/Witness.lean`](CombLemma/Witness.lean)
+2. [`CombArg/Witness.lean`](CombArg/Witness.lean)
    — `PairableCover`, `LocalWitness`.
-3. [`CombLemma/EnergyBound.lean`](CombLemma/EnergyBound.lean)
+3. [`CombArg/EnergyBound.lean`](CombArg/EnergyBound.lean)
    — `Refinement` structure + arithmetic bookkeeping.
-4. [`CombLemma/Refinement.lean`](CombLemma/Refinement.lean)
+4. [`CombArg/Refinement.lean`](CombArg/Refinement.lean)
    — refinement-construction facade + six submodules under `Refinement/`.
-5. [`CombLemma/SupReduction.lean`](CombLemma/SupReduction.lean)
+5. [`CombArg/SupReduction.lean`](CombArg/SupReduction.lean)
    — the top-level chain.
 6. [`docs/design-notes.md`](docs/design-notes.md) — rationale for each
    structural choice.

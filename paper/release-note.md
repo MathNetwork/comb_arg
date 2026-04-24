@@ -1,13 +1,13 @@
-# Release note — CombLemma v0.1.0
+# Release note — CombArg v0.1.0
 
-**Accompanying paper:** *Compiling the Almgren–Pitts Combinatorial Lemma*.
-**Library:** CombLemma v0.1.0, Apache-2.0,
+**Accompanying paper:** *Compiling the Almgren–Pitts Combinatorial Argument*.
+**Library:** CombArg v0.1.0, Apache-2.0,
 <https://github.com/MathNetwork/comb_arg>.
 **Release date:** 2026-04-23.
 
 ## What this release is
 
-The Almgren–Pitts combinatorial lemma — the quantitative
+The Almgren–Pitts combinatorial argument — the quantitative
 covering-refinement argument that appears as Step 2 of min-max
 constructions of minimal hypersurfaces in Pitts (1981),
 Colding–De Lellis (2003), De Lellis–Tasnady (2013), De Lellis–Ramic
@@ -16,7 +16,7 @@ and subsequent literature — extracted from its
 geometric-measure-theory context and released as a standalone
 machine-verified theorem in Lean 4.
 
-The main theorem, `CombLemma.exists_sup_reduction`, asserts that
+The main theorem, `CombArg.exists_sup_reduction`, asserts that
 given a continuous energy `f : unitInterval → ℝ` with supremum `m₀`,
 a near-criticality parameter `N > 0`, and a local reducer witness
 with saving `1/(4N)` at every `1/N`-near-critical parameter, there
@@ -60,7 +60,7 @@ proof cannot avoid.
 ## How to consume
 
 ```
-require CombLemma from git
+require CombArg from git
   "https://github.com/MathNetwork/comb_arg.git" @ "v0.1.0"
 ```
 
@@ -68,7 +68,7 @@ Then, with `f`, `hf`, `m0`, `hm_pos`, `hm`, `N`, `hN`, and a
 `witness` hypothesis in scope:
 
 ```
-exact CombLemma.exists_sup_reduction hf hm_pos hm hN witness
+exact CombArg.exists_sup_reduction hf hm_pos hm hN witness
 ```
 
 Details in the accompanying paper §5 and in

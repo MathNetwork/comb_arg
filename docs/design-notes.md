@@ -238,7 +238,7 @@ convenience*, not substantive to the argument. The Lean formulation
 is therefore **paper-equivalent** for the downstream induction; it is
 a correct abstraction-decomposition, not a drift.
 
-See `CombLemma/Refinement.lean`'s `InitialCover` docstring
+See `CombArg/Refinement.lean`'s `InitialCover` docstring
 and the v2-A-i-fix commit for the resolution discussion.
 
 ## Open design questions summary
@@ -325,7 +325,7 @@ contradiction with the assumption that `t` lies in all three
 closures. Hence each point is in at most two `closure (pr.J k)`.
 
 See `terminal_twoFold` and `parity_rescue_sorted` in
-`CombLemma/Refinement.lean`.
+`CombArg/Refinement.lean`.
 
 ### Why this matters
 
