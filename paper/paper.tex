@@ -44,11 +44,22 @@
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
-% Colored Lean declaration tag for theorem/definition/proposition
-% headers and inline proof-body references. Renders the Lean decl
-% path in a restrained blue typewriter font.
+% Clickable Lean declaration tags.
+% Syntax:  \lean{short_name}{file_path.lean}    — inline in prose.
+%          \leanrefs{\leanitem{short_name}{file_path.lean} ...}  — indented list under theorem header.
+% Only the short decl name is shown; the full GitHub URL is implicit
+% via `\leanrepo`.
 \definecolor{leantag}{HTML}{2B6CB0}
-\newcommand{\lean}[1]{{\color{leantag}\texttt{#1}}}
+\newcommand{\lean}[2]{\href{\leanrepo/#2}{\color{leantag}\texttt{#1}}}
+\newcommand{\leanrefs}[1]{%
+  \par\nopagebreak
+  \begingroup
+  \begin{list}{}{\leftmargin=2em \topsep=2pt \itemsep=0pt \parsep=0pt}%
+  #1
+  \end{list}
+  \endgroup
+}
+\newcommand{\leanitem}[2]{\item \href{\leanrepo/#2}{\color{leantag}\texttt{#1}}}
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
 
@@ -161,8 +172,9 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
-\begin{definition}[\texttt{PairableCover} class, \lean{CombArg.PairableCover}]
+\begin{definition}[\texttt{PairableCover} class]
 \label{def:pcover}
+\leanrefs{\leanitem{PairableCover}{Witness.lean}}
 A \texttt{PairableCover X} instance declares, for each abstract
 \texttt{c : Cover}, a left region and a right region in $X$ and a
 scalar diameter, subject to two axioms: the two regions are
@@ -170,24 +182,27 @@ disjoint, and overlapping combined regions of diameter-comparable
 covers are ordered by inclusion.
 \end{definition}
 
-\begin{definition}[\texttt{LocalWitness} structure, \lean{CombArg.LocalWitness}]
+\begin{definition}[\texttt{LocalWitness} structure]
 \label{def:witness}
+\leanrefs{\leanitem{LocalWitness}{Witness.lean}}
 A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
 neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
 continuous replacement energy $E : K \to \mathbb{R}$, and the
 inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 \end{definition}
 
-\begin{definition}[Near-critical set, \lean{CombArg.nearCritical}]
+\begin{definition}[Near-critical set]
 \label{def:NC}
+\leanrefs{\leanitem{nearCritical}{Refinement/InitialCover.lean}}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
 $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
 write $\NC$.
 \end{definition}
 
-\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure, \lean{CombArg.FiniteCoverWithWitnesses}]
+\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
 \label{def:ref}
+\leanrefs{\leanitem{FiniteCoverWithWitnesses}{Core.lean}}
 A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
 carries a finite nonempty index type $\iota$, pieces
 $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
@@ -199,8 +214,9 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
 \end{definition}
 
-\begin{definition}[\texttt{InitialCover} structure, \lean{CombArg.Refinement.InitialCover}]
+\begin{definition}[\texttt{InitialCover} structure]
 \label{def:ic}
+\leanrefs{\leanitem{InitialCover}{Refinement/InitialCover.lean}}
 Specialized to $K = \unit$. An
 \texttt{InitialCover X f m\textsubscript{0} N} carries a finite
 family of open intervals $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
@@ -216,8 +232,9 @@ witness centers, required because grid points need not themselves
 be near-critical.}
 \end{definition}
 
-\begin{definition}[\texttt{PartialRefinement} structure, \lean{CombArg.Refinement.PartialRefinement}]
+\begin{definition}[\texttt{PartialRefinement} structure]
 \label{def:pr}
+\leanrefs{\leanitem{PartialRefinement}{Refinement/PartialRefinement.lean}}
 Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
 \texttt{PartialRefinement ic $\ell$} carries pieces
 $J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
@@ -229,9 +246,10 @@ $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 \subsection{Public API: abstract core}
 \label{sec:core-spec}
 
-\begin{theorem}[Abstract core, \lean{CombArg.exists\_sup\_reduction\_of\_cover}]
+\begin{theorem}[Abstract core]
 \label{thm:core}
-\leavevmode\par\noindent
+\leanrefs{\leanitem{exists\_sup\_reduction\_of\_cover}{Core.lean}}
+\noindent
 \textbf{Input.} A compact, nonempty topological space $K$; a
 continuous $f : K \to \mathbb{R}$; $m_0 = \sup f$; scalars
 $0 < \varepsilon \le \delta$; a
@@ -246,9 +264,10 @@ $\sup f' \le m_0 - \varepsilon$.
 \subsection{Public API: one-parameter application}
 \label{sec:app-spec}
 
-\begin{theorem}[One-parameter application, \lean{CombArg.exists\_sup\_reduction}]
+\begin{theorem}[One-parameter application]
 \label{thm:main}
-\leavevmode\par\noindent
+\leanrefs{\leanitem{exists\_sup\_reduction}{SupReduction.lean}}
+\noindent
 \textbf{Input.} A pseudo-metric space $X$ with a
 \texttt{PairableCover X} instance (Definition~\ref{def:pcover});
 a continuous $f : \unit \to \mathbb{R}$; $m_0 \in \mathbb{R}$
@@ -271,27 +290,31 @@ $\delta = 1/N$, $\varepsilon = 1/(4N)$.
 The declarations below are consumed by Theorem~\ref{thm:main};
 proofs are sketched in \S\ref{sec:proof}.
 
-\begin{proposition}[Compactness of $\NC$, \lean{CombArg.Refinement.isCompact\_nearCritical}, \lean{CombArg.Refinement.nearCritical\_nonempty}]
+\begin{proposition}[Compactness of $\NC$]
 \label{prop:NC-compact}
+\leanrefs{%
+  \leanitem{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
+  \leanitem{nearCritical\_nonempty}{Refinement/InitialCover.lean}%
+}
 If $K$ is compact and $f$ continuous, $\NC$ is compact. If
 additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
 \end{proposition}
 
 \begin{itemize}
-\item \lean{CombArg.Refinement.exists\_initialCover}
+\item \lean{exists\_initialCover}{Refinement/CoverConstruction.lean}
 --- existence of an \texttt{InitialCover} via a grid plus
 Lebesgue-number construction on the compact sublevel set $\NC$.
-\item \lean{CombArg.Refinement.exists\_terminal\_refinement}
+\item \lean{exists\_terminal\_refinement}{Refinement/Induction.lean}
 --- existence of a terminal \texttt{PartialRefinement} with
 injective $\sigma$ via bounded smallest-index induction with
 two-case dispatch.
-\item \lean{CombArg.Refinement.InitialCover.not\_three\_overlap}
+\item \lean{not\_three\_overlap}{Refinement/Disjointness.lean}
 --- at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
-\item \lean{CombArg.Refinement.saving\_bound\_closure}
+\item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
 --- the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
-\item \lean{CombArg.Refinement.exists\_refinement}
+\item \lean{exists\_refinement}{Refinement/Assembly.lean}
 --- packages the 1D cover construction output as a
 \texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$,
 the input to Theorem~\ref{thm:core}.
@@ -388,8 +411,9 @@ TwoFold. Theorem~\ref{thm:core} closes.
 
 \subsection{Stage A: existence of the initial cover}
 
-\begin{proposition}[Existence of an initial cover, \lean{CombArg.Refinement.exists\_initialCover}]
+\begin{proposition}[Existence of an initial cover]
 \label{prop:exists-ic}
+\leanrefs{\leanitem{exists\_initialCover}{Refinement/CoverConstruction.lean}}
 Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
@@ -418,15 +442,17 @@ selected. Condition~(b) holds by the Lebesgue argument.
 
 Starting from an initial cover, one builds pieces inductively.
 
-\begin{definition}[Base case, \lean{CombArg.Refinement.step\_zero}]
+\begin{definition}[Base case]
 \label{def:step0}
+\leanrefs{\leanitem{step\_zero}{Refinement/PartialRefinement.lean}}
 $\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
 refinement with
 $J_1 := I_1$ and $\sigma(1) := 1$.
 \end{definition}
 
-\begin{definition}[Inductive step, \lean{CombArg.Refinement.step\_succ\_at}]
+\begin{definition}[Inductive step]
 \label{def:step-succ}
+\leanrefs{\leanitem{step\_succ\_at}{Refinement/Induction.lean}}
 Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
 an index $i^* \in \{1,\ldots,n\}$ with
 $I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
@@ -449,8 +475,9 @@ explicit argument and returns the extension bundled with the
 ``$i^*$ is covered'' property, for termination.}
 \end{definition}
 
-\begin{proposition}[Termination, \lean{CombArg.Refinement.exists\_terminal\_refinement}]
+\begin{proposition}[Termination]
 \label{prop:exists-terminal}
+\leanrefs{\leanitem{exists\_terminal\_refinement}{Refinement/Induction.lean}}
 Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
 $\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
 partial refinement of some length $L$ with $\sigma$ injective
@@ -476,8 +503,9 @@ $\sigma(k)$ correspond to already-covered indices.
 The final stage extends the saving bound from open $J_k$ to
 $\overline{J_k}$ and derives TwoFold from spacing~(a).
 
-\begin{proposition}[TwoFold via parity, \lean{CombArg.Refinement.terminal\_twoFold}]
+\begin{proposition}[TwoFold via parity]
 \label{prop:twofold}
+\leanrefs{\leanitem{terminal\_twoFold}{Refinement/Assembly.lean}}
 For a partial refinement $\mathrm{pr}$ of length $L$ with
 $\sigma$ injective, every $t \in \unit$ lies in at most two of
 $\overline{J_1}, \ldots, \overline{J_L}$.
@@ -489,8 +517,8 @@ that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
 2$) have strict separation between $\overline{I_i}$ and
 $\overline{I_j}$, hence
 $\overline{I_i} \cap \overline{I_j} = \emptyset$
-(\lean{CombArg.Refinement.InitialCover.chain\_spacing},
-\lean{CombArg.Refinement.InitialCover.closure\_disjoint\_of\_even\_gap}).
+(\lean{chain\_spacing}{Refinement/Disjointness.lean},
+\lean{closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}).
 
 Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
 admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
@@ -504,11 +532,12 @@ $c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
 and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
 parities and one of them is the even gap. The pair with even
 gap has disjoint closures, contradicting the common point
-(\lean{CombArg.Refinement.InitialCover.not\_three\_overlap}).
+(\lean{not\_three\_overlap}{Refinement/Disjointness.lean}).
 \end{proof}
 
-\begin{proposition}[Closure extension of saving bound, \lean{CombArg.Refinement.saving\_bound\_closure}]
+\begin{proposition}[Closure extension of saving bound]
 \label{prop:saving-bound}
+\leanrefs{\leanitem{saving\_bound\_closure}{Refinement/Assembly.lean}}
 Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
 every $t \in \overline{J_k}$,
 $f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
@@ -526,8 +555,9 @@ a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
 limits.
 \end{proof}
 
-\begin{lemma}[Assembly, \lean{CombArg.Refinement.exists\_refinement}]
+\begin{lemma}[Assembly]
 \label{lem:assembly}
+\leanrefs{\leanitem{exists\_refinement}{Refinement/Assembly.lean}}
 A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
 injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
 a refinement of $(\unit, X, f, m_0, N)$ in the sense of
