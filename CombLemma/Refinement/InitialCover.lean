@@ -94,7 +94,7 @@ the separated form is paper-equivalent for the downstream induction).
 
 The **saving is `1/(4N)` exactly**; this fixes the threshold the
 refinement induction maintains through to
-`EnergyBound.Refinement.saving_ge_quarter_N`. -/
+`FiniteCoverWithWitnesses.saving_ge_eps`. -/
 structure InitialCover
     {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     (f : unitInterval → ℝ) (m₀ : ℝ) (N : ℕ) where

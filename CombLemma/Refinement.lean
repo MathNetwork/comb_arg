@@ -19,9 +19,10 @@ access the complete Step 1 API.
 
 From the witness hypothesis (a `LocalWitness` at every
 `1/N`-near-critical parameter), this module constructs a
-`EnergyBound.Refinement`: a finite family of pieces covering the
-near-critical set with `twoFold` overlap control and a `1/(4N)` saving
-floor. The construction follows DLT §3.2 Step 1 (De Lellis–Tasnady 2013,
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`: a finite
+family of pieces covering the near-critical set with `twoFold` overlap
+control and a `1/(4N)` saving floor. The construction follows DLT §3.2
+Step 1 (De Lellis–Tasnady 2013,
 *The existence of embedded minimal hypersurfaces*).
 
 ## Module layout

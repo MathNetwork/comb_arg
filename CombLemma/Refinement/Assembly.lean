@@ -3,17 +3,20 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.EnergyBound
+import CombLemma.Core
 import CombLemma.Refinement.CoverConstruction
 import CombLemma.Refinement.Disjointness
 import CombLemma.Refinement.Induction
 import Mathlib.Topology.Sequences
 
 /-!
-# Step 1 — Assembly into `EnergyBound.Refinement`
+# Step 1 — Assembly into `FiniteCoverWithWitnesses`
 
 Chains the preceding infrastructure into the Phase 2 terminal target
-`exists_refinement`.
+`exists_refinement`, packaging the 1D cover construction as a
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
+application-specific input to the abstract core theorem
+`CombLemma.exists_sup_reduction_of_cover`.
 
 * `terminal_twoFold` — if `σ` is injective then at most two pieces of
   a terminal `PartialRefinement` have `t` in their closure. Uses the
@@ -23,8 +26,8 @@ Chains the preceding infrastructure into the Phase 2 terminal target
   open neighborhood extends to the closure, via continuity of
   `replacementEnergy` and a sequence-limit argument.
 * `exists_refinement` — from the witness hypothesis, assembles a
-  `EnergyBound.Refinement` by taking `piece k := closure (pr.J k)` and
-  `saving k := 1/(4N)` uniform; `twoFold` via `terminal_twoFold`,
+  `FiniteCoverWithWitnesses` by taking `piece k := closure (pr.J k)`
+  and `saving k := 1/(4N)` uniform; `twoFold` via `terminal_twoFold`,
   `saving_bound` via `saving_bound_closure`.
 -/
 
@@ -123,16 +126,20 @@ abstract-`K` generalization is left to future work. -/
 /-- **`exists_refinement`** — the terminal target of this file.
 Given continuous `f : unitInterval → ℝ`, the hypothesis
 `m₀ = sSup (range f)`, `N > 0`, and local witnesses at every
-`1/N`-near-critical parameter, produces a `EnergyBound.Refinement`.
+`1/N`-near-critical parameter, produces a
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
+1D-specialized input for the abstract core theorem
+`CombLemma.exists_sup_reduction_of_cover`.
 
 Chains the preceding infrastructure:
 
 1. `exists_initialCover` → `InitialCover` with DLT spacing (a)+(b).
 2. `exists_terminal_refinement` → terminal `PartialRefinement ic L`
    with `σ` injective and `∀ i, ic.I i ⊆ ⋃ pr.J k`.
-3. Assemble `EnergyBound.Refinement` with `piece k := closure (pr.J k)`
-   and `saving k := 1/(4N)`. TwoFold via `terminal_twoFold`;
-   `saving_bound` via `saving_bound_closure`. -/
+3. Assemble `FiniteCoverWithWitnesses` with
+   `piece k := closure (pr.J k)` and `saving k := 1/(4N)` uniform;
+   `twoFold` via `terminal_twoFold`; `saving_bound` via
+   `saving_bound_closure`. -/
 lemma exists_refinement
     {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} (hf : Continuous f)
@@ -140,7 +147,8 @@ lemma exists_refinement
     {N : ℕ} (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
                  Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
-    Nonempty (EnergyBound.Refinement unitInterval X f m₀ N) := by
+    Nonempty (FiniteCoverWithWitnesses unitInterval f m₀
+              (1 / (N : ℝ)) (1 / (4 * (N : ℝ)))) := by
   -- Step 1: initial cover.
   obtain ⟨ic⟩ := exists_initialCover hf hm hN witness
   -- Step 2: iterate to terminal state.
@@ -160,7 +168,7 @@ lemma exists_refinement
                 ((ic.intervalCenter ⟨0, ic.n_pos⟩).val + ic.radius ⟨0, ic.n_pos⟩)
     have hr_pos := ic.radius_pos ⟨0, ic.n_pos⟩
     constructor <;> linarith
-  -- Step 4: assemble EnergyBound.Refinement.
+  -- Step 4: assemble FiniteCoverWithWitnesses.
   refine ⟨{
     ι := Fin L
     ιFintype := inferInstance
@@ -170,11 +178,11 @@ lemma exists_refinement
     saving := fun _ => 1 / (4 * (N : ℝ))
     saving_pos := fun _ => by positivity
     saving_bound := ?_
-    covers_near_critical := ?_
+    covers_delta_near_critical := ?_
     twoFold := ?_
-    saving_ge_quarter_N := fun _ => le_refl _ }⟩
-  · -- covers_near_critical: chain ic.covers + h_terminal + subset_closure.
-    calc nearCritical f m₀ N
+    saving_ge_eps := fun _ => le_refl _ }⟩
+  · -- covers_delta_near_critical: chain ic.covers + h_terminal + subset_closure.
+    calc {t : unitInterval | f t ≥ m₀ - 1 / (N : ℝ)}
         ⊆ ⋃ i : Fin ic.n, ic.I i := ic.covers
       _ ⊆ ⋃ k : Fin L, pr.J k := Set.iUnion_subset h_terminal
       _ ⊆ ⋃ k : Fin L, closure (pr.J k) :=
