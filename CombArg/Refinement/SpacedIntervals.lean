@@ -151,6 +151,34 @@ lemma not_three_overlap (sp : SkippedSpacedIntervals)
       (sp.closure_disjoint_of_even_gap b c ((c.val - b.val) / 2 - 1)
         (by omega))) ⟨hb, hc⟩
 
+/-- **Parity rescue, unordered variant**: no point lies in three
+interval closures at three distinct indices (regardless of how
+the indices are sorted). Sorts the three `.val`s by trichotomy
+and delegates to `not_three_overlap`. -/
+lemma not_three_overlap_any_order (sp : SkippedSpacedIntervals)
+    (a b c : Fin sp.n)
+    (hab : a.val ≠ b.val) (hac : a.val ≠ c.val) (hbc : b.val ≠ c.val)
+    (t : unitInterval)
+    (ha : t ∈ closure (sp.I a)) (hb : t ∈ closure (sp.I b))
+    (hc : t ∈ closure (sp.I c)) :
+    False := by
+  rcases lt_trichotomy a.val b.val with h12 | h12 | h12
+  · rcases lt_trichotomy b.val c.val with h23 | h23 | h23
+    · exact sp.not_three_overlap a b c h12 h23 t ha hb hc
+    · exact hbc h23
+    · rcases lt_trichotomy a.val c.val with h13 | h13 | h13
+      · exact sp.not_three_overlap a c b h13 h23 t ha hc hb
+      · exact hac h13
+      · exact sp.not_three_overlap c a b h13 h12 t hc ha hb
+  · exact hab h12
+  · rcases lt_trichotomy a.val c.val with h13 | h13 | h13
+    · exact sp.not_three_overlap b a c h12 h13 t hb ha hc
+    · exact hac h13
+    · rcases lt_trichotomy b.val c.val with h23 | h23 | h23
+      · exact sp.not_three_overlap b c a h23 h13 t hb hc ha
+      · exact hbc h23
+      · exact sp.not_three_overlap c b a h23 h12 t hc hb ha
+
 end SkippedSpacedIntervals
 
 end CombArg.Refinement

@@ -58,34 +58,20 @@ lemma terminal_twoFold
   have h1 : t ∈ closure (pr.J k1) := (Finset.mem_filter.mp hk1).2
   have h2 : t ∈ closure (pr.J k2) := (Finset.mem_filter.mp hk2).2
   have h3 : t ∈ closure (pr.J k3) := (Finset.mem_filter.mp hk3).2
-  have h_clos_sub : ∀ k : Fin L, closure (pr.J k) ⊆ closure (ic.I (pr.σ k)) :=
-    fun k => closure_mono (pr.J_subset k)
-  have ht1 := h_clos_sub k1 h1
-  have ht2 := h_clos_sub k2 h2
-  have ht3 := h_clos_sub k3 h3
-  have hs12 : pr.σ k1 ≠ pr.σ k2 := fun h => hk12 (hσ h)
-  have hs13 : pr.σ k1 ≠ pr.σ k3 := fun h => hk13 (hσ h)
-  have hs23 : pr.σ k2 ≠ pr.σ k3 := fun h => hk23 (hσ h)
-  have hd12v : (pr.σ k1).val ≠ (pr.σ k2).val := fun h => hs12 (Fin.ext h)
-  have hd13v : (pr.σ k1).val ≠ (pr.σ k3).val := fun h => hs13 (Fin.ext h)
-  have hd23v : (pr.σ k2).val ≠ (pr.σ k3).val := fun h => hs23 (Fin.ext h)
-  -- Sort the three σ-indices by .val via 6 cases.
-  rcases lt_trichotomy (pr.σ k1).val (pr.σ k2).val with h12 | h12 | h12
-  · rcases lt_trichotomy (pr.σ k2).val (pr.σ k3).val with h23 | h23 | h23
-    · exact ic.not_three_overlap (pr.σ k1) (pr.σ k2) (pr.σ k3) h12 h23 t ht1 ht2 ht3
-    · exact hd23v h23
-    · rcases lt_trichotomy (pr.σ k1).val (pr.σ k3).val with h13 | h13 | h13
-      · exact ic.not_three_overlap (pr.σ k1) (pr.σ k3) (pr.σ k2) h13 h23 t ht1 ht3 ht2
-      · exact hd13v h13
-      · exact ic.not_three_overlap (pr.σ k3) (pr.σ k1) (pr.σ k2) h13 h12 t ht3 ht1 ht2
-  · exact hd12v h12
-  · rcases lt_trichotomy (pr.σ k1).val (pr.σ k3).val with h13 | h13 | h13
-    · exact ic.not_three_overlap (pr.σ k2) (pr.σ k1) (pr.σ k3) h12 h13 t ht2 ht1 ht3
-    · exact hd13v h13
-    · rcases lt_trichotomy (pr.σ k2).val (pr.σ k3).val with h23 | h23 | h23
-      · exact ic.not_three_overlap (pr.σ k2) (pr.σ k3) (pr.σ k1) h23 h13 t ht2 ht3 ht1
-      · exact hd23v h23
-      · exact ic.not_three_overlap (pr.σ k3) (pr.σ k2) (pr.σ k1) h23 h12 t ht3 ht2 ht1
+  have h_clos_sub : ∀ k : Fin L,
+      closure (pr.J k) ⊆ closure (ic.toSkippedSpacedIntervals.I (pr.σ k)) :=
+    fun k => by
+      simp only [ic.toSkippedSpacedIntervals_I]
+      exact closure_mono (pr.J_subset k)
+  have hd12v : (pr.σ k1).val ≠ (pr.σ k2).val :=
+    fun h => hk12 (hσ (Fin.ext h))
+  have hd13v : (pr.σ k1).val ≠ (pr.σ k3).val :=
+    fun h => hk13 (hσ (Fin.ext h))
+  have hd23v : (pr.σ k2).val ≠ (pr.σ k3).val :=
+    fun h => hk23 (hσ (Fin.ext h))
+  exact ic.toSkippedSpacedIntervals.not_three_overlap_any_order
+    (pr.σ k1) (pr.σ k2) (pr.σ k3) hd12v hd13v hd23v t
+    (h_clos_sub k1 h1) (h_clos_sub k2 h2) (h_clos_sub k3 h3)
 
 /-- **Saving-bound extends to closure via continuity**. For `t` in
 `closure (pr.J k)`, the inequality `f t − replacementEnergy t ≥
