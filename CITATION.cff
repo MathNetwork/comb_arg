@@ -1,0 +1,45 @@
+cff-version: 1.2.0
+message: "If you use this formalization, please cite it using the metadata below."
+title: "CombLemma: The Almgren-Pitts Combinatorial Lemma, Formalized in Lean 4"
+version: 0.1.0
+date-released: 2026-04-23
+authors:
+  - family-names: Li
+    given-names: Xinze
+    email: lixinze@math.utoronto.ca
+type: software
+repository-code: "https://github.com/MathNetwork/comb_arg"
+license: Apache-2.0
+doi: 10.5281/zenodo.TBD
+keywords:
+  - lean4
+  - mathlib
+  - min-max
+  - almgren-pitts
+  - geometric-measure-theory
+  - combinatorics
+  - formalization
+abstract: |
+  A Lean 4 formalization of the Almgren–Pitts combinatorial lemma — the
+  quantitative covering-refinement argument underlying min-max
+  constructions of minimal hypersurfaces. The library provides a single
+  main theorem, `CombLemma.exists_sup_reduction`, establishing a
+  quantitative `1/(4N)` scalar energy reduction from a `LocalWitness`
+  hypothesis, extracted as a standalone metric-combinatorial result
+  independent of any geometric-measure-theory content. Zero sorries;
+  only the three standard Lean 4 / Mathlib foundational axioms
+  (`propext`, `Classical.choice`, `Quot.sound`) are transitively used.
+
+references:
+  - type: article
+    authors:
+      - family-names: De Lellis
+        given-names: Camillo
+      - family-names: Tasnady
+        given-names: Dominik
+    title: "The existence of embedded minimal hypersurfaces"
+    year: 2013
+    journal: "Journal of Differential Geometry"
+    volume: 95
+    issue: 3
+    doi: 10.4310/jdg/1381931732

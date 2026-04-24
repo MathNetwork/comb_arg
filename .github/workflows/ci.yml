@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Lake build + sorry/axiom audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install elan
+        run: |
+          curl https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache Mathlib oleans
+        uses: actions/cache@v4
+        with:
+          path: .lake/build
+          key: mathlib-olean-${{ hashFiles('lake-manifest.json', 'lean-toolchain') }}
+          restore-keys: |
+            mathlib-olean-
+
+      - name: Download Mathlib cache
+        run: lake exe cache get
+
+      - name: Build
+        run: lake build
+
+      - name: Build test
+        run: lake build test
+
+      - name: Sorry audit
+        run: |
+          echo "Checking for code `sorry` / `admit` / `sorryAx`..."
+          # Match Lean syntactic `sorry` / `admit` tokens; tolerate
+          # natural-English uses of `admit` / `admits` in docstrings.
+          if grep -rnE '(^|\s)(sorry|admit)(\s|$)' MinMaxCombinatorics/ | \
+             grep -vE '(admits?|admit[a-z]|admitted|admittance)'; then
+            echo "FAIL: code `sorry` or `admit` found."
+            exit 1
+          fi
+          if grep -rn 'sorryAx' MinMaxCombinatorics/; then
+            echo "FAIL: sorryAx found."
+            exit 1
+          fi
+          echo "Sorry audit: clean."
+
+      - name: Axiom audit
+        run: |
+          echo "Checking axioms of min_max_energy_reduction..."
+          cat > /tmp/axiom_audit.lean <<'EOF'
+          import MinMaxCombinatorics
+          #print axioms MinMaxCombinatorics.min_max_energy_reduction
+          EOF
+          OUTPUT=$(lake env lean /tmp/axiom_audit.lean 2>&1)
+          echo "$OUTPUT"
+          # Expected: only [propext, Classical.choice, Quot.sound].
+          if echo "$OUTPUT" | grep -qE '(sorryAx|axioms: \[.*(sorryAx))'; then
+            echo "FAIL: sorryAx detected in axiom list."
+            exit 1
+          fi
+          EXPECTED_AXIOMS="propext, Classical.choice, Quot.sound"
+          if ! echo "$OUTPUT" | grep -q "\[$EXPECTED_AXIOMS\]"; then
+            echo "FAIL: axiom list does not exactly match the expected set."
+            echo "Expected: depends on axioms: [$EXPECTED_AXIOMS]"
+            exit 1
+          fi
+          echo "Axiom audit: clean."

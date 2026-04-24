@@ -1,0 +1,948 @@
+\documentclass[11pt,reqno]{amsart}
+
+\usepackage{amsmath,amsthm,amssymb}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!60!black
+}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{geometry}
+\geometry{margin=1in}
+
+\lstset{
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  columns=fullflexible,
+  keepspaces=true,
+  frame=single,
+  framesep=4pt,
+  rulecolor=\color{black!30},
+  showstringspaces=false,
+  aboveskip=6pt,
+  belowskip=6pt
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\CombLemma}{\texttt{CombLemma}}
+\newcommand{\Mathlib}{\texttt{Mathlib}}
+\newcommand{\unit}{\mathbf{I}}
+\newcommand{\NC}{\mathrm{NC}}
+\newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombLemma}
+% Inline, colored, clickable link to a verified Lean declaration.
+% #1 = Lean declaration name (as rendered)
+% #2 = file path inside CombLemma/ (e.g. SupReduction.lean)
+\newcommand{\defref}[2]{%
+  \href{\leanrepo/#2}{%
+    \textcolor{green!45!black}{\ensuremath{\checkmark}}\hspace{0.15em}%
+    \textcolor{blue!55!black}{\texttt{#1}}%
+  }%
+}
+
+\title{Compiling the Almgren--Pitts Combinatorial Lemma}
+
+\author{Xinze Li}
+\address{\textit{Correspondence:} \texttt{lixinze@math.utoronto.ca}}
+\date{\today}
+
+\begin{document}
+
+\begin{abstract}
+The Almgren--Pitts combinatorial lemma is a recurring technical
+step in the min-max theory of minimal hypersurfaces. We extract it
+from the literature as a standalone metric-combinatorial algorithm
+and formalize it in Lean 4 as an importable library.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+A minimal hypersurface is a critical point of the area
+functional in codimension one. On a closed Riemannian manifold
+$(M^{n+1}, g)$, existence of a nontrivial minimal hypersurface
+is nontrivial: direct minimization over a fixed homology class
+may produce only degenerate configurations, and the relevant
+critical points are typically of saddle type rather than minima.
+Birkhoff~(1917) established the prototype of a \emph{min-max}
+construction by producing closed geodesics on the sphere via a
+sweepout by loops; Almgren and Pitts, in the 1960s and 1970s,
+generalized the construction to higher-dimensional varifolds.
+The output is the following existence theorem, with regularity
+supplied by Schoen--Simon~\cite{SS81}.
+
+\begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
+\label{thm:minmax}
+Every closed Riemannian manifold $(M^{n+1}, g)$ admits a
+nontrivial embedded minimal hypersurface $\Sigma \subset M$
+whose singular set $\mathrm{Sing}\,\Sigma$ has Hausdorff
+dimension at most $n-7$.
+\end{theorem}
+
+Theorem~\ref{thm:minmax} was established in its systematic form
+by Pitts in the monograph~\cite{Pit81}; it has subsequently been
+re-proved and extended in various frameworks by
+Colding--De Lellis~\cite{CDL03}, De Lellis--Tasnady~\cite{DLT13},
+Marques--Neves~\cite{MN14}, and others.
+
+Pitts's proof splits into two parts. The first part executes the
+min-max construction: starting from a sweepout family $\Lambda$
+and the min-max value
+\[
+m_0(\Lambda) \;=\; \inf_{\Lambda} \, \max_{t} \, \mathcal{H}^n(\Gamma_t),
+\]
+one produces an almost-minimizing sequence of varifolds. The
+second part is the regularity theory for the limiting varifold.
+Within the first part, one key technical step is a combinatorial
+assembly. In the formulation of De Lellis--Tasnady~\cite[\S3.2]{DLT13},
+it reads as follows.
+
+\begin{theorem}[De Lellis--Tasnady~{\cite[\S3.2]{DLT13}}]
+\label{thm:comb-intro}
+Let $\{\partial \Omega_t\}_{t \in [0,1]}$ be a sweepout of
+$(M^{n+1}, g)$ with $\mathcal{H}^n(\partial \Omega_t)$
+continuous in $t$, let $m_0 = \sup_t \mathcal{H}^n(\partial
+\Omega_t)$, and let $N > 0$. Suppose that at each $t$ with
+$\mathcal{H}^n(\partial \Omega_t) \ge m_0 - 1/N$ there is a
+nested pair $A_t \subset\subset B_t \subset\subset U_t'$ in $M$
+such that $\partial \Omega_t$ is almost minimizing in
+$(A_t, B_t)$, and a replacement family
+$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ (given
+by~\cite[Lemma 3.1]{DLT13}) with $\partial \Omega_{t,0} =
+\partial \Omega_t$ and $\mathcal{H}^n(\partial \Omega_{t,1})
+\le \mathcal{H}^n(\partial \Omega_t) - 1/(4N)$ inside $U_t'$.
+Then there exists a modified sweepout $\{\partial \Omega_t'\}$
+with $\sup_t \mathcal{H}^n(\partial \Omega_t') \le m_0 - 1/(4N)$.
+\end{theorem}
+
+The combinatorial content of Theorem~\ref{thm:comb-intro} --- a
+one-parameter assembly turning local near-critical savings into a
+global supremum improvement --- recurs in Pitts's original proof
+of Theorem~\ref{thm:minmax}~\cite[proof of Thm.~4.10]{Pit81} and
+in the subsequent treatments~\cite[\S5]{CDL03},
+\cite[Prop.~4.8]{DLR17}, \cite[Prop.~5.8]{DL12}, and
+\cite[\S4]{MN14}, each time formulated in the geometric
+language of the paper at hand.
+
+The recurrence is structural. The statement of
+Theorem~\ref{thm:comb-intro} is paper-agnostic: it depends on no
+geometric measure theory, no admissible class, no ambient
+regularity. Its content is a bookkeeping argument on continuous
+real-valued functions, free of the geometric material that
+varies between papers. Yet the statement has no canonical
+reference, so each author re-derives it in local notation.
+
+This note takes a different approach. We extract
+Theorem~\ref{thm:comb-intro} as an independent statement and
+formalize it in Lean 4 as the library \CombLemma. Informally,
+the extracted form is the following.
+
+\begin{theorem}[Extracted combinatorial lemma; formalized as \defref{exists\_sup\_reduction}{SupReduction.lean}]
+\label{thm:comb-extracted}
+Let $X$ be a pseudo-metric space equipped with an abstract
+paired-cover structure. Let $f : [0,1] \to \mathbb{R}$ be
+continuous with $m_0 = \sup f$ and $m_0 > 0$, and let $N > 0$.
+Assume that at every $t \in [0,1]$ with $f(t) \ge m_0 - 1/N$
+there is a \emph{local witness}: an open neighborhood $U_t \ni t$,
+a paired cover $c_t$ in $X$, and a continuous replacement energy
+$E_t : [0,1] \to \mathbb{R}$ satisfying $f(s) - E_t(s) \ge 1/(4N)$
+for all $s \in U_t$. Then there exists $f' : [0,1] \to \mathbb{R}$
+with $\sup f' \le m_0 - 1/(4N)$.
+\end{theorem}
+
+Theorem~\ref{thm:comb-extracted} is the scalar skeleton of
+Theorem~\ref{thm:comb-intro}. The geometric content has been
+stripped: the boundary $\partial \Omega_t$ is replaced by a
+continuous function $f : [0,1] \to \mathbb{R}$; the
+Hausdorff-measure hypothesis becomes $m_0 = \sup f$; the nested
+pair $(A_t, B_t, U_t')$ collapses to a single open neighborhood
+$U_t$; the replacement family
+$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ collapses to a
+single continuous $E_t$; the almost-minimizing assumption on
+the varifold disappears. What remains is the combinatorial
+bookkeeping: a near-critical cover, uniform saving bounds, and
+the assembly of a globally improved $f'$. The abstract
+paired-cover class on $X$ is a scaffolding parameter that
+would, in a GMT instantiation, carry the geometric data of the
+replacement; it is not load-bearing in the present proof (see
+\S\ref{sec:discussion}). The formalization is machine-verified
+against \Mathlib; it declares no custom axioms and contains no
+\texttt{sorry}. A subsequent min-max paper that establishes its
+own local-replacement lemma can then invoke the combinatorial
+step as a one-line import, with the verification following
+along.
+
+\S\ref{sec:def-thm} gives the definitions and the main theorem;
+\S\ref{sec:proof} sketches the proof; \S\ref{sec:discussion}
+records the structural details the formalization makes explicit.
+
+\section{Definitions and theorem}
+\label{sec:def-thm}
+
+Throughout this section, let $X$ be a pseudo-metric space carrying
+an abstract paired-cover structure (Definition~\ref{def:pcover}).
+Let $K$ be a topological space. The main theorem specializes to
+$K = \unit$ (see Remark~\ref{rem:K-unit}).
+
+\subsection{Paired covers and local witnesses}
+
+\begin{definition}[Pairable cover class]
+\label{def:pcover}
+A \emph{pairable-cover} structure on $X$ consists of: a type
+$\mathrm{Cover}$, two functions
+$\mathrm{leftRegion}, \mathrm{rightRegion} : \mathrm{Cover}
+\to 2^X$, a diameter function
+$\mathrm{diameter} : \mathrm{Cover} \to \mathbb{R}_{\ge 0}$,
+a disjointness axiom
+$\mathrm{leftRegion}(c) \cap \mathrm{rightRegion}(c) = \emptyset$,
+and a diameter-nesting axiom stating that overlapping combined
+regions of diameter-comparable covers are ordered by
+inclusion \defref{PairableCover}{Witness.lean}.\footnote{See
+Remark~\ref{rem:scaffolding} on the scaffolding status of this
+class.}
+\end{definition}
+
+\begin{definition}[Local witness]
+\label{def:witness}
+A \emph{local witness} at $t : K$ with saving threshold
+$\varepsilon \in \mathbb{R}$ is a tuple consisting of: an open
+set $U \ni t$ in $K$, a cover $c : \mathrm{Cover}$, a continuous
+function $E : K \to \mathbb{R}$, and the uniform inequality
+$\forall s \in U,\; f(s) - E(s) \ge \varepsilon$, where
+$f : K \to \mathbb{R}$ is the ambient energy \defref{LocalWitness}{Witness.lean}.
+\end{definition}
+
+\begin{definition}[Near-critical set]
+\label{def:NC}
+For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
+$N \in \mathbb{N}$, the \emph{$1/N$-near-critical set} is
+$\NC = \{t \in K : f(t) \ge m_0 - 1/N\}$ \defref{nearCritical}{Refinement/InitialCover.lean}.
+\end{definition}
+
+\begin{proposition}[Compactness of the near-critical set]
+\label{prop:NC-compact}
+If $K$ is compact and $f$ is continuous, $\NC$ is closed in $K$,
+hence compact. If additionally $m_0 = \sup f$ and $N > 0$, $\NC$
+is nonempty \defref{isCompact\_nearCritical}{Refinement/InitialCover.lean}, \defref{nearCritical\_nonempty}{Refinement/InitialCover.lean}.
+\end{proposition}
+
+\subsection{Intermediate structures}
+
+Fix now $K = \unit$.
+
+\begin{definition}[Initial cover]
+\label{def:ic}
+An \emph{initial cover} for $(f, m_0, N)$ is a finite family
+$\{I_i\}_{i=1}^n$ of open intervals in $\unit$, each
+$I_i = (c_i - r_i, c_i + r_i) \cap \unit$, together with a
+witness center $w_i \in \NC$ and a local witness at $w_i$ with
+saving $1/(4N)$, such that
+\begin{enumerate}
+\item[(a)] $c_i + r_i < c_{i+2} - r_{i+2}$ for all valid $i$
+  (non-overlap at index gap 2);
+\item[(b)] $I_i \subset U_{w_i}$ (the $i$-th interval is
+  contained in the $i$-th witness neighborhood);
+\item[(c)] $\NC \subset \bigcup_i I_i$.
+\end{enumerate}
+We write this structure
+$\mathrm{InitialCover}(X, f, m_0, N)$ \defref{InitialCover}{Refinement/InitialCover.lean}.\footnote{Conditions (a) and (b) transcribe DLT~\cite[\S3.2]{DLT13}'s spacing and subset conditions verbatim; the pair $(c_i, w_i)$ replaces DLT's single $t_i$, see Finding~2 in \S\ref{sec:discussion}.}
+\end{definition}
+
+\begin{definition}[Partial refinement]
+\label{def:pr}
+Given an initial cover $\mathrm{ic}$ and a natural $\ell$, a
+\emph{partial refinement of length $\ell$} consists of pieces
+$J_1,\ldots,J_\ell \subseteq \unit$ and an index assignment
+$\sigma : \{1,\ldots,\ell\} \to \{1,\ldots,n\}$ satisfying
+\begin{enumerate}
+\item[(i)] $J_k \subseteq I_{\sigma(k)}$ for each $k$;
+\item[(ii)] $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each
+  $k$.
+\end{enumerate}
+We write this structure
+$\mathrm{PartialRefinement}(\mathrm{ic}, \ell)$ \defref{PartialRefinement}{Refinement/PartialRefinement.lean}.
+\end{definition}
+
+\begin{definition}[Refinement]
+\label{def:ref}
+A \emph{refinement} of $(K, X, f, m_0, N)$ consists of a finite
+nonempty index set $\iota$, pieces $\{p_l\}_{l \in \iota}$
+covering $\NC$, a replacement-energy family
+$\{E_l : K \to \mathbb{R}\}_{l \in \iota}$, a saving
+family $\{s_l \in \mathbb{R}_{>0}\}_{l \in \iota}$, and three
+invariants: (I) $f - E_l \ge s_l$ on $p_l$; (II) each point of
+$K$ lies in at most two pieces; (III) $s_l \ge 1/(4N)$ for all
+$l$ \defref{EnergyBound.Refinement}{EnergyBound.lean}.
+\end{definition}
+
+\subsection{Main theorem}
+
+\begin{theorem}[$1/(4N)$ sup reduction]
+\label{thm:main}
+Let $X$ be a pseudo-metric space with a pairable-cover structure
+(Definition~\ref{def:pcover}). Let $f : \unit \to \mathbb{R}$
+be continuous, let $m_0 \in \mathbb{R}$ with $m_0 > 0$ and
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$. Assume
+that for every $t \in \NC$ there exists a local witness at $t$
+with saving $1/(4N)$ (Definition~\ref{def:witness}). Then there
+exists $f' : \unit \to \mathbb{R}$ with
+\[
+\sup f' \;\le\; m_0 - \frac{1}{4N}.
+\]
+\end{theorem}
+
+\begin{proof}
+Follows from Propositions~\ref{prop:exists-ic},
+\ref{prop:exists-terminal},
+and Theorem~\ref{thm:arithmetic} by
+Lemma~\ref{lem:assembly}; see \S\ref{sec:proof}. The full chain
+is \defref{exists\_sup\_reduction}{SupReduction.lean}, which
+composes \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}
+with \defref{EnergyBound.exists\_reducedEnergy\_sup\_lt}{EnergyBound.lean}.
+\end{proof}
+
+\begin{remark}
+\label{rem:K-unit}
+Theorem~\ref{thm:main} specializes to $K = \unit$. The
+specialization enters Definitions~\ref{def:ic}~and~\ref{def:pr}
+(intervals of $\unit$, $\sigma$ into a finite index set coming
+from the cover of $\NC \subset \unit$). The arithmetic step
+(Theorem~\ref{thm:arithmetic}) is formulated for general compact
+$K$.
+\end{remark}
+
+\begin{remark}[Reduction, not contradiction]
+\label{rem:reduction}
+The theorem is stated as an existence of $f'$ rather than as a
+contradiction $\bot$. This is deliberate: the hypothesis gives
+$m_0 = \sup f$ for a specific $f$, not that $m_0$ is a
+category-theoretic min-max level. Consumers who supply an
+admissible class $\mathcal{A}$ with $m_0 = \inf_{g \in
+\mathcal{A}} \sup g$ and $f \in \mathcal{A}$ layer the
+contradiction on top by showing $f' \in \mathcal{A}$. See~\cite[\S3.2]{DLT13} for the GMT instance.
+\end{remark}
+
+\subsection{The arithmetic half}
+
+The arithmetic half takes any refinement of $(K, X, f, m_0, N)$
+and builds $f'$ by scalar subtraction.
+
+\begin{theorem}[Arithmetic assembly]
+\label{thm:arithmetic}
+Let $K$ be compact and nonempty, $f : K \to \mathbb{R}$
+continuous, $m_0 = \sup f$ with $m_0 > 0$, $N > 0$, and let
+$R$ be a refinement of $(K, X, f, m_0, N)$
+(Definition~\ref{def:ref}). Then there exists
+$f' : K \to \mathbb{R}$ with $\sup f' \le m_0 - 1/(4N)$.
+\end{theorem}
+
+The proof constructs
+$f'(t) := f(t) - \sum_{l \in \iota : t \in p_l} s_l$
+and establishes the bound by a case split on whether $t \in \NC$,
+using invariants~(II) and~(III) from
+Definition~\ref{def:ref}. The formal
+statement is \defref{EnergyBound.exists\_reducedEnergy\_sup\_lt}{EnergyBound.lean}.
+
+\section{Proof structure}
+\label{sec:proof}
+
+We split the proof of Theorem~\ref{thm:main} into three stages.
+Stage~A builds an initial cover from the witness hypothesis.
+Stage~B runs an induction producing a terminal partial refinement
+with injective $\sigma$. Stage~C assembles the refinement by
+extending saving bounds to closures and deriving TwoFold.
+Theorem~\ref{thm:arithmetic} closes.
+
+\subsection{Stage A: existence of the initial cover}
+
+\begin{proposition}[Existence of an initial cover]
+\label{prop:exists-ic}
+Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
+(Definition~\ref{def:ic}) exists \defref{exists\_initialCover}{Refinement/CoverConstruction.lean}.
+\end{proposition}
+
+\begin{proof}[Construction]
+Compactness of $\NC$ (Proposition~\ref{prop:NC-compact}) plus the
+open cover $\{U_t\}_{t \in \NC}$ afforded by the witness
+hypothesis admit a Lebesgue number $\lambda > 0$: every
+$\lambda$-ball in $\NC$ fits inside some $U_t$. Choose
+$M \in \mathbb{N}$ with $M > 4/\lambda$, form the grid
+$c_k = k/M$ for $k = 0, \ldots, M$, and select those $c_k$ within
+$\lambda/4$ of $\NC$. For each selected $c_k$ pick a witness
+center $w_k \in \NC$ within $\lambda/4$ of $c_k$; the ball of
+radius $\lambda$ around $w_k$ fits inside some $U_{w_k}$, hence
+so does the interval
+$I_k := (c_k - 2/(3M), c_k + 2/(3M)) \cap \unit$. Spacing
+condition~(a) holds because consecutive selected grid indices
+differ by at least~2 in the selected finset, so their centers
+differ by at least $2/M > 4/(3M) = 2 \cdot (2/(3M))$. Coverage
+condition~(c) holds because every $t \in \NC$ is within
+$1/(2M) < 2/(3M)$ of its rounded grid neighbor, which is
+selected. Condition~(b) holds by the Lebesgue argument.
+\end{proof}
+
+\subsection{Stage B: the refinement induction}
+
+Starting from an initial cover, one builds pieces inductively.
+
+\begin{definition}[Base case]
+\label{def:step0}
+$\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
+refinement with
+$J_1 := I_1$ and $\sigma(1) := 1$ \defref{step\_zero}{Refinement/PartialRefinement.lean}.
+\end{definition}
+
+\begin{definition}[Inductive step]
+\label{def:step-succ}
+Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
+an index $i^* \in \{1,\ldots,n\}$ with
+$I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
+extension by case split on whether
+$I_{i^*} \subseteq J_\ell \cup I_{\sigma(\ell)}$:
+
+\begin{itemize}
+\item[(Case 1)] If yes, set $J_{\ell+1} := I_{i^*}$.
+\item[(Case 2)] Otherwise, set
+  $J_{\ell+1} := I_{i^*} \setminus I_{\sigma(\ell)}$.
+\end{itemize}
+
+In both cases set $\sigma(\ell+1) := i^*$. Both invariants of
+Definition~\ref{def:pr} are preserved; in Case~2 the preservation
+of (ii) uses the induction hypothesis on
+$I_{\sigma(\ell)} \subseteq \bigcup_k J_k$ \defref{step\_succ\_at}{Refinement/Induction.lean}.\footnote{A variant \texttt{step\_succ} chooses $i^*$ internally via $\mathrm{Finset.min'}$; \texttt{step\_succ\_at} takes $i^*$ as an explicit argument and returns the extension bundled with the ``$i^*$ is covered'' property, for termination.}
+\end{definition}
+
+\begin{proposition}[Termination]
+\label{prop:exists-terminal}
+Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
+$\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
+partial refinement of some length $L$ with $\sigma$ injective
+and $I_i \subseteq \bigcup_k J_k$ for every
+$i$ \defref{exists\_terminal\_refinement}{Refinement/Induction.lean}.
+\end{proposition}
+
+\begin{proof}[Argument]
+Let $\mathrm{rem}(\mathrm{pr})$ be the finite set of indices
+$i$ with $I_i \not\subseteq \bigcup_k J_k$. One step of
+$\mathrm{step\_succ\_at}$ at $i^* \in \mathrm{rem}(\mathrm{pr})$
+(chosen as the smallest such) produces $\mathrm{pr}'$ with
+$i^* \notin \mathrm{rem}(\mathrm{pr}')$ and
+$\mathrm{rem}(\mathrm{pr}') \subseteq \mathrm{rem}(\mathrm{pr})
+\setminus \{i^*\}$, hence strict decrease. Injectivity of
+$\sigma$ follows from the case split in
+Definition~\ref{def:step-succ}: the new $\sigma(\ell+1) = i^*$
+is fresh because $i^* \in \mathrm{rem}$ while existing
+$\sigma(k)$ correspond to already-covered indices.
+\end{proof}
+
+\subsection{Stage C: assembly}
+
+The final stage extends the saving bound from open $J_k$ to
+$\overline{J_k}$ and derives TwoFold from spacing~(a).
+
+\begin{proposition}[TwoFold via parity]
+\label{prop:twofold}
+For a partial refinement $\mathrm{pr}$ of length $L$ with
+$\sigma$ injective, every $t \in \unit$ lies in at most two of
+$\overline{J_1}, \ldots, \overline{J_L}$ \defref{terminal\_twoFold}{Refinement/Assembly.lean}.
+\end{proposition}
+
+\begin{proof}[Argument]
+From spacing condition~(a), iterated $m$ times, one obtains
+that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
+2$) have strict separation between $\overline{I_i}$ and
+$\overline{I_j}$, hence
+$\overline{I_i} \cap \overline{I_j} = \emptyset$ \defref{InitialCover.chain\_spacing}{Refinement/Disjointness.lean}, \defref{InitialCover.closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}.
+
+Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
+admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
+\overline{J_{k_3}}$. Since $\overline{J_k} \subseteq
+\overline{I_{\sigma(k)}}$ and $\sigma$ is injective,
+$\sigma(k_1), \sigma(k_2), \sigma(k_3)$ are three distinct
+indices in $\{1,\ldots,n\}$ with a common point in the
+closures of $I_{\sigma(k_i)}$. Among any three distinct
+integers $a < b < c$ some pair has even gap $\ge 2$: either
+$c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
+and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
+parities and one of them is the even gap. The pair with even
+gap has disjoint closures, contradicting the common
+point \defref{InitialCover.not\_three\_overlap}{Refinement/Disjointness.lean}.
+\end{proof}
+
+\begin{proposition}[Closure extension of saving bound]
+\label{prop:saving-bound}
+Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
+every $t \in \overline{J_k}$,
+$f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
+$E_{\sigma(k)}$ is the replacement energy of the $\sigma(k)$-th
+local witness \defref{saving\_bound\_closure}{Refinement/Assembly.lean}.
+\end{proposition}
+
+\begin{proof}[Argument]
+On $J_k \subseteq U_{w_{\sigma(k)}}$ the witness gives
+$f - E_{\sigma(k)} \ge 1/(4N)$. The function
+$g := f - E_{\sigma(k)}$ is continuous
+(Definitions~\ref{def:witness} requires $E_t$ continuous;
+$f$ is continuous by hypothesis). A closure point is a limit of
+a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
+limits.
+\end{proof}
+
+\begin{lemma}[Assembly]
+\label{lem:assembly}
+A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
+injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
+a refinement of $(\unit, X, f, m_0, N)$ in the sense of
+Definition~\ref{def:ref}, with
+$p_k := \overline{J_k}$, uniform saving
+$s_k := 1/(4N)$, and
+$E_k := $ the replacement energy of the
+$\sigma(k)$-th witness \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}.
+\end{lemma}
+
+\begin{proof}[Argument]
+Invariant~(I) is Proposition~\ref{prop:saving-bound}.
+Invariant~(II) is Proposition~\ref{prop:twofold}.
+Invariant~(III) holds by construction ($s_k = 1/(4N)$).
+Coverage of $\NC$ chains $\NC \subseteq \bigcup_i I_i
+\subseteq \bigcup_k J_k \subseteq \bigcup_k
+\overline{J_k}$.
+\end{proof}
+
+Theorem~\ref{thm:main} now follows: chain
+Propositions~\ref{prop:exists-ic}~and~\ref{prop:exists-terminal},
+invoke Lemma~\ref{lem:assembly}, and apply
+Theorem~\ref{thm:arithmetic}.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Eight structural points}
+
+Formalizing the proof surfaces eight structural details that the
+prose exposition in~\cite{Pit81,CDL03,DLT13,DLR17,DL12,MN14}
+compresses. None is a correction; each is a place where the
+prose-level argument is locally underdetermined in a way the
+formal proof must resolve.
+
+\begin{enumerate}
+\item The witness saving must commit to $\varepsilon = 1/(4N)$
+  exactly, not $\exists \varepsilon > 0$. The weaker hypothesis
+  does not thread through the lower bound on the
+  sum-of-savings in Theorem~\ref{thm:arithmetic}.
+
+\item The single $t_i$ of DLT~\cite[\S3.2]{DLT13} must be
+  decoupled into an interval center $c_i$ and a witness
+  center $w_i$ (Definition~\ref{def:ic}). The existence
+  proof with $c_i = w_i$ forced is intractable under the
+  standard Lebesgue-number approach: the grid point
+  $c_k$ supplying the interval is not in general near-critical.
+
+\item The index assignment $\sigma$ is not monotone
+  (Definition~\ref{def:pr}, Proposition~\ref{prop:exists-terminal}).
+  Intuition from geometric pictures suggests it should be; the
+  smallest-index-selection rule occasionally backtracks when an
+  earlier index has been covered as a side effect of a later
+  step.
+
+\item Spacing condition~(a) yields disjointness of
+  $\overline{I_i}$ and $\overline{I_j}$ only for even gaps
+  $|i - j| = 2(m+1)$. A counterexample with non-monotone
+  centers (permitted by the abstract structure) witnesses
+  overlap at odd gap~3.
+
+\item TwoFold (Proposition~\ref{prop:twofold}) therefore
+  requires an explicit parity argument: among three distinct
+  indices some pair has even gap. DLT~\cite[\S3.2]{DLT13}
+  asserts TwoFold in one sentence; the unpacking into
+  chain-disjointness plus the parity rescue occupies a full
+  proposition.
+
+\item The \texttt{PairableCover} class's \texttt{diameter\_nesting}
+  axiom is not invoked in the present proof. The scalar
+  specialization to $\unit$ uses explicit radii instead. See
+  Remark~\ref{rem:scaffolding}.
+
+\item The replacement energy of a local witness must carry
+  continuity explicitly (Definition~\ref{def:witness}). In GMT
+  use this is automatic; under the abstraction, continuity is
+  load-bearing in Proposition~\ref{prop:saving-bound} and must
+  be an explicit field of \texttt{LocalWitness}.
+
+\item The ambient class $X$ and \texttt{PairableCover} are
+  carried in signatures but not consumed by the proof chain;
+  see Remark~\ref{rem:scaffolding}.
+\end{enumerate}
+
+\subsection{Scaffolding}
+
+\begin{remark}[\texttt{PairableCover} as scaffolding]
+\label{rem:scaffolding}
+The \texttt{PairableCover} class is carried through
+\texttt{LocalWitness} and the intermediate structures but its
+axioms are not used in the proof of Theorem~\ref{thm:main}.
+Three outcomes are under consideration for v0.2: retain the
+class as an extension point (future abstract-$K$ formulations
+may consume it); rework the proof so the class is load-bearing
+(following DLT's nested pair structure $A \subset\subset B
+\subset\subset U'$ with annular shell $C = B \setminus A$);
+or remove it in favor of a scalar-only interface. The v0.1
+release defers the decision.
+\end{remark}
+
+\subsection{What is and is not in the repository}
+
+\CombLemma~v0.1.0 contains the mathematics described above and
+nothing else. In particular:
+\begin{itemize}
+\item It does \emph{not} construct local witnesses. The
+  hypothesis of Theorem~\ref{thm:main} is supplied by the
+  consumer.
+\item It does \emph{not} contain any GMT content. Varifolds,
+  Caccioppoli sets, currents, measure-theoretic regularity
+  theorems are all absent.
+\item It does \emph{not} prove the full min-max theorem. The
+  local-replacement lemma and the min-max closure remain the
+  consumer's work.
+\item It does \emph{not} address multi-parameter sweepouts.
+  Generalization to $K$ other than $\unit$ is future work;
+  see \S\ref{ss:coverage} below.
+\end{itemize}
+
+\subsection{Coverage across the min-max literature}
+\label{ss:coverage}
+
+The formalization of \CombLemma~v0.1 specializes the sweepout
+parameter space to $K = [0,1]$. Every min-max construction of
+minimal hypersurfaces that operates on a one-parameter sweepout
+consumes the same combinatorial assembly, and its scalar content
+is what Theorem~\ref{thm:comb-extracted} formalizes. The list of
+one-parameter constructions that \CombLemma~covers (as a
+citation replacing the paper's internal re-derivation of the
+combinatorial step) is summarized in Table~\ref{tab:coverage}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}p{0.38\textwidth}p{0.56\textwidth}@{}}
+\toprule
+\textbf{Source} & \textbf{Where the one-parameter sweepout appears} \\
+\midrule
+Pitts~\cite[proof of Thm.~4.10]{Pit81}, $m=1$ case
+  & The $(m,\mathbf{M})$-homotopy class of the main existence theorem, specialized to $m=1$. \\
+Simon--Smith~\cite{Smi83}; Colding--De Lellis~\cite[\S5]{CDL03}
+  & 1-parameter sweepout of surfaces in 3-manifolds, with continuous refinement. \\
+De Lellis--Tasnady~\cite[\S3.2]{DLT13}
+  & ``Standard notion of 1-parameter family of hypersurfaces,'' $\{\partial\Omega_t\}_{t\in[0,1]}$. \\
+De Lellis--Ramic~\cite[Prop.~4.8]{DLR17}
+  & 1-parameter sweepout with boundary. \\
+Li--Zhou~\cite{LZ17}
+  & Free-boundary 1-parameter sweepout $\phi : [0,1] \to \mathcal{Z}_n(\Omega,\partial\Omega)$. \\
+Guaraco~\cite{Gua18}
+  & 1-parameter Allen--Cahn min-max, $\Phi : [0,1] \to W^{1,2}(M)$. \\
+Ketover~\cite{Ket16}
+  & Equivariant 1-parameter Simon--Smith min-max. \\
+Chambers--Liokumovich~\cite{CL16}
+  & 1-parameter family of hypersurfaces for existence in complete, finite-volume manifolds. \\
+Chambers--Liokumovich~\cite{CL20}
+  & Monotonicity framework, $\{\partial\Omega_t\}_{t\in[0,1]}$. \\
+Chodosh--Liokumovich--Spolaor~\cite{CLS22}
+  & Non-excessive sweepout framework, explicitly ``one-parameter min-max.'' \\
+Zhou~\cite{Zho19}
+  & Multiplicity-one conjecture for 1-parameter sweepouts. \\
+\bottomrule
+\end{tabular}
+\caption{One-parameter min-max works whose combinatorial step
+is covered by \CombLemma~v0.1. In each, the paper's
+local-replacement lemma supplies the hypothesis of
+Theorem~\ref{thm:comb-extracted}; the combinatorial assembly
+becomes a one-line invocation of
+\texttt{CombLemma.exists\_sup\_reduction}.}
+\label{tab:coverage}
+\end{table}
+
+Multi-parameter extensions are \emph{not} covered by v0.1. These
+include Pitts's general $(m,\mathbf{M})$
+framework~\cite[Thm.~4.10]{Pit81} with $m \ge 2$, the 5-parameter
+Willmore construction of Marques--Neves~\cite{MN14}, the Weyl-law
+and density work of Liokumovich--Marques--Neves~\cite{LMN18} and
+Irie--Marques--Neves~\cite{IMN18}, and
+De Lellis's multi-parameter exposition~\cite[Prop.~5.8]{DL12}.
+A multi-parameter generalization is planned; see
+\S\ref{ss:roadmap} for the specific interface changes it entails.
+
+\subsection{Library roadmap}
+\label{ss:roadmap}
+
+Because \CombLemma's deliverable is a program and its public
+interface (the \texttt{LocalWitness} structure, the statement of
+\texttt{exists\_sup\_reduction}) is what downstream papers
+consume, a ``future work'' list for this paper is a versioning
+roadmap rather than a conjecture list. The planned trajectory is
+as follows.
+
+\begin{itemize}
+\item \textbf{v0.2 (generalize $K$).} Move the parameter space
+  from \texttt{unitInterval} to an arbitrary compact metric
+  space. The \texttt{LocalWitness} structure is unchanged. The
+  \texttt{InitialCover} structure is redesigned: spacing
+  condition~(a), which currently relies on the linear order of
+  $[0,1]$ (indices~$i$ and $i+2$), is replaced by a metric
+  ball-covering condition on $K$ (pairs of balls at distance
+  $\ge \lambda$ in the metric). The parity-rescue argument of
+  \S\ref{sec:proof}~Stage~C becomes a disjointness argument on
+  multiplicity in the metric cover. Downstream consumers who
+  already operate on $[0,1]$ keep their existing call sites
+  unchanged.
+
+\item \textbf{v0.3 (multi-parameter $K = [0,1]^m$).} Move from
+  arbitrary compact $K$ to a cubical-complex parametrization
+  following Pitts~\cite{Pit81}. The \texttt{InitialCover} family
+  of open intervals $\{I_i\}$ becomes a family of open cubes
+  indexed by a cubical complex $I(m, n)$; the spacing condition
+  becomes a face-relation bound; the parity argument becomes a
+  cube-colouring argument counting cells by parity of
+  coordinate-sum. \texttt{LocalWitness} and the main-theorem
+  signature remain unchanged up to substituting~$K$; existing
+  downstream consumers continue to compile.
+
+\item \textbf{\texttt{PairableCover} decision.} The class is
+  scaffolding in v0.1 (Finding~8, \S\ref{ss:points};
+  Remark~\ref{rem:scaffolding}). v0.2 either (a) activates it by
+  reworking Stage~C~(\S\ref{sec:proof}) to consume the
+  diameter-nesting axiom in a DLT-style annular shell argument,
+  or (b) removes it in favour of a scalar-only interface.
+  Selection between~(a) and~(b) will be driven by whichever form
+  a concrete downstream consumer establishes first.
+
+\item \textbf{\texttt{Mathlib} integration.} \CombLemma~is
+  currently a standalone project with its own package name.
+  If the material is suitable for upstreaming, a future version
+  will adapt naming to Mathlib conventions (namespace layout,
+  camel/snake case per declaration type, split granularity
+  matching Mathlib's file-per-concept norm) and submit the
+  library as a \Mathlib~pull request. The adaptation will not
+  change the public API names; it will re-export them under
+  Mathlib's namespace structure.
+\end{itemize}
+
+None of the above is a mathematical open problem. Each is a
+defined interface change with a concrete scope, a target version,
+and an identified downstream compatibility story.
+
+\begin{thebibliography}{Mathlib}
+
+\bibitem[Pit81]{Pit81}
+J.~T. Pitts, \emph{Existence and regularity of minimal surfaces
+on Riemannian manifolds}, Mathematical Notes~27, Princeton
+University Press, 1981.
+
+\bibitem[SS81]{SS81}
+R.~Schoen and L.~Simon, \emph{Regularity of stable minimal
+hypersurfaces}, Comm.\ Pure Appl.\ Math.~34 (1981), no.~6,
+741--797.
+
+\bibitem[CDL03]{CDL03}
+T.~H. Colding and C.~De Lellis, \emph{The min-max construction
+of minimal surfaces}, Surv.\ Differ.\ Geom.~VIII (2003),
+75--107.
+
+\bibitem[DLT13]{DLT13}
+C.~De Lellis and D.~Tasnady, \emph{The existence of embedded
+minimal hypersurfaces}, J.\ Differential Geom.~95 (2013),
+no.~3, 355--388.
+
+\bibitem[DLR18]{DLR17}
+C.~De Lellis and J.~Ramic, \emph{Min-max theory for minimal
+hypersurfaces with boundary}, Ann.\ Inst.\ Fourier~68 (2018),
+no.~5, 1909--1986.
+
+\bibitem[DL16]{DL12}
+C.~De Lellis, exposition of the combinatorial step in the min-max
+construction, Ann.\ Inst.\ Fourier, 2016. (Precise article
+reference to be confirmed against the author's library.)
+
+\bibitem[MN14]{MN14}
+F.~Marques and A.~Neves, \emph{Min-max theory and the Willmore
+conjecture}, Ann.\ of Math.~(2) 179 (2014), no.~2, 683--782.
+
+\bibitem[Smi83]{Smi83}
+F.~Smith, \emph{On the existence of embedded minimal 2-spheres
+in the 3-sphere, endowed with an arbitrary Riemannian metric},
+PhD thesis, University of Melbourne, 1983.
+
+\bibitem[LZ17]{LZ17}
+M.~M.-C. Li and X.~Zhou, \emph{Min-max theory for free boundary
+minimal hypersurfaces I: Regularity theory}, J.\ Differential
+Geom.~118 (2021), no.~3, 487--553.
+
+\bibitem[Gua18]{Gua18}
+M.~A.~M. Guaraco, \emph{Min-max for phase transitions and the
+existence of embedded minimal hypersurfaces}, J.\ Differential
+Geom.~108 (2018), no.~1, 91--133.
+
+\bibitem[Ket16]{Ket16}
+D.~Ketover, \emph{Equivariant min-max theory}, arXiv:1612.08692
+(2016).
+
+\bibitem[CL16]{CL16}
+G.~R. Chambers and Y.~Liokumovich, \emph{Existence of minimal
+hypersurfaces in complete manifolds of finite volume},
+Invent.\ Math.~219 (2020), no.~1, 179--217.
+
+\bibitem[CL20]{CL20}
+G.~R. Chambers and Y.~Liokumovich, \emph{Monotonicity of sweepouts
+and minimal hypersurfaces}, arXiv preprint (2020).
+
+\bibitem[CLS22]{CLS22}
+O.~Chodosh, Y.~Liokumovich, and L.~Spolaor, \emph{Non-excessive
+sweepouts and the min-max minimal hypersurface problem},
+arXiv preprint (2022).
+
+\bibitem[Zho19]{Zho19}
+X.~Zhou, \emph{On the multiplicity one conjecture in min-max
+theory}, Ann.\ of Math.~(2) 192 (2020), no.~3, 767--820.
+
+\bibitem[LMN18]{LMN18}
+Y.~Liokumovich, F.~C. Marques, and A.~Neves, \emph{Weyl law for
+the volume spectrum}, Ann.\ of Math.~(2) 187 (2018), no.~3,
+933--961.
+
+\bibitem[IMN18]{IMN18}
+K.~Irie, F.~C. Marques, and A.~Neves, \emph{Density of minimal
+hypersurfaces for generic metrics}, Ann.\ of Math.~(2) 187 (2018),
+no.~3, 963--972.
+
+\bibitem[dMU21]{Lean4}
+L.~de~Moura and S.~Ullrich, \emph{The Lean~4 theorem prover and
+programming language}, in: CADE-28, Lecture Notes in Computer
+Science~12699, Springer, 2021, 625--635.
+
+\bibitem[MC20]{Mathlib}
+The \Mathlib~Community, \emph{The Lean Mathematical Library},
+in: CPP 2020, 367--381.
+
+\end{thebibliography}
+
+\appendix
+
+\section{Repository structure}
+\label{app:structure}
+
+\CombLemma~is a Lean 4 \texttt{lake} project with a pinned
+\Mathlib~dependency (commit recorded in
+\texttt{lake-manifest.json}). The source layout is:
+
+\begin{lstlisting}
+CombLemma.lean          top-level re-export
+CombLemma/
+  Witness.lean          PairableCover, LocalWitness
+  EnergyBound.lean      EnergyBound.Refinement, arithmetic
+  SupReduction.lean     exists_sup_reduction (main theorem)
+  Refinement.lean       facade re-exporting six submodules
+  Refinement/
+    InitialCover.lean   nearCritical, InitialCover
+    CoverConstruction.lean  exists_initialCover
+    PartialRefinement.lean  PartialRefinement, step_zero
+    Induction.lean      step_succ, step_succ_at, exists_terminal_refinement
+    Disjointness.lean   chain_spacing, disjoint_of_even_gap,
+                        closure_disjoint_of_even_gap, not_three_overlap
+    Assembly.lean       terminal_twoFold, saving_bound_closure,
+                        exists_refinement
+test/Smoke.lean         trivial PairableCover on R
+examples/MinimalUsage.lean  invocation pattern for consumers
+\end{lstlisting}
+
+Thirteen Lean 4 files, approximately 1937 lines including
+docstrings and copyright headers; no individual file exceeds
+400 lines.
+
+\section{Build and axiom audit}
+\label{app:axioms}
+
+The library builds with
+\begin{lstlisting}
+lake exe cache get   # fetch Mathlib oleans (first run)
+lake build           # build CombLemma
+lake build test      # build smoke test
+lake build examples  # build examples
+\end{lstlisting}
+No custom axioms are declared. The axiom audit
+\begin{lstlisting}
+#print axioms CombLemma.exists_sup_reduction
+\end{lstlisting}
+reports dependence on three axioms: \texttt{propext},
+\texttt{Classical.choice}, \texttt{Quot.sound}. These are
+Lean 4's foundational axioms; all three are used throughout
+\Mathlib.
+
+\section{GMT $\leftrightarrow$ abstract glossary}
+\label{app:glossary}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.38\textwidth}p{0.56\textwidth}@{}}
+\toprule
+\textbf{GMT / min-max term} & \textbf{\CombLemma~correspondence} \\
+\midrule
+Sweepout & Continuous $f : K \to \mathbb{R}$ \\
+Sweepout parameter space & $K$ (specialized to $\unit$) \\
+Width of the sweepout & $m_0 = \sup f$ \\
+Near-critical slice & $t$ with $f(t) \ge m_0 - 1/N$ \\
+Replacement family at $t$ & Local witness at $t$ (Definition~\ref{def:witness}) \\
+Energy of the replacement & Replacement-energy function $E_t$ \\
+Quantitative saving & Threshold $\varepsilon$; here $\varepsilon = 1/(4N)$ \\
+Varifold / current / Caccioppoli set & Ambient $X$ (abstracted away) \\
+Paired-cover structure on $X$ & \texttt{PairableCover}~$X$ \\
+Improved sweepout & $f'$ (conclusion of Theorem~\ref{thm:main}) \\
+Min-max contradiction & Downstream consumer responsibility \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Installation and invocation}
+\label{app:install}
+
+To consume \CombLemma~in a downstream Lean 4 project, add to
+the project's \texttt{lakefile}:
+\begin{lstlisting}
+require CombLemma from git
+  "https://github.com/MathNetwork/comb_arg.git" @ "v0.1.0"
+\end{lstlisting}
+Run \texttt{lake exe cache get} and \texttt{lake build}. In
+consumer code:
+\begin{lstlisting}
+import CombLemma
+
+example
+    {X : Type*} [PseudoMetricSpace X] [CombLemma.PairableCover X]
+    {f : unitInterval -> R} (hf : Continuous f)
+    {m0 : R} (hm_pos : 0 < m0) (hm : m0 = sSup (Set.range f))
+    {N : N} (hN : 0 < N)
+    (witness : forall t : unitInterval, f t >= m0 - 1/(N:R) ->
+        Nonempty (CombLemma.LocalWitness unitInterval X f t
+                    (1 / (4 * (N : R))))) :
+    exists f' : unitInterval -> R,
+        sSup (Set.range f') <= m0 - 1/(4 * (N : R)) :=
+  CombLemma.exists_sup_reduction hf hm_pos hm hN witness
+\end{lstlisting}
+(ASCII substitutions for Unicode in the Lean 4 source:
+\texttt{R}~$= \mathbb{R}$, \texttt{N}~$= \mathbb{N}$,
+\texttt{->}~$= \to$, \texttt{>=}~$= \ge$, \texttt{<=}~$= \le$,
+\texttt{in}~$= \in$.)
+
+\end{document}

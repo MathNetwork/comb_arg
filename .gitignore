@@ -1,0 +1,18 @@
+.lake/
+build/
+*.olean
+*.ilean
+*.hash
+.DS_Store
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.fdb_latexmk
+*.fls
+*.toc
+*.synctex.gz
+
+# Local reference PDFs (copyrighted; kept locally, not committed)
+resources/*.pdf
