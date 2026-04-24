@@ -3,6 +3,65 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.1.1] — 2026-04-24
+
+### Reframe: combinatorial core vs. bookkeeping corollary
+
+Documentation-only release. All Lean proof bodies, declaration
+signatures, and the axiom audit (`propext`, `Classical.choice`,
+`Quot.sound`) are unchanged; public identifiers keep their names.
+
+#### Changed
+
+- **Main theorem** is now
+  `CombArg.Refinement.exists_refinement` (combinatorial core):
+  from a `LocalWitness` family on the near-critical set of
+  `f : unitInterval → ℝ`, produce a
+  `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`
+  with two-fold overlap. The non-trivial content
+  (Lebesgue-number cover, bounded smallest-index refinement,
+  skip-2 parity rescue) lives here.
+- `CombArg.exists_sup_reduction_of_cover` is reframed as a
+  **sup-reduction bookkeeping corollary** (generic `K`): a
+  three-line scalar arithmetic consequence of the combinatorial
+  core (or of any independently produced
+  `FiniteCoverWithWitnesses`).
+- `CombArg.exists_sup_reduction` is reframed as the
+  **one-parameter sup-reduction corollary**, composing the
+  combinatorial main theorem with the bookkeeping corollary on
+  `K = unitInterval` with `(δ, ε) = (1/N, 1/(4N))`.
+- `CombArg.lean` top-level facade: imports reordered
+  (`Refinement` first) and expanded module docstring reflecting
+  the new framing.
+- Module and declaration docstrings updated in
+  `CombArg/Core.lean`, `CombArg/SupReduction.lean`, and
+  `CombArg/Refinement/Assembly.lean`.
+- `paper/paper.tex`: §1/§2/§3 and Figure~1 rewritten around the
+  new framing. Old `lem:assembly` (§3) merged into the proof of
+  the new `thm:core`.
+- `docs/design-notes.md` §13 records the reframe rationale.
+
+#### Unchanged
+
+- All Lean proof bodies, tactic scripts, and file-level structure.
+- All declaration signatures (`exists_refinement`,
+  `exists_sup_reduction_of_cover`, `exists_sup_reduction`,
+  `FiniteCoverWithWitnesses`, `LocalWitness`, `PairableCover`,
+  and supporting structures).
+- `#print axioms` for all public theorems: still
+  `[propext, Classical.choice, Quot.sound]`.
+- `lake build` / `lake build test` / `lake build examples`:
+  still all green.
+
+#### Known follow-ups
+
+- `README.md` and `docs/project-overview.md` still describe
+  `exists_sup_reduction_of_cover` as "abstract core"; align
+  with the paper framing in the next substantive documentation
+  pass (tracked alongside the PairableCover §12 resolution).
+
+[0.1.1]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.1.1
+
 ## [0.1.0] — 2026-04-23
 
 ### Initial release

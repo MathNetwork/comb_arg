@@ -364,3 +364,109 @@ Three options under consideration:
 **Decision**: TBD.
 
 **Date raised**: 2026-04-23. **Date resolved**: TBD.
+
+## §13. Reframe v0.1.1: combinatorial core vs. bookkeeping corollary
+
+**Resolved 2026-04-24.** Paper and Lean documentation framing is
+reorganized so that the **main theorem** is the cover-refinement
+existence (`exists_refinement`), and the scalar sup-reduction
+(`exists_sup_reduction_of_cover`, `exists_sup_reduction`) is
+framed as a three-line bookkeeping corollary. No Lean proofs,
+signatures, or axioms change — only naming, export ordering,
+docstrings, and the paper narrative.
+
+### Why v0.1 had the framing inverted
+
+The initial release (v0.1.0) followed the surface shape of DLT's
+§3.2 — which *ends* at the supremum inequality
+`sup f' ≤ m₀ − 1/(4N)` as its consumer-visible conclusion — and
+promoted that sup-reduction statement to the role of "abstract
+core". The cover-refinement pipeline (Lebesgue number, bounded
+smallest-index induction, skip-2 parity rescue) was demoted to
+"internal lemmas" feeding the core.
+
+### Why this is the wrong way round
+
+Under inspection, the sup-reduction theorem as stated has
+near-trivial content: given a `FiniteCoverWithWitnesses`, the
+competitor `f'(t) := f(t) − Σ s_l · 𝟙[t ∈ p_l]` works by a
+three-line case split (Lemma `sup_le_of_saving`). The Lean proof
+of `exists_sup_reduction_of_cover` does not even use
+`FiniteCoverWithWitnesses.energies` — only the savings `s_l`.
+The non-trivial content (Lebesgue-number cover construction,
+injective-σ refinement induction, two-fold parity rescue) lives
+entirely in the *production* of such a cover, which is exactly
+what `exists_refinement` packages.
+
+### What v0.1.1 changes
+
+**Paper (`paper/paper.tex`)**:
+
+- §1 intro Theorem 1.3 (`thm:intro-scalar`) is renamed
+  "Combinatorial core" and its conclusion changed from
+  "∃ f' with reduced supremum" to the cover-data (I)(II)(III)
+  conditions.
+- §1 intro Theorem 1.4 (`thm:intro-core`) becomes Corollary 1.4
+  ("Sup reduction"), stating the competitor existence as a
+  consequence of the combinatorial core.
+- §2.2 `thm:core` is restated as the combinatorial core on
+  `[0,1]` with `leanmargin` pointing to `exists_refinement`;
+  the old `thm:core` statement (generic-`K` sup reduction)
+  becomes `cor:core-sup` with `leanmargin` pointing to
+  `exists_sup_reduction_of_cover`.
+- §2.3 `thm:main` becomes a corollary (one-parameter
+  specialization) rather than a theorem.
+- §3 stages A/B/C now prove the combinatorial core directly;
+  the old `lem:assembly` is removed (its content inlines as the
+  closing paragraph of §3).
+- Figure~1: Tier 1 is now `exists_refinement` (combinatorial
+  core); Tier 2 holds both sup-reduction corollaries side by
+  side; pillars P1/P2 feed Tier 1, pillar P3 feeds the generic
+  corollary.
+
+**Lean**:
+
+- `CombArg.lean` — imports reordered (`Refinement` first) and
+  expanded module docstring marking `exists_refinement` as the
+  combinatorial main theorem.
+- `CombArg/Refinement/Assembly.lean` — docstring on
+  `exists_refinement` updated from "terminal target" to
+  "combinatorial main theorem".
+- `CombArg/Core.lean` — module and declaration docstrings on
+  `exists_sup_reduction_of_cover` updated from "abstract core"
+  to "sup-reduction bookkeeping (corollary layer)".
+- `CombArg/SupReduction.lean` — docstring on
+  `exists_sup_reduction` updated from "1D sup reduction"
+  to "one-parameter sup-reduction corollary".
+
+**No behavioural changes**: all proof bodies, all declaration
+signatures, and the axiom audit
+(`propext`, `Classical.choice`, `Quot.sound`) are unchanged.
+
+### Why (II) "at most two pieces" is no longer redundant-looking
+
+In the old framing, the at-most-two overlap appeared as an
+*input* hypothesis to `exists_sup_reduction_of_cover`, where the
+proof used it only to say "at most one extra non-negative term
+in the sum" — a redundant constraint that any multiplicity would
+satisfy. Reviewers reading only the corollary were right to
+question its role.
+
+In the new framing, (II) appears as a *conclusion* of the main
+theorem: it is the non-trivial output of the skip-2 parity
+rescue in the 1D cover construction (see §11 of this file and
+`not_three_overlap_any_order`). Its role as an output of a
+careful combinatorial construction — not as an unmotivated input
+— is now visible from the statement.
+
+### Scope not covered in this reframe (flagged for later)
+
+- `README.md`: still describes `exists_sup_reduction_of_cover`
+  as "Abstract core". Bring it into line with the paper framing
+  when the README next gets a substantive edit (planned with
+  the PairableCover §12 resolution in v0.2).
+- `docs/project-overview.md`: likely needs the same treatment.
+- Multi-parameter generalization `K = unitInterval^m` (still
+  planned for v0.2) will introduce a second combinatorial main
+  theorem alongside `exists_refinement`, not a second
+  sup-reduction corollary.
