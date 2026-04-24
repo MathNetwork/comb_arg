@@ -16,7 +16,10 @@
 \usepackage{geometry}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
+\usepackage{marginnote}
 \geometry{margin=1in}
+\setlength{\marginparwidth}{1.4in}
+\setlength{\marginparsep}{4pt}
 
 \lstset{
   basicstyle=\small\ttfamily,
@@ -45,21 +48,25 @@
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
 % Clickable Lean declaration tags.
-% Syntax:  \lean{short_name}{file_path.lean}    — inline in prose.
-%          \leanrefs{\leanitem{short_name}{file_path.lean} ...}  — indented list under theorem header.
-% Only the short decl name is shown; the full GitHub URL is implicit
-% via `\leanrepo`.
-\definecolor{leantag}{HTML}{2B6CB0}
-\newcommand{\lean}[2]{\href{\leanrepo/#2}{\color{leantag}\texttt{#1}}}
-\newcommand{\leanrefs}[1]{%
-  \par\nopagebreak
-  \begingroup
-  \begin{list}{}{\leftmargin=2em \topsep=2pt \itemsep=0pt \parsep=0pt}%
-  #1
-  \end{list}
-  \endgroup
+% Lean community purple (logo colour) for all tags.
+\definecolor{leanpurple}{HTML}{6F2DA8}
+% Inline clickable tag (use in prose / bullet lists):
+%   \lean{short_name}{File/Path.lean}
+\newcommand{\lean}[2]{\href{\leanrepo/#2}{%
+  \color{leanpurple}\texttt{#1}}}
+% Margin tag (use right after \label{...} in theorem / def / prop):
+%   \leanmargin{short_name}{File/Path.lean}
+\newcommand{\leanmargin}[2]{%
+  \marginnote{\scriptsize\color{leanpurple}\ttfamily
+    \href{\leanrepo/#2}{#1}}%
 }
-\newcommand{\leanitem}[2]{\item \href{\leanrepo/#2}{\color{leantag}\texttt{#1}}}
+% Multi-decl margin tag (two decls, stacked):
+%   \leanmargintwo{a}{fileA}{b}{fileB}
+\newcommand{\leanmargintwo}[4]{%
+  \marginnote{\scriptsize\color{leanpurple}\ttfamily
+    \href{\leanrepo/#2}{#1}\\[1pt]%
+    \href{\leanrepo/#4}{#3}}%
+}
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
 
@@ -174,7 +181,7 @@ a continuous scalar energy.
 
 \begin{definition}[\texttt{PairableCover} class]
 \label{def:pcover}
-\leanrefs{\leanitem{PairableCover}{Witness.lean}}
+\leanmargin{PairableCover}{Witness.lean}
 A \texttt{PairableCover X} instance declares, for each abstract
 \texttt{c : Cover}, a left region and a right region in $X$ and a
 scalar diameter, subject to two axioms: the two regions are
@@ -184,7 +191,7 @@ covers are ordered by inclusion.
 
 \begin{definition}[\texttt{LocalWitness} structure]
 \label{def:witness}
-\leanrefs{\leanitem{LocalWitness}{Witness.lean}}
+\leanmargin{LocalWitness}{Witness.lean}
 A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
 neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
 continuous replacement energy $E : K \to \mathbb{R}$, and the
@@ -193,7 +200,7 @@ inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 
 \begin{definition}[Near-critical set]
 \label{def:NC}
-\leanrefs{\leanitem{nearCritical}{Refinement/InitialCover.lean}}
+\leanmargin{nearCritical}{Refinement/InitialCover.lean}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
 $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
@@ -202,7 +209,7 @@ write $\NC$.
 
 \begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
 \label{def:ref}
-\leanrefs{\leanitem{FiniteCoverWithWitnesses}{Core.lean}}
+\leanmargin{FiniteCoverWithWitnesses}{Core.lean}
 A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
 carries a finite nonempty index type $\iota$, pieces
 $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
@@ -216,7 +223,7 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 
 \begin{definition}[\texttt{InitialCover} structure]
 \label{def:ic}
-\leanrefs{\leanitem{InitialCover}{Refinement/InitialCover.lean}}
+\leanmargin{InitialCover}{Refinement/InitialCover.lean}
 Specialized to $K = \unit$. An
 \texttt{InitialCover X f m\textsubscript{0} N} carries a finite
 family of open intervals $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
@@ -234,7 +241,7 @@ be near-critical.}
 
 \begin{definition}[\texttt{PartialRefinement} structure]
 \label{def:pr}
-\leanrefs{\leanitem{PartialRefinement}{Refinement/PartialRefinement.lean}}
+\leanmargin{PartialRefinement}{Refinement/PartialRefinement.lean}
 Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
 \texttt{PartialRefinement ic $\ell$} carries pieces
 $J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
@@ -248,7 +255,7 @@ $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 
 \begin{theorem}[Abstract core]
 \label{thm:core}
-\leanrefs{\leanitem{exists\_sup\_reduction\_of\_cover}{Core.lean}}
+\leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
 \noindent
 \textbf{Input.} A compact, nonempty topological space $K$; a
 continuous $f : K \to \mathbb{R}$; $m_0 = \sup f$; scalars
@@ -266,7 +273,7 @@ $\sup f' \le m_0 - \varepsilon$.
 
 \begin{theorem}[One-parameter application]
 \label{thm:main}
-\leanrefs{\leanitem{exists\_sup\_reduction}{SupReduction.lean}}
+\leanmargin{exists\_sup\_reduction}{SupReduction.lean}
 \noindent
 \textbf{Input.} A pseudo-metric space $X$ with a
 \texttt{PairableCover X} instance (Definition~\ref{def:pcover});
@@ -292,10 +299,8 @@ proofs are sketched in \S\ref{sec:proof}.
 
 \begin{proposition}[Compactness of $\NC$]
 \label{prop:NC-compact}
-\leanrefs{%
-  \leanitem{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
-  \leanitem{nearCritical\_nonempty}{Refinement/InitialCover.lean}%
-}
+\leanmargintwo{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
+              {nearCritical\_nonempty}{Refinement/InitialCover.lean}
 If $K$ is compact and $f$ continuous, $\NC$ is compact. If
 additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
 \end{proposition}
@@ -413,7 +418,7 @@ TwoFold. Theorem~\ref{thm:core} closes.
 
 \begin{proposition}[Existence of an initial cover]
 \label{prop:exists-ic}
-\leanrefs{\leanitem{exists\_initialCover}{Refinement/CoverConstruction.lean}}
+\leanmargin{exists\_initialCover}{Refinement/CoverConstruction.lean}
 Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
@@ -444,7 +449,7 @@ Starting from an initial cover, one builds pieces inductively.
 
 \begin{definition}[Base case]
 \label{def:step0}
-\leanrefs{\leanitem{step\_zero}{Refinement/PartialRefinement.lean}}
+\leanmargin{step\_zero}{Refinement/PartialRefinement.lean}
 $\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
 refinement with
 $J_1 := I_1$ and $\sigma(1) := 1$.
@@ -452,7 +457,7 @@ $J_1 := I_1$ and $\sigma(1) := 1$.
 
 \begin{definition}[Inductive step]
 \label{def:step-succ}
-\leanrefs{\leanitem{step\_succ\_at}{Refinement/Induction.lean}}
+\leanmargin{step\_succ\_at}{Refinement/Induction.lean}
 Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
 an index $i^* \in \{1,\ldots,n\}$ with
 $I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
@@ -477,7 +482,7 @@ explicit argument and returns the extension bundled with the
 
 \begin{proposition}[Termination]
 \label{prop:exists-terminal}
-\leanrefs{\leanitem{exists\_terminal\_refinement}{Refinement/Induction.lean}}
+\leanmargin{exists\_terminal\_refinement}{Refinement/Induction.lean}
 Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
 $\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
 partial refinement of some length $L$ with $\sigma$ injective
@@ -505,7 +510,7 @@ $\overline{J_k}$ and derives TwoFold from spacing~(a).
 
 \begin{proposition}[TwoFold via parity]
 \label{prop:twofold}
-\leanrefs{\leanitem{terminal\_twoFold}{Refinement/Assembly.lean}}
+\leanmargin{terminal\_twoFold}{Refinement/Assembly.lean}
 For a partial refinement $\mathrm{pr}$ of length $L$ with
 $\sigma$ injective, every $t \in \unit$ lies in at most two of
 $\overline{J_1}, \ldots, \overline{J_L}$.
@@ -537,7 +542,7 @@ gap has disjoint closures, contradicting the common point
 
 \begin{proposition}[Closure extension of saving bound]
 \label{prop:saving-bound}
-\leanrefs{\leanitem{saving\_bound\_closure}{Refinement/Assembly.lean}}
+\leanmargin{saving\_bound\_closure}{Refinement/Assembly.lean}
 Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
 every $t \in \overline{J_k}$,
 $f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
@@ -557,7 +562,7 @@ limits.
 
 \begin{lemma}[Assembly]
 \label{lem:assembly}
-\leanrefs{\leanitem{exists\_refinement}{Refinement/Assembly.lean}}
+\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
 A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
 injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
 a refinement of $(\unit, X, f, m_0, N)$ in the sense of
