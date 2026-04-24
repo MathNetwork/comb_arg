@@ -605,78 +605,85 @@ $\sigma(k)$ correspond to already-covered indices.
 
 Stage C packages the refined covering as a
 \texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}),
-which the core theorem turns into the sup-reducing $f'$. For
-comparison, we quote the DLT passage in which the packaging and
-the final arithmetic live side by side.
+which the core theorem turns into the sup-reducing $f'$. We trace
+through \cite[\S3.2, Step~2]{DLT13} in sequence, indicating at
+each step where the content lands in the formalization.
 
-\begin{quote}\small
-\textbf{DLT \cite[\S3.2, Step~2]{DLT13}.}\ \
-Lemma~3.1 produces a family $\{\partial \Omega_{i,t}\}$ with
-\begin{itemize}\setlength{\itemsep}{1pt}\small
-\item $\Omega_{i,t} = \Omega_t$ if $t \notin (a_i, b_i)$, and
-      $\Omega_{i,t} \setminus U_i' = \Omega_t \setminus U_i'$
-      if $t \in (a_i, b_i)$;
-\item $\mathcal{H}^n(\partial \Omega_{i,t}) \le
-      \mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{4N}$
-      for every $t$;
-\item $\mathcal{H}^n(\partial \Omega_{i,t}) \le
-      \mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{2N}$
-      if $t \in (a_i + \delta, b_i - \delta)$.
-\end{itemize}
-If $t \in (a_i, b_i) \cap (a_j, b_j)$, then $j = i+1$ and
-$\mathrm{dist}(U_i', U_{i+1}') > 0$. Define the modified sweepout
-\begin{itemize}\setlength{\itemsep}{1pt}\small
-\item $\Omega'_t = \Omega_t$ if $t \notin \bigcup_i J_i$;
-\item $\Omega'_t = \Omega_{i,t}$ if $t$ is in a single $J_i$;
-\item $\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')]
-      \cup [\Omega_{i,t} \cap U_i']
-      \cup [\Omega_{i+1,t} \cap U_{i+1}']$
-      on $J_i \cap J_{i+1}$.
-\end{itemize}
-Bounding the area: for $t \notin K$ the point lies in at most
-two $J_i$'s, so
+DLT start by applying~\cite[Lemma~3.1]{DLT13} to produce, at each
+near-critical parameter $t$, a replacement family
+$\{\partial \Omega_{i,t}\}$ with three properties:
+$\Omega_{i,t} = \Omega_t$ outside $(a_i, b_i)$ and agrees with
+$\Omega_t$ outside $U_i'$ inside $(a_i, b_i)$; the global upper
+bound $\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{4N}$; and, most
+importantly, the saving
+$\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{2N}$ when
+$t \in (a_i + \delta, b_i - \delta)$. In our formalization this
+data is what a \texttt{LocalWitness} (Definition~\ref{def:witness})
+carries: the scalar $E_{\sigma(k)} : K \to \mathbb{R}$ plays the
+role of $\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood
+$U_t$ plays $(a_i, b_i)$, and we collapse DLT's separate
+``saving on the inner core'' bound $-\tfrac{1}{2N}$ and ``no-loss
+outside'' bound $+\tfrac{1}{4N}$ into a single uniform saving
+$\varepsilon = \tfrac{1}{4N}$ that holds everywhere on $U_t$.
+Stage~B has already handed us pieces $p_l$ on which this witness
+saving is valid (Proposition~\ref{prop:saving-bound}), so by
+Stage~C we have per-piece scalar savings $s_l \ge \varepsilon$
+directly.
+
+Next DLT observe that if $t \in (a_i, b_i) \cap (a_j, b_j)$, then
+$j = i+1$, and moreover $\mathrm{dist}(U_i', U_{i+1}') > 0$. This
+is the two-fold overlap of the refined covering, and in our
+formalization it is the \texttt{twoFold} field of
+\texttt{FiniteCoverWithWitnesses}, derived from the parity-gap
+spacing by Proposition~\ref{prop:twofold} below.
+
+DLT then define a modified sweepout $\{\partial \Omega'_t\}$
+piecewise: $\Omega'_t = \Omega_t$ outside all $J_i$; $\Omega'_t =
+\Omega_{i,t}$ if $t$ lies in a single $J_i$; and on
+$J_i \cap J_{i+1}$ the sweepout blends the two replacements,
+$\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')] \cup
+[\Omega_{i,t} \cap U_i'] \cup [\Omega_{i+1,t} \cap U_{i+1}']$.
+Stripped of the geometry this is additive scalar subtraction of
+savings over the pieces containing $t$: our reduced energy is
+\[
+f'(t) \;=\; f(t) \;-\; \sum_{l \,:\, t \in \overline{J_l}} s_l,
+\]
+and the two-fold invariant bounds the sum length by $2$, matching
+DLT's two-piece blend on overlaps.
+
+The area accounting then splits on whether $t$ is near-critical.
+For $t \notin K$, the point lies in at most two $J_i$'s and each
+replacement can add at most $\tfrac{1}{4N}$, so
 \[
 \mathcal{H}^n(\partial \Omega'_t) \;\le\;
-\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{2N};
+\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{2N}.
 \]
-for $t \in K$ the point lies in at least one
-$(a_i + \delta, b_i - \delta)$ and in at most one other $J_l$,
-so area gains $\ge \tfrac{1}{2N}$ inside some $U_i'$ and loses
-$\le \tfrac{1}{4N}$ inside $U_l'$, hence
+For $t \in K$, the point lies in at least one inner core
+$(a_i + \delta, b_i - \delta)$, where the replacement saves
+$\ge \tfrac{1}{2N}$ in $U_i'$, and in at most one other $J_l$
+where it costs $\le \tfrac{1}{4N}$ in $U_l'$, for net
 \[
 \mathcal{H}^n(\partial \Omega'_t) \;\le\;
 \mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{4N}.
 \]
-\end{quote}
+In our formalization the same case analysis is the scalar
+argument for $f'(t) \le m_0 - \varepsilon$ inside the abstract
+core (the lemma \texttt{reducedEnergy\_le} from
+\S\ref{sec:core-spec}): split on whether $t$ lies in any piece
+of the cover, use the saving floor $s_l \ge \varepsilon$ in the
+positive branch and the covering condition
+$\{f \ge m_0 - \delta\} \subseteq \bigcup_l p_l$ in the negative
+branch. With $(\delta, \varepsilon) = (1/N, 1/(4N))$ this
+specializes to DLT's arithmetic; the abstract core reads off the
+same algebra for arbitrary $(\delta, \varepsilon)$ with
+$\varepsilon \le \delta$.
 
-Our formalization splits DLT's passage along the structural
-boundary between the cover and the arithmetic. The three bullets
-on $\{\partial \Omega_{i,t}\}$ are the data we bundle into a
-\texttt{LocalWitness} at each near-critical parameter: the scalar
-replacement energy $E_{\sigma(k)}$ plays the role of
-$\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood $U_t$
-plays $(a_i, b_i)$, and the $1/(4N)$ saving is the bullet
-``$\mathcal{H}^n(\partial \Omega_{i,t}) \le \mathcal{H}^n(\partial
-\Omega_t) - 1/(2N)$'' already at the cover-refinement stage (our
-Stage~B produces pieces on which the witness saving holds). The
-observation ``$t \in (a_i, b_i) \cap (a_j, b_j) \Rightarrow j =
-i+1$'' is our TwoFold invariant
-(Proposition~\ref{prop:twofold}). The case split at $t \notin K$
-versus $t \in K$ is the two-branch case split in the pointwise
-argument for \texttt{reducedEnergy\_le} inside the abstract core
-(\S\ref{sec:core-spec}). The piecewise definition of
-$\Omega'_t$ corresponds to the scalar formula
-$f'(t) = f(t) - \sum_{l : t \in \overline{J_l}} s_l$; DLT's
-piecewise construction is an explicit sum over the at-most-two
-pieces containing $t$. The $(4N)^{-1}$ appearing at the end of
-DLT's paragraph is our $\varepsilon$; the abstract core generalises
-the pair $(1/N, 1/(4N))$ to $(\delta, \varepsilon)$ with
-$\varepsilon \le \delta$ and reads off the same arithmetic
-unchanged.
-
-The present stage proves the two propositions that feed the core:
-the saving bound extends from open $J_k$ to $\overline{J_k}$
-(continuity), and the TwoFold invariant holds (from spacing~(a)).
+The rest of this subsection establishes the two propositions
+that Stage~B leaves open: the saving bound extends from open
+$J_k$ to $\overline{J_k}$ (continuity), and the two-fold
+invariant holds (a parity argument on the spacing condition~(a)).
 
 \begin{proposition}[TwoFold via parity]
 \label{prop:twofold}
