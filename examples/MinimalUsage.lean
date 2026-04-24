@@ -60,9 +60,14 @@ section
       Nonempty (CombArg.LocalWitness unitInterval X f t
                   (1 / (4 * (N : ℝ)))))
 
-  -- Conclusion: a competitor function `f'` exists with supremum
-  -- at most `m₀ - 1/(4N)`.
-  example : ∃ f' : unitInterval → ℝ,
+  -- Conclusion: a competitor `f'` together with a modification
+  -- set `S ⊆ unitInterval` exist with: (coverage) `S` contains
+  -- the `1/N`-near-critical set; (a) `f' ≤ f` pointwise; (b)
+  -- `f' = f` off `S`; (c) `sSup (range f') ≤ m₀ - 1/(4N)`.
+  example : ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
+      {t : unitInterval | f t ≥ m₀ - 1 / (N : ℝ)} ⊆ S ∧
+      (∀ t, f' t ≤ f t) ∧
+      (∀ t, t ∉ S → f' t = f t) ∧
       sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) :=
     CombArg.exists_sup_reduction hf hm_pos hm hN witness
 end
@@ -72,7 +77,10 @@ The consumer then threads `f'` into whatever downstream argument
 requires a strictly-better competitor (for example, a min-max
 contradiction: if `m₀` were the infimum of `sSup (range ·)` over
 some admissible class `𝒜` and `f ∈ 𝒜`, showing `f' ∈ 𝒜` would
-contradict the minimality of `m₀`).
+contradict the minimality of `m₀`). Conditions (a) and (b) anchor
+`f'` to `f`: `f' = f` everywhere off `S`, so membership in
+admissible classes that require pointwise bounds or off-support
+coincidence with `f` transfers cleanly.
 
 ## What this file does not do
 

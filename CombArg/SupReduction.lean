@@ -60,17 +60,28 @@ on `K = unitInterval` with `δ = 1/N`, `ε = 1/(4N)`.
 
 Let `f : unitInterval → ℝ` be continuous with `m₀ = sSup (range f)`,
 `m₀ > 0`, and fix `N > 0`. Suppose every parameter `t` with
-`f t ≥ m₀ − 1/N` admits a `LocalWitness` with saving `1/(4N)`. Then
-a competitor `f' : unitInterval → ℝ` exists with
-`sSup (range f') ≤ m₀ − 1/(4N)`.
+`f t ≥ m₀ − 1/N` admits a `LocalWitness` with saving `1/(4N)`.
+Then a competitor `f' : unitInterval → ℝ` together with a
+modification set `S ⊆ unitInterval` exist with
+
+* **coverage** — `S` contains the `1/N`-near-critical set;
+* **(a)** pointwise dominance — `f' t ≤ f t` for every `t`;
+* **(b)** localization — `f' t = f t` whenever `t ∉ S`;
+* **(c)** supremum bound — `sSup (range f') ≤ m₀ − 1/(4N)`.
+
+(a)(b) anchor `f'` to `f`: without them, any constant
+`f' ≡ c ≤ m₀ − 1/(4N)` would satisfy (c) vacuously. (b) forces
+`f' = f` everywhere outside `S`, so generic non-constant `f`
+forbids constant competitors.
 
 ## Proof architecture
 
 `Refinement.exists_refinement` produces a
-`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` via the
-DLT-style interval refinement induction; `exists_sup_reduction_of_cover`
-then converts the cover into the sup-reducing competitor by scalar
-arithmetic. -/
+`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` via
+the DLT-style interval refinement induction;
+`exists_sup_reduction_of_cover` then converts the cover into the
+sup-reducing competitor by scalar arithmetic. The modification
+set `S` is exposed as `⋃ l, C.piece l`. -/
 theorem exists_sup_reduction
     {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} (hf : Continuous f)
@@ -78,7 +89,11 @@ theorem exists_sup_reduction
     {N : ℕ} (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
                   Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
-    ∃ f' : unitInterval → ℝ, sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) := by
+    ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
+      {t : unitInterval | f t ≥ m₀ - 1 / (N : ℝ)} ⊆ S ∧
+      (∀ t, f' t ≤ f t) ∧
+      (∀ t, t ∉ S → f' t = f t) ∧
+      sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) := by
   obtain ⟨C⟩ := Refinement.exists_refinement hf hm hN witness
   have hN_real : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN
   have hδ : (0 : ℝ) < 1 / (N : ℝ) := one_div_pos.mpr hN_real
@@ -86,6 +101,8 @@ theorem exists_sup_reduction
   have hle : 1 / (4 * (N : ℝ)) ≤ 1 / (N : ℝ) := by
     apply one_div_le_one_div_of_le hN_real
     linarith
-  exact exists_sup_reduction_of_cover hf hm hδ hε hle C
+  obtain ⟨f', h_le, h_eq, h_sup⟩ :=
+    exists_sup_reduction_of_cover hf hm hδ hε hle C
+  exact ⟨f', ⋃ l, C.piece l, C.covers_delta_near_critical, h_le, h_eq, h_sup⟩
 
 end CombArg

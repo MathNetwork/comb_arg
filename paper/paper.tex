@@ -236,12 +236,27 @@ produced by the corollary below.
 
 \begin{corollary}[Sup reduction]
 \label{thm:intro-core}
-Under the hypotheses of Theorem~\ref{thm:intro-scalar}, there
-exists $f' : [0,1] \to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \frac{1}{4N}.
-\]
+Under the hypotheses of Theorem~\ref{thm:intro-scalar}, with the
+pieces $\{p_l\}$ produced there, there exists
+$f' : [0,1] \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in [0,1]$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
 \end{corollary}
+
+\begin{remark}[Why (a)+(b) are stated]
+\label{rem:anchor-f-prime}
+The bound (c) alone is trivialized by any constant
+$f' \equiv c \le m_0 - 1/(4N)$. Condition (a) ties $f'$
+pointwise below $f$; condition (b) forces $f'$ to coincide with
+$f$ wherever no piece modifies it. Together they anchor $f'$ to
+$f$, so generic non-constant $f$ rules out constant competitors,
+and (c) becomes a non-trivial quantitative assertion about the
+specific competitor the proof produces
+(concretely, $f'(t) = f(t) - \sum_{l :\, t \in p_l} s_l$).
+\end{remark}
 
 The bookkeeping underlying Corollary~\ref{thm:intro-core} is
 strictly more general than the one-parameter statement it
@@ -505,38 +520,46 @@ Let $K$ be a compact, nonempty topological space,
 $f : K \to \mathbb{R}$ continuous with $m_0 = \sup f$, and
 $0 < \varepsilon \le \delta$. Given a
 \texttt{FiniteCoverWithWitnesses}$(K, f, m_0, \delta, \varepsilon)$
-(Definition~\ref{def:ref}), there exists $f' : K \to \mathbb{R}$
-with
-\[
-\sup f' \;\le\; m_0 - \varepsilon.
-\]
+(Definition~\ref{def:ref}) with pieces $\{p_l\}$, there exists
+$f' : K \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in K$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - \varepsilon$.
+\end{enumerate}
 \end{corollary}
 
 \begin{proof}
-Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$ and verify the
-hypotheses of Lemma~\ref{lem:scalar-sup-reduction}. Condition~(i):
-each $s_l > 0$, so $f'(t) \le f(t)$. Condition~(ii): suppose
-$f(t) \ge m_0 - \delta$. By (IV) of Definition~\ref{def:ref},
-$t \in p_l$ for some $l$; by (III), $s_l \ge \varepsilon$. The
-remaining savings in the sum (at most one more, by the two-fold
-overlap (II)) are non-negative, so $f(t) - f'(t) \ge \varepsilon$.
-The lemma yields $\sup f' \le m_0 - \varepsilon$.
+Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$. Since each
+$s_l > 0$, (a) holds. If $t \notin \bigcup_l p_l$ the sum is
+empty, giving (b). For (c), apply
+Lemma~\ref{lem:scalar-sup-reduction}: (i) follows from (a);
+(ii) holds because when $f(t) \ge m_0 - \delta$, (IV) gives
+some $p_l \ni t$, (III) gives $s_l \ge \varepsilon$, and the
+remaining at-most-one saving (by two-fold overlap (II)) is
+non-negative, so $f(t) - f'(t) \ge \varepsilon$. The lemma
+yields $\sup f' \le m_0 - \varepsilon$.
 \end{proof}
 
 \begin{corollary}[One-parameter sup reduction]
 \label{thm:main}
 \leanmargin{exists\_sup\_reduction}{SupReduction.lean}
-Under the hypotheses of Theorem~\ref{thm:core}, there exists
-$f' : \unit \to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \tfrac{1}{4N}.
-\]
+Under the hypotheses of Theorem~\ref{thm:core}, there exist
+$f' : \unit \to \mathbb{R}$ and a set $S \subseteq \unit$
+containing $\NC$ such that:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in \unit$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin S$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
 \end{corollary}
 
 Corollary~\ref{thm:main} is Corollary~\ref{cor:core-sup} applied
 to the \texttt{FiniteCoverWithWitnesses} produced by
 Theorem~\ref{thm:core}, with
-$(\delta, \varepsilon) = (1/N, 1/(4N))$.
+$(\delta, \varepsilon) = (1/N, 1/(4N))$; the modification set
+$S$ is the union of the cover pieces, which contains $\NC$ by
+condition~(IV) of Definition~\ref{def:ref}.
 
 \subsection{Internal lemmas}
 \label{sec:internal}

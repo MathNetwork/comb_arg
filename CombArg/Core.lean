@@ -182,6 +182,27 @@ lemma lt_of_not_mem_iUnion_piece {t : K} (ht : t ∉ ⋃ l, C.piece l) :
     f t < m₀ - δ :=
   not_le.mp (fun h => ht (C.covers_delta_near_critical h))
 
+/-- **Pointwise dominance**: `reducedEnergy t ≤ f t` for every `t`.
+All savings are positive, so the subtracted sum is non-negative. -/
+lemma reducedEnergy_le_f (t : K) : C.reducedEnergy t ≤ f t := by
+  show f t - ∑ l ∈ C.piecesContaining t, C.saving l ≤ f t
+  have hnonneg : (0 : ℝ) ≤ ∑ l ∈ C.piecesContaining t, C.saving l :=
+    Finset.sum_nonneg fun l _ => le_of_lt (C.saving_pos l)
+  linarith
+
+/-- **Localization**: if `t` lies in no piece, `reducedEnergy t = f t`.
+When `piecesContaining t = ∅`, the subtracted sum is zero, so
+`f' t = f t − 0 = f t`. -/
+lemma reducedEnergy_eq_of_not_mem_iUnion_piece {t : K}
+    (ht : t ∉ ⋃ l, C.piece l) : C.reducedEnergy t = f t := by
+  show f t - ∑ l ∈ C.piecesContaining t, C.saving l = f t
+  have h_ne : ¬ (C.piecesContaining t).Nonempty := fun ⟨l, hl⟩ =>
+    ht (Set.mem_iUnion.mpr ⟨l, C.mem_piecesContaining.mp hl⟩)
+  have h_empty : C.piecesContaining t = ∅ :=
+    Finset.not_nonempty_iff_eq_empty.mp h_ne
+  rw [h_empty, Finset.sum_empty]
+  ring
+
 /-- **Pointwise bound**: `reducedEnergy t ≤ m₀ − ε` for every `t`.
 
 * **Case `t ∈ ⋃ pieces`** (count ≥ 1): sum `≥ ε` by
@@ -263,7 +284,18 @@ Let `K` be a compact nonempty space, `f : K → ℝ` continuous with
 `m₀ = sSup (range f)`, and fix `0 < ε ≤ δ`. From a
 `FiniteCoverWithWitnesses K f m₀ δ ε` (a finite multiplicity-bounded
 cover of the `δ`-near-critical set with per-piece savings ≥ ε), a
-competitor `f' : K → ℝ` exists with `sSup (range f') ≤ m₀ − ε`.
+competitor `f' : K → ℝ` exists with three properties anchoring it
+to `f`:
+
+* **(a)** pointwise dominance `f' t ≤ f t` everywhere;
+* **(b)** localization `f' t = f t` whenever `t` lies outside the
+  union of cover pieces;
+* **(c)** supremum bound `sSup (range f') ≤ m₀ − ε`.
+
+Without (a)(b), any constant `f' ≡ c ≤ m₀ − ε` would satisfy (c)
+vacuously; (a) ties `f'` below `f`, and (b) forces `f' = f`
+wherever no piece modifies, so a generic non-constant `f` forbids
+trivial constant competitors.
 
 The output `f' = C.reducedEnergy` is the DLT-style pointwise
 subtraction of all applicable savings from `f`. -/
@@ -273,7 +305,13 @@ theorem exists_sup_reduction_of_cover
     {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
     {δ ε : ℝ} (_hδ : 0 < δ) (_hε : 0 < ε) (hle : ε ≤ δ)
     (C : FiniteCoverWithWitnesses K f m₀ δ ε) :
-    ∃ f' : K → ℝ, sSup (Set.range f') ≤ m₀ - ε :=
-  ⟨C.reducedEnergy, C.reducedEnergy_sSup_le hf hm hle⟩
+    ∃ f' : K → ℝ,
+      (∀ t, f' t ≤ f t) ∧
+      (∀ t, t ∉ (⋃ l, C.piece l) → f' t = f t) ∧
+      sSup (Set.range f') ≤ m₀ - ε :=
+  ⟨C.reducedEnergy,
+   C.reducedEnergy_le_f,
+   fun _ ht => C.reducedEnergy_eq_of_not_mem_iUnion_piece ht,
+   C.reducedEnergy_sSup_le hf hm hle⟩
 
 end CombArg

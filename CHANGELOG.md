@@ -5,11 +5,16 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [0.1.1] — 2026-04-24
 
-### Reframe: combinatorial core vs. bookkeeping corollary
+### Reframe: combinatorial core vs. bookkeeping corollary, with
+### anchoring conjuncts on sup-reduction corollaries
 
-Documentation-only release. All Lean proof bodies, declaration
-signatures, and the axiom audit (`propext`, `Classical.choice`,
-`Quot.sound`) are unchanged; public identifiers keep their names.
+Framing + narrative release, plus a **breaking API change** to the
+two sup-reduction corollaries' conclusions (strict superset of the
+old guarantee — clients that destructure the old 1-tuple
+existential must update to the new 4-tuple / 5-tuple). The axiom
+audit (`propext`, `Classical.choice`, `Quot.sound`) is unchanged;
+all proof bodies are unchanged; public identifiers keep their
+names.
 
 #### Changed
 
@@ -39,15 +44,46 @@ signatures, and the axiom audit (`propext`, `Classical.choice`,
 - `paper/paper.tex`: §1/§2/§3 and Figure~1 rewritten around the
   new framing. Old `lem:assembly` (§3) merged into the proof of
   the new `thm:core`.
+- Paper Theorem 1.3 and Theorem 2.X (§2.2) statement: remove
+  non-load-bearing hypotheses (ambient pseudo-metric $X$ with
+  `PairableCover X`, and the dead $m_0 > 0$ hypothesis). A new
+  Remark~\ref{rem:lean-scaffolding} records the Lean-side
+  scaffolding.
 - `docs/design-notes.md` §13 records the reframe rationale.
+
+#### Changed (breaking: conclusion strengthened)
+
+- `exists_sup_reduction_of_cover` conclusion **strengthened** from
+  `∃ f', sSup (range f') ≤ m₀ − ε` to
+  `∃ f', (∀ t, f' t ≤ f t) ∧ (∀ t ∉ ⋃ l, C.piece l, f' t = f t)
+  ∧ sSup (range f') ≤ m₀ − ε`. The two new conjuncts anchor the
+  competitor to `f` (pointwise dominance and localization off the
+  cover's support), ruling out trivial constant witnesses and
+  making the statement genuinely quantitative. Proof is unchanged
+  at the mathematical level; two short lemmas extracted:
+  `reducedEnergy_le_f`,
+  `reducedEnergy_eq_of_not_mem_iUnion_piece`.
+- `exists_sup_reduction` conclusion **strengthened** similarly,
+  additionally exposing the modification set `S ⊆ unitInterval`
+  (the union of cover pieces) and its coverage of the
+  `1/N`-near-critical set. New signature:
+  `∃ (f' : unitInterval → ℝ) (S : Set unitInterval), {t | f t ≥
+  m₀ − 1/N} ⊆ S ∧ (∀ t, f' t ≤ f t) ∧ (∀ t ∉ S, f' t = f t) ∧
+  sSup (range f') ≤ m₀ − 1/(4N)`.
+- `examples/MinimalUsage.lean`: docstring-level `example`
+  updated to the new conclusion shape.
+- `README.md` public-theorem code blocks updated to the new
+  signatures.
 
 #### Unchanged
 
-- All Lean proof bodies, tactic scripts, and file-level structure.
-- All declaration signatures (`exists_refinement`,
-  `exists_sup_reduction_of_cover`, `exists_sup_reduction`,
-  `FiniteCoverWithWitnesses`, `LocalWitness`, `PairableCover`,
-  and supporting structures).
+- All proof bodies (Core.lean's existence witness is still
+  `C.reducedEnergy`, SupReduction.lean still chains
+  `exists_refinement` through the bookkeeping corollary).
+- `exists_refinement` signature (only strengthening is on the
+  two sup-reduction corollaries downstream).
+- `FiniteCoverWithWitnesses`, `LocalWitness`, `PairableCover`,
+  and all supporting structures.
 - `#print axioms` for all public theorems: still
   `[propext, Classical.choice, Quot.sound]`.
 - `lake build` / `lake build test` / `lake build examples`:

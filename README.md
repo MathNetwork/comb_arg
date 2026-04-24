@@ -69,7 +69,10 @@ theorem exists_sup_reduction_of_cover
     {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
     {δ ε : ℝ} (_hδ : 0 < δ) (_hε : 0 < ε) (hle : ε ≤ δ)
     (C : FiniteCoverWithWitnesses K f m₀ δ ε) :
-    ∃ f' : K → ℝ, sSup (Set.range f') ≤ m₀ - ε
+    ∃ f' : K → ℝ,
+      (∀ t, f' t ≤ f t) ∧
+      (∀ t, t ∉ (⋃ l, C.piece l) → f' t = f t) ∧
+      sSup (Set.range f') ≤ m₀ - ε
 
 -- One-parameter application: K = unitInterval, δ = 1/N, ε = 1/(4N).
 theorem exists_sup_reduction
@@ -79,7 +82,11 @@ theorem exists_sup_reduction
     {N : ℕ} (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
                   Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
-    ∃ f' : unitInterval → ℝ, sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ))
+    ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
+      {t : unitInterval | f t ≥ m₀ - 1 / (N : ℝ)} ⊆ S ∧
+      (∀ t, f' t ≤ f t) ∧
+      (∀ t, t ∉ S → f' t = f t) ∧
+      sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ))
 ```
 
 See [`docs/project-overview.md`](docs/project-overview.md) for a narrative
