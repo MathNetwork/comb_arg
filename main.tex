@@ -93,12 +93,16 @@ formalize it in Lean~4 as the importable library \CombArg.
 
 A minimal hypersurface is a critical point of the area functional
 in codimension one. On a closed Riemannian manifold
-$(M^{n+1}, g)$, direct minimization over a fixed homology class
-may produce only degenerate configurations, and the relevant
-critical points are typically of saddle type. The resolution,
-following Birkhoff (1917) for closed geodesics and Almgren--Pitts
-for higher-dimensional varifolds, is a \emph{min-max}
-construction; regularity of the output is Schoen--Simon~\cite{SS81}.
+$(M^{n+1}, g)$ with $H_n(M;\mathbb{Z}) = 0$ (for instance
+$M = S^{n+1}$), direct minimization of the $n$-dimensional
+Hausdorff measure over integral currents yields only the empty
+hypersurface; a non-trivial minimal hypersurface must be
+constructed as a saddle-type critical point of the area
+functional. The construction, following Birkhoff (1917) for
+closed geodesics and Almgren--Pitts for higher-dimensional
+varifolds, is a \emph{min-max} scheme; regularity of the output
+is due to Pitts \cite{Pit81} in ambient dimension up to $7$ and
+to Schoen--Simon \cite{SS81} in higher dimensions.
 
 \begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
 \label{thm:minmax}
@@ -108,10 +112,10 @@ singular set $\mathrm{Sing}\,\Sigma$ has Hausdorff dimension at
 most $n - 7$.
 \end{theorem}
 
-The core technical result of Pitts's proof, used in every
-subsequent treatment~\cite{CDL03,DLT13,DLR17,DL12,MN14}, is the
-Almgren--Pitts combinatorial argument, stated in the
-Colding--De~Lellis formulation as follows.
+A key step in Pitts's proof, recurring in
+\cite{CDL03,DLT13,DLR17,DL12,MN14}, is the Almgren--Pitts
+combinatorial argument, stated in the Colding--De~Lellis
+formulation as follows.
 
 \begin{theorem}[Almgren--Pitts combinatorial Argument,
 {\cite[Prop.~3.4]{CDL03}}]
@@ -119,7 +123,8 @@ Colding--De~Lellis formulation as follows.
 Let $\Lambda$ be a homotopically closed family of sweepouts of
 $M^{n+1}$, and $m_0 = \inf_\Lambda \mathcal{F}$. There exists a
 min-max sequence $\{\Gamma^N\}$ converging as varifolds to a
-stationary integral varifold of mass $m_0$, with $\Gamma^N$
+stationary integer rectifiable varifold of mass $m_0$, with
+$\Gamma^N$
 $1/N$-almost-minimizing in every pair
 $(U^1, U^2) \in \mathcal{CO}$ of $\mathcal{H}^n$-disjoint open
 sets, for all $N$ sufficiently large.
@@ -167,13 +172,17 @@ Then there exists $f' : [0,1] \to \mathbb{R}$ with
 \]
 \end{theorem}
 
-Translation from the De~Lellis--Tasnady setting to Theorem~\ref{thm:intro-scalar}:
-the boundary $\partial \Omega_t$ becomes a continuous
-$f : [0,1] \to \mathbb{R}$; the Hausdorff-measure hypothesis
-becomes $m_0 = \sup f$; the nested pair $(A_t, B_t, U_t')$
-collapses to a single neighborhood $U_t$; the replacement family
-$\{\partial \Omega_{t,\tau}\}$ collapses to a single continuous
-$E_t$; and the almost-minimizing hypothesis is no longer needed.
+Translation from the De~Lellis--Tasnady setting to
+Theorem~\ref{thm:intro-scalar}: the boundary $\partial \Omega_t$
+becomes a continuous $f : [0,1] \to \mathbb{R}$; the
+Hausdorff-measure hypothesis becomes $m_0 = \sup f$; the nested
+pair $(A_t, B_t, U_t')$ collapses to a single neighborhood $U_t$;
+the replacement family $\{\partial \Omega_{t,\tau}\}$ collapses
+to a single continuous $E_t$; and the almost-minimizing
+hypothesis, which in the original proof is the input to
+Lemma~3.1 of~\cite{DLT13}, is absorbed into the existence of the
+local witness (the caller must supply witnesses wherever they
+would be produced in the ambient GMT setting).
 
 The Lean library actually proves a more general statement, of
 which Theorem~\ref{thm:intro-scalar} is a direct specialization:
@@ -626,7 +635,15 @@ role of $\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood
 $U_t$ plays $(a_i, b_i)$, and the two separate bounds
 (``saving $-\tfrac{1}{2N}$ on the inner core'' and ``no-loss
 $+\tfrac{1}{4N}$ outside'') collapse to a single uniform saving
-$\varepsilon = \tfrac{1}{4N}$ on $U_t$.
+$\varepsilon = \tfrac{1}{4N}$ on $U_t$.\footnote{This is strictly
+stronger than the original two-bound statement: the local witness
+asserts a uniform saving of $\tfrac{1}{4N}$ on all of $U_t$,
+whereas De~Lellis--Tasnady only require a larger saving
+$\tfrac{1}{2N}$ on the inner core $(a_i+\delta, b_i-\delta)$ and
+bounded loss $\tfrac{1}{4N}$ elsewhere. The stronger abstract
+assumption removes the $\delta$ parameter of the inner core from
+the scalar theorem; the caller must verify the uniform version
+holds in the ambient setting.}
 Stage~B has already handed us pieces $p_l$ on which this witness
 saving is valid (Proposition~\ref{prop:saving-bound}), so by
 Stage~C we have per-piece scalar savings $s_l \ge \varepsilon$
