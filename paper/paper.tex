@@ -32,51 +32,40 @@
   belowskip=6pt
 }
 
-\usepackage[most]{tcolorbox}
-
-% Theorem-environment colors.
-\definecolor{defcolor}{HTML}{2B6CB0}       % blue — definitions
-\definecolor{thmcolor}{HTML}{805AD5}       % purple — theorems/propositions/lemmas
-\definecolor{remarkcolor}{HTML}{718096}    % gray — remarks
-\definecolor{leantag}{HTML}{2B6CB0}        % Lean ref — blue
-
-% Shared tcolorbox base style: thin gray outer border, colored left bar.
-\tcbset{
-  thmbox/.style={
-    enhanced, breakable,
-    colback=white,
-    colframe=black!35,
-    boxrule=0.3pt,
-    leftrule=2pt,
-    top=4pt, bottom=4pt, left=8pt, right=8pt,
-    arc=0pt, outer arc=0pt,
-    before skip=8pt, after skip=8pt,
-    fonttitle=\bfseries,
-  }
-}
-
-% Definition (blue bar), numbered X.Y within section.
-\newtcbtheorem[number within=section]{definition}{Definition}
-  {thmbox, colframe=defcolor}{def}
-% Theorem / Proposition / Lemma (purple bar), share definition's counter.
-\newtcbtheorem[use counter from=definition]{theorem}{Theorem}
-  {thmbox, colframe=thmcolor}{thm}
-\newtcbtheorem[use counter from=definition]{proposition}{Proposition}
-  {thmbox, colframe=thmcolor}{prop}
-\newtcbtheorem[use counter from=definition]{lemma}{Lemma}
-  {thmbox, colframe=thmcolor}{lem}
-% Remark (gray bar).
-\newtcbtheorem[use counter from=definition]{remark}{Remark}
-  {thmbox, colframe=remarkcolor}{rem}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
 
 \newcommand{\CombArg}{\texttt{CombArg}}
 \newcommand{\Mathlib}{\texttt{Mathlib}}
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
-% Inline Lean reference: small blue typewriter decl name.
-%   \leanref{CombArg.PairableCover}
-\newcommand{\leanref}[1]{{\color{leantag}\ttfamily\small #1}}
+% Clickable Lean declaration tags — verified-green with checkmark.
+% \normalfont inside each tag forces upright texttt even when the
+% enclosing theorem body is italic (amsthm default).
+\definecolor{leangreen}{HTML}{2E7D32}
+% Inline clickable tag.
+%   \lean{short_name}{File/Path.lean}
+\newcommand{\lean}[2]{{\normalfont\color{leangreen}%
+  \ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}}}
+% Header tag: small right-flushed bracketed name with checkmark,
+% rendered right after the theorem/def/prop label.
+%   \leanmargin{short_name}{File/Path.lean}
+\newcommand{\leanmargin}[2]{%
+  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
+    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}]}\par\nopagebreak
+}
+% Two-decl header tag, comma-separated on one line.
+\newcommand{\leanmargintwo}[4]{%
+  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
+    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}},
+     \ensuremath{\checkmark}\,\href{\leanrepo/#4}{\texttt{#3}}]}\par\nopagebreak
+}
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
 
@@ -109,7 +98,8 @@ following Birkhoff (1917) for closed geodesics and Almgren--Pitts
 for higher-dimensional varifolds, is a \emph{min-max}
 construction; regularity of the output is Schoen--Simon~\cite{SS81}.
 
-\begin{theorem}{Almgren--Pitts min-max theorem~\cite{Pit81,SS81}}{minmax}
+\begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
+\label{thm:minmax}
 Every closed Riemannian manifold $(M^{n+1}, g)$ admits a
 nontrivial embedded minimal hypersurface $\Sigma \subset M$ whose
 singular set $\mathrm{Sing}\,\Sigma$ has Hausdorff dimension at
@@ -121,7 +111,9 @@ subsequent treatment~\cite{CDL03,DLT13,DLR17,DL12,MN14} --- is
 the Almgren--Pitts combinatorial argument, stated in the
 Colding--De~Lellis formulation as follows.
 
-\begin{proposition}{Almgren--Pitts combinatorial Argument, \cite[Prop.~3.4]{CDL03}}{AP-combinatorial}
+\begin{proposition}[Almgren--Pitts combinatorial Argument,
+{\cite[Prop.~3.4]{CDL03}}]
+\label{prop:AP-combinatorial}
 Let $\Lambda$ be a homotopically closed family of sweepouts of
 $M^{n+1}$, and $m_0 = \inf_\Lambda \mathcal{F}$. There exists a
 min-max sequence $\{\Gamma^N\}$ converging as varifolds to a
@@ -158,7 +150,8 @@ Stripped of its GMT instantiation, the content of Steps~1--2 is
 the following scalar statement, which is the precise theorem we
 formalize.
 
-\begin{theorem}{Extracted scalar version of Steps 1--2}{intro-scalar}
+\begin{theorem}[Extracted scalar version of Steps 1--2]
+\label{thm:intro-scalar}
 Let $X$ be a pseudo-metric space with an abstract paired-cover
 structure. Let $f : [0,1] \to \mathbb{R}$ be continuous with
 $m_0 = \sup f$ and $m_0 > 0$, and let $N \in \mathbb{N}$ with
@@ -218,8 +211,9 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
-\begin{definition}{\texttt{PairableCover} class}{pcover}
-\leanref{CombArg.PairableCover}
+\begin{definition}[\texttt{PairableCover} class]
+\label{def:pcover}
+\leanmargin{PairableCover}{Witness.lean}
 A \texttt{PairableCover X} instance declares, for each abstract
 \texttt{c : Cover}, a left region and a right region in $X$ and a
 scalar diameter, subject to two axioms: the two regions are
@@ -227,24 +221,27 @@ disjoint, and overlapping combined regions of diameter-comparable
 covers are ordered by inclusion.
 \end{definition}
 
-\begin{definition}{\texttt{LocalWitness} structure}{witness}
-\leanref{CombArg.LocalWitness}
+\begin{definition}[\texttt{LocalWitness} structure]
+\label{def:witness}
+\leanmargin{LocalWitness}{Witness.lean}
 A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
 neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
 continuous replacement energy $E : K \to \mathbb{R}$, and the
 inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 \end{definition}
 
-\begin{definition}{Near-critical set}{NC}
-\leanref{CombArg.Refinement.nearCritical}
+\begin{definition}[Near-critical set]
+\label{def:NC}
+\leanmargin{nearCritical}{Refinement/InitialCover.lean}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
 $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
 write $\NC$.
 \end{definition}
 
-\begin{definition}{\texttt{FiniteCoverWithWitnesses} structure}{ref}
-\leanref{CombArg.FiniteCoverWithWitnesses}
+\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
+\label{def:ref}
+\leanmargin{FiniteCoverWithWitnesses}{Core.lean}
 A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
 carries a finite nonempty index type $\iota$, pieces
 $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
@@ -254,14 +251,11 @@ $\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
 (II) each $t \in K$ lies in at most two pieces;
 (III) $s_l \ge \varepsilon$ for all $l$;
 (IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
-This is the abstract form of the refined covering
-$\{\overline{J_l}\}$ produced at the end of~\cite[\S3.2 Step 1]{DLT13};
-conditions (II)--(III) are DLT's two-fold overlap and per-piece
-saving invariants.
 \end{definition}
 
-\begin{definition}{\texttt{InitialCover} structure}{ic}
-\leanref{CombArg.Refinement.InitialCover}
+\begin{definition}[\texttt{InitialCover} structure]
+\label{def:ic}
+\leanmargin{InitialCover}{Refinement/InitialCover.lean}
 Specialized to $K = \unit$. An
 \texttt{InitialCover X f m\textsubscript{0} N} carries a finite
 family of open intervals $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
@@ -274,29 +268,26 @@ subject to
 (a) and (b) transcribe~\cite[\S3.2]{DLT13}'s spacing and subset
 conditions; the pair $(c_i, w_i)$ separates interval centers from
 witness centers, required because grid points need not themselves
-be near-critical.} Corresponds to the initial covering $\{I_i\}$
-of $\NC$ entering~\cite[\S3.2]{DLT13} \emph{before} the Step~1
-refinement.
+be near-critical.}
 \end{definition}
 
-\begin{definition}{\texttt{PartialRefinement} structure}{pr}
-\leanref{CombArg.Refinement.PartialRefinement}
+\begin{definition}[\texttt{PartialRefinement} structure]
+\label{def:pr}
+\leanmargin{PartialRefinement}{Refinement/PartialRefinement.lean}
 Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
 \texttt{PartialRefinement ic $\ell$} carries pieces
 $J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
 $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 (i) $J_k \subseteq I_{\sigma(k)}$ for each $k$;
 (ii) $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each $k$.
-This captures the \emph{mid-induction state} of~\cite[\S3.2
-Step~1]{DLT13}, where each $I_j$ has been either kept whole
-(``the same'') or split (``into two halves'').
 \end{definition}
 
 \subsection{Public API: abstract core}
 \label{sec:core-spec}
 
-\begin{theorem}{Abstract core}{core}
-\leanref{CombArg.exists\_sup\_reduction\_of\_cover}
+\begin{theorem}[Abstract core]
+\label{thm:core}
+\leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
 \noindent
 \textbf{Input.} A compact, nonempty topological space $K$; a
 continuous $f : K \to \mathbb{R}$; $m_0 = \sup f$; scalars
@@ -312,8 +303,9 @@ $\sup f' \le m_0 - \varepsilon$.
 \subsection{Public API: one-parameter application}
 \label{sec:app-spec}
 
-\begin{theorem}{One-parameter application}{main}
-\leanref{CombArg.exists\_sup\_reduction}
+\begin{theorem}[One-parameter application]
+\label{thm:main}
+\leanmargin{exists\_sup\_reduction}{SupReduction.lean}
 \noindent
 \textbf{Input.} A pseudo-metric space $X$ with a
 \texttt{PairableCover X} instance (Definition~\ref{def:pcover});
@@ -337,28 +329,29 @@ $\delta = 1/N$, $\varepsilon = 1/(4N)$.
 The declarations below are consumed by Theorem~\ref{thm:main};
 proofs are sketched in \S\ref{sec:proof}.
 
-\begin{proposition}{Compactness of $\NC$}{NC-compact}
-\leanref{CombArg.Refinement.isCompact\_nearCritical}\\
-\leanref{CombArg.Refinement.nearCritical\_nonempty}
+\begin{proposition}[Compactness of $\NC$]
+\label{prop:NC-compact}
+\leanmargintwo{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
+              {nearCritical\_nonempty}{Refinement/InitialCover.lean}
 If $K$ is compact and $f$ continuous, $\NC$ is compact. If
 additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
 \end{proposition}
 
 \begin{itemize}
-\item \leanref{CombArg.Refinement.exists\_initialCover}
+\item \lean{exists\_initialCover}{Refinement/CoverConstruction.lean}
 --- existence of an \texttt{InitialCover} via a grid plus
 Lebesgue-number construction on the compact sublevel set $\NC$.
-\item \leanref{CombArg.Refinement.exists\_terminal\_refinement}
+\item \lean{exists\_terminal\_refinement}{Refinement/Induction.lean}
 --- existence of a terminal \texttt{PartialRefinement} with
 injective $\sigma$ via bounded smallest-index induction with
 two-case dispatch.
-\item \leanref{CombArg.Refinement.InitialCover.not\_three\_overlap}
+\item \lean{not\_three\_overlap}{Refinement/Disjointness.lean}
 --- at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
-\item \leanref{CombArg.Refinement.saving\_bound\_closure}
+\item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
 --- the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
-\item \leanref{CombArg.Refinement.exists\_refinement}
+\item \lean{exists\_refinement}{Refinement/Assembly.lean}
 --- packages the 1D construction output as a
 \texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
 with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$; the input
@@ -447,29 +440,18 @@ bookkeeping.}
 \section{Proof structure}
 \label{sec:proof}
 
-We split the proof of Theorem~\ref{thm:main} into three stages,
-each one mirroring a segment of~\cite[\S3.2]{DLT13}:
-
-\begin{center}\small
-\begin{tabular}{@{}lll@{}}
-\toprule
-\textsc{our stage} & \textsc{DLT13 \S3.2 segment} & \textsc{output}\\
-\midrule
-Stage A & (setup, pre-Step~1) & \texttt{InitialCover} \\
-Stage B & Step~1 (refinement of the covering) & terminal \texttt{PartialRefinement} \\
-Stage C & Step~2 (conclusion: bookkeeping) & \texttt{FiniteCoverWithWitnesses} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\noindent
-Theorem~\ref{thm:core} then consumes the output of Stage~C and
-closes the chain.
+We split the proof of Theorem~\ref{thm:main} into three stages.
+Stage~A builds an initial cover from the witness hypothesis.
+Stage~B runs an induction producing a terminal partial refinement
+with injective $\sigma$. Stage~C assembles the finite cover with
+witnesses by extending saving bounds to closures and deriving
+TwoFold. Theorem~\ref{thm:core} closes.
 
 \subsection{Stage A: existence of the initial cover}
 
-\begin{proposition}{Existence of an initial cover}{exists-ic}
-\leanref{CombArg.Refinement.exists\_initialCover}
+\begin{proposition}[Existence of an initial cover]
+\label{prop:exists-ic}
+\leanmargin{exists\_initialCover}{Refinement/CoverConstruction.lean}
 Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
@@ -496,98 +478,19 @@ selected. Condition~(b) holds by the Lebesgue argument.
 
 \subsection{Stage B: the refinement induction}
 
-This stage realizes~\cite[\S3.2 Step~1]{DLT13}: each initial
-interval $I_j$ with $j \ge 2$ is either kept whole (``remains
-the same'') or split (``into two halves''), depending on whether
-the paired cover at $t_{\sigma(\ell)}$ is compatible with the new
-$t_{i^*}$. Figure~\ref{fig:step1} reproduces the
-\cite[Fig.~1]{DLT13} schematic.
+Starting from an initial cover, one builds pieces inductively.
 
-\begin{figure}[htbp]
-\centering
-\begin{tikzpicture}[
-  font=\footnotesize,
-  bar/.style={line width=1.2pt},
-  tick/.style={line width=0.9pt},
-  lbl/.style={font=\footnotesize},
-  gridline/.style={dashed,gray!55,line width=0.4pt}
-]
-% J_l bars, stacked vertically (staircase), in DLT Fig 1 left style.
-% Each bar sits at its own y-row; adjacent J_l overlap on the x-axis
-% to show the two-fold invariant.
-\def\ya{5}  \def\yb{4}  \def\yc{3}  \def\yd{2}  \def\ye{1}
-
-% vertical dashed guides at overlap boundaries
-\foreach \x in {2.5, 3.5, 4.8, 6.5, 7.8}
-  \draw[gridline] (\x,-0.7) -- (\x,\ya+0.35);
-
-% J_1
-\node[lbl,anchor=east] at (-0.2,\ya) {$J_1$};
-\draw[bar] (0.3,\ya) -- (2.5,\ya);
-\draw[tick] (0.3,\ya-0.12) -- (0.3,\ya+0.12);
-\draw[tick] (2.5,\ya-0.12) -- (2.5,\ya+0.12);
-
-% J_2 (overlaps J_1 on the left)
-\node[lbl,anchor=east] at (-0.2,\yb) {$J_2$};
-\draw[bar] (1.9,\yb) -- (3.5,\yb);
-\draw[tick] (1.9,\yb-0.12) -- (1.9,\yb+0.12);
-\draw[tick] (3.5,\yb-0.12) -- (3.5,\yb+0.12);
-
-% J_3 (overlaps J_2)
-\node[lbl,anchor=east] at (-0.2,\yc) {$J_3$};
-\draw[bar] (3.0,\yc) -- (4.8,\yc);
-\draw[tick] (3.0,\yc-0.12) -- (3.0,\yc+0.12);
-\draw[tick] (4.8,\yc-0.12) -- (4.8,\yc+0.12);
-
-% J_4 (overlaps J_3)
-\node[lbl,anchor=east] at (-0.2,\yd) {$J_4$};
-\draw[bar] (4.3,\yd) -- (6.5,\yd);
-\draw[tick] (4.3,\yd-0.12) -- (4.3,\yd+0.12);
-\draw[tick] (6.5,\yd-0.12) -- (6.5,\yd+0.12);
-
-% J_5 (overlaps J_4)
-\node[lbl,anchor=east] at (-0.2,\ye) {$J_5$};
-\draw[bar] (6.0,\ye) -- (7.8,\ye);
-\draw[tick] (6.0,\ye-0.12) -- (6.0,\ye+0.12);
-\draw[tick] (7.8,\ye-0.12) -- (7.8,\ye+0.12);
-
-% parameter axis [0,1]
-\draw[-{Latex[length=2mm]},line width=0.8pt] (-0.2,-0.3) -- (8.4,-0.3);
-\node[lbl,right=2pt] at (8.4,-0.3) {$t$};
-\draw[tick] (0.0,-0.3-0.12) -- (0.0,-0.3+0.12);
-\draw[tick] (8.0,-0.3-0.12) -- (8.0,-0.3+0.12);
-\node[lbl,below=1pt] at (0.0,-0.4) {$0$};
-\node[lbl,below=1pt] at (8.0,-0.4) {$1$};
-
-% NC bracket underneath the axis
-\draw[line width=1pt,gray!70!black]
-  (0.8,-0.9) -- (7.2,-0.9);
-\node[lbl,below=1pt] at (4.0,-0.95) {$\NC \;=\; \{t : f(t) \ge m_0 - 1/N\}$};
-
-\end{tikzpicture}
-\caption{\label{fig:step1}Staircase layout of the refined cover
-$\{J_l\}$ on $[0,1]$, after~\cite[Fig.~1 left]{DLT13}. Each piece
-$J_l$ is drawn on its own row so that vertical sweeps are legible:
-at any parameter $t \in [0,1]$, the number of rows the vertical
-line crosses is the overlap multiplicity; the cover satisfies
-$|\{l : t \in \overline{J_l}\}| \le 2$ for every $t$ (two-fold
-invariant). The $\NC$ bracket on the parameter axis marks the
-$1/N$-near-critical set, which is contained in
-$\bigcup_l J_l$.}
-\end{figure}
-
-Formally, $\{J_l\}$ is built by induction from $\mathrm{step\_zero}$
-(base case) via $\mathrm{step\_succ\_at}$ (inductive step).
-
-\begin{definition}{Base case}{step0}
-\leanref{CombArg.Refinement.step\_zero}
+\begin{definition}[Base case]
+\label{def:step0}
+\leanmargin{step\_zero}{Refinement/PartialRefinement.lean}
 $\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
 refinement with
 $J_1 := I_1$ and $\sigma(1) := 1$.
 \end{definition}
 
-\begin{definition}{Inductive step}{step-succ}
-\leanref{CombArg.Refinement.step\_succ\_at}
+\begin{definition}[Inductive step]
+\label{def:step-succ}
+\leanmargin{step\_succ\_at}{Refinement/Induction.lean}
 Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
 an index $i^* \in \{1,\ldots,n\}$ with
 $I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
@@ -610,8 +513,9 @@ explicit argument and returns the extension bundled with the
 ``$i^*$ is covered'' property, for termination.}
 \end{definition}
 
-\begin{proposition}{Termination}{exists-terminal}
-\leanref{CombArg.Refinement.exists\_terminal\_refinement}
+\begin{proposition}[Termination]
+\label{prop:exists-terminal}
+\leanmargin{exists\_terminal\_refinement}{Refinement/Induction.lean}
 Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
 $\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
 partial refinement of some length $L$ with $\sigma$ injective
@@ -634,21 +538,12 @@ $\sigma(k)$ correspond to already-covered indices.
 
 \subsection{Stage C: assembly}
 
-This stage realizes~\cite[\S3.2 Step~2]{DLT13}: from the refined
-$\{J_l\}$ together with the local-witness saving bound one packages
-a \texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}),
-whose three invariants (per-piece saving floor, two-fold overlap,
-coverage of $\NC$) are precisely the data DLT's Step 2 bookkeeping
-consumes. Here we extend the saving bound from open $J_k$ to
-$\overline{J_k}$ and derive the two-fold invariant from
-spacing~(a). Theorem~\ref{thm:core} then turns the assembled cover
-into the sup-reducing competitor $f'$ (our formalization stops
-here; DLT proceeds to derive a contradiction against
-$m_0 = \inf_\Lambda \mathcal{F}$, which is the caller's
-responsibility).
+The final stage extends the saving bound from open $J_k$ to
+$\overline{J_k}$ and derives TwoFold from spacing~(a).
 
-\begin{proposition}{TwoFold via parity}{twofold}
-\leanref{CombArg.Refinement.terminal\_twoFold}
+\begin{proposition}[TwoFold via parity]
+\label{prop:twofold}
+\leanmargin{terminal\_twoFold}{Refinement/Assembly.lean}
 For a partial refinement $\mathrm{pr}$ of length $L$ with
 $\sigma$ injective, every $t \in \unit$ lies in at most two of
 $\overline{J_1}, \ldots, \overline{J_L}$.
@@ -660,8 +555,8 @@ that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
 2$) have strict separation between $\overline{I_i}$ and
 $\overline{I_j}$, hence
 $\overline{I_i} \cap \overline{I_j} = \emptyset$
-(\leanref{CombArg.Refinement.InitialCover.chain\_spacing},
-\leanref{CombArg.Refinement.InitialCover.closure\_disjoint\_of\_even\_gap}).
+(\lean{chain\_spacing}{Refinement/Disjointness.lean},
+\lean{closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}).
 
 Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
 admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
@@ -675,11 +570,12 @@ $c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
 and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
 parities and one of them is the even gap. The pair with even
 gap has disjoint closures, contradicting the common point
-(\leanref{CombArg.Refinement.InitialCover.not\_three\_overlap}).
+(\lean{not\_three\_overlap}{Refinement/Disjointness.lean}).
 \end{proof}
 
-\begin{proposition}{Closure extension of saving bound}{saving-bound}
-\leanref{CombArg.Refinement.saving\_bound\_closure}
+\begin{proposition}[Closure extension of saving bound]
+\label{prop:saving-bound}
+\leanmargin{saving\_bound\_closure}{Refinement/Assembly.lean}
 Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
 every $t \in \overline{J_k}$,
 $f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
@@ -697,8 +593,9 @@ a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
 limits.
 \end{proof}
 
-\begin{lemma}{Assembly}{assembly}
-\leanref{CombArg.Refinement.exists\_refinement}
+\begin{lemma}[Assembly]
+\label{lem:assembly}
+\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
 A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
 injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
 a refinement of $(\unit, X, f, m_0, N)$ in the sense of
