@@ -7,7 +7,7 @@ import CombArg.Core
 import CombArg.Refinement.CoverConstruction
 import CombArg.Refinement.Disjointness
 import CombArg.Refinement.Induction
-import Mathlib.Topology.Sequences
+import CombArg.Util
 
 /-!
 # Step 1 — Assembly into `FiniteCoverWithWitnesses`
@@ -99,24 +99,13 @@ lemma saving_bound_closure
     (pr : PartialRefinement ic L) (k : Fin L)
     (t : unitInterval) (ht : t ∈ closure (pr.J k)) :
     f t - (ic.wit (pr.σ k)).replacementEnergy t ≥ 1 / (4 * (N : ℝ)) := by
-  -- `pr.J k ⊆ ic.I (pr.σ k) ⊆ (ic.wit (pr.σ k)).neighborhood`.
-  have h_sub : pr.J k ⊆ (ic.wit (pr.σ k)).neighborhood := fun s hs =>
-    ic.I_subset_neighborhood (pr.σ k) (pr.J_subset k hs)
-  -- `g := f − replacementEnergy` is continuous.
-  set g := fun s : unitInterval => f s - (ic.wit (pr.σ k)).replacementEnergy s
-  have hg_cont : Continuous g :=
-    hf.sub (ic.wit (pr.σ k)).replacementEnergy_continuous
-  -- Pointwise bound on `pr.J k`.
-  have h_bound_J : ∀ s ∈ pr.J k, 1 / (4 * (N : ℝ)) ≤ g s := fun s hs =>
-    (ic.wit (pr.σ k)).saving_bound s (h_sub hs)
-  -- Sequence from closure membership.
-  rw [mem_closure_iff_seq_limit] at ht
-  obtain ⟨u, hu_mem, hu_tendsto⟩ := ht
-  have h_bound_u : ∀ n, 1 / (4 * (N : ℝ)) ≤ g (u n) := fun n =>
-    h_bound_J (u n) (hu_mem n)
-  have h_tendsto : Filter.Tendsto (fun n => g (u n)) Filter.atTop (nhds (g t)) :=
-    (hg_cont.tendsto t).comp hu_tendsto
-  exact ge_of_tendsto' h_tendsto h_bound_u
+  -- On `pr.J k ⊆ (ic.wit (pr.σ k)).neighborhood` the witness gives
+  -- `(f − E) ≥ 1/(4N)`; this closed-half-line condition extends to
+  -- `closure (pr.J k)` by continuity of `f − E`.
+  refine ge_of_closure_of_ge
+    (hf.sub (ic.wit (pr.σ k)).replacementEnergy_continuous)
+    (fun s hs => (ic.wit (pr.σ k)).saving_bound s
+      (ic.I_subset_neighborhood (pr.σ k) (pr.J_subset k hs))) ht
 
 /-! ## Terminal target: `exists_refinement`
 
