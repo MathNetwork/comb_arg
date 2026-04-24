@@ -113,9 +113,9 @@ subsequent treatment~\cite{CDL03,DLT13,DLR17,DL12,MN14}, is the
 Almgren--Pitts combinatorial argument, stated in the
 Colding--De~Lellis formulation as follows.
 
-\begin{proposition}[Almgren--Pitts combinatorial Argument,
+\begin{theorem}[Almgren--Pitts combinatorial Argument,
 {\cite[Prop.~3.4]{CDL03}}]
-\label{prop:AP-combinatorial}
+\label{thm:AP-combinatorial}
 Let $\Lambda$ be a homotopically closed family of sweepouts of
 $M^{n+1}$, and $m_0 = \inf_\Lambda \mathcal{F}$. There exists a
 min-max sequence $\{\Gamma^N\}$ converging as varifolds to a
@@ -123,9 +123,9 @@ stationary integral varifold of mass $m_0$, with $\Gamma^N$
 $1/N$-almost-minimizing in every pair
 $(U^1, U^2) \in \mathcal{CO}$ of $\mathcal{H}^n$-disjoint open
 sets, for all $N$ sufficiently large.
-\end{proposition}
+\end{theorem}
 
-The proof of Proposition~\ref{prop:AP-combinatorial} reduces to
+The proof of Theorem~\ref{thm:AP-combinatorial} reduces to
 a one-parameter claim on the sweepout~\cite[\S3.2]{DLT13}:
 
 \begin{quote}
@@ -210,7 +210,7 @@ abstract API (Theorem~\ref{thm:core},
 one-parameter application (Theorem~\ref{thm:main},
 \S\ref{sec:app-spec}).
 
-\paragraph{Scope.} This note formalizes the proof of the Claim
+\textbf{Scope.} This note formalizes the proof of the Claim
 (the combinatorial argument on $[0,1]$) as a Lean 4 library,
 \CombArg. We do \emph{not}
 formalize \cite[Lemma~3.1]{DLT13} (the replacement family), the
@@ -243,7 +243,7 @@ space), \texttt{X} a pseudo-metric space (the ambient space whose
 covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
 a continuous scalar energy.
 
-In DLT's proof of Proposition~\ref{prop:AP-combinatorial},
+In DLT's proof of Theorem~\ref{thm:AP-combinatorial},
 \cite[Lemma~3.1]{DLT13} supplies, for each near-critical
 parameter $t$, an $\mathcal{H}^n$-disjoint pair of open sets
 $(U_{1,t}', U_{2,t}')$ in $M^{n+1}$ inside which a local
