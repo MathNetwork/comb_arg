@@ -174,12 +174,41 @@ becomes $m_0 = \sup f$; the nested pair $(A_t, B_t, U_t')$
 collapses to a single neighborhood $U_t$; the replacement family
 $\{\partial \Omega_{t,\tau}\}$ collapses to a single continuous
 $E_t$; and the almost-minimizing hypothesis is no longer needed.
-Theorem~\ref{thm:intro-scalar} reappears in
-\S\ref{sec:app-spec} as the public one-parameter API of \CombArg\
-(Theorem~\ref{thm:main}); it is the specialization of an abstract
-core (Theorem~\ref{thm:core}) in which the pair $(1/N, 1/(4N))$
-becomes arbitrary scalars $(\delta, \varepsilon)$ with
-$\varepsilon \le \delta$.
+
+The Lean library actually proves a more general statement, of
+which Theorem~\ref{thm:intro-scalar} is a direct specialization:
+the parameter interval $[0,1]$ may be replaced by any compact,
+nonempty topological space $K$, and the specific pair
+$(1/N, 1/(4N))$ by arbitrary scalars $(\delta, \varepsilon)$ with
+$0 < \varepsilon \le \delta$. The input is then a finite covering
+of the $\delta$-super-level set of $f$ carrying per-piece
+replacements with uniform saving $\varepsilon$.
+
+\begin{theorem}[Abstract core]
+\label{thm:intro-core}
+Let $K$ be a compact, nonempty topological space, $f : K \to
+\mathbb{R}$ a continuous energy with $m_0 = \sup f$, and let
+$0 < \varepsilon \le \delta$. Suppose there is a finite family of
+pieces $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
+$\{E_l : K \to \mathbb{R}\}$, and savings
+$\{s_l \ge \varepsilon\}$ with: (I) $f - E_l \ge s_l$ on $p_l$;
+(II) every $t \in K$ lies in at most two pieces; (III)
+$\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
+Then there exists $f' : K \to \mathbb{R}$ with
+\[
+\sup f' \;\le\; m_0 - \varepsilon.
+\]
+\end{theorem}
+
+Theorem~\ref{thm:intro-scalar} follows by taking $K = [0,1]$,
+$\delta = 1/N$, $\varepsilon = 1/(4N)$, and running a 1D
+cover-refinement construction on the local witnesses to produce
+the family $\{p_l\}$ with two-fold overlap. Both theorems reappear
+in §\ref{sec:spec}: Theorem~\ref{thm:intro-core} as the library's
+abstract API (Theorem~\ref{thm:core},
+\S\ref{sec:core-spec}), and Theorem~\ref{thm:intro-scalar} as the
+one-parameter application (Theorem~\ref{thm:main},
+\S\ref{sec:app-spec}).
 
 \paragraph{Scope.} This note formalizes the proof of the Claim
 (the combinatorial argument on $[0,1]$) as a Lean 4 library,
