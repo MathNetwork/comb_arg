@@ -29,6 +29,121 @@ open scoped Classical
 variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
 
+/-! ## Shared builder for the inductive step
+
+Both `step_succ` and `step_succ_at` below append a new
+`(l+1)`-th piece to a `PartialRefinement ic (l+1)`. The two
+variants differ only in the choice of the new piece's `J`
+value (Case 1 vs Case 2 of DLT §3.2). We factor the common
+`J_subset` / `processed_cover` bookkeeping into a helper:
+
+* `extend_refinement pr i_star Jnew hJsub hcover` builds a
+  `PartialRefinement ic (l+2)` with `J_{l+1} = Jnew`,
+  `σ_{l+1} = i_star`, given
+  - `hJsub : Jnew ⊆ ic.I i_star`, and
+  - `hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k', pr.J k'`.
+
+Each case supplies one line of Set algebra for each of `hJsub`
+and `hcover`. -/
+
+/-- Common builder for the inductive step: append a new piece
+`Jnew` with label `i_star` to a `PartialRefinement`. The
+`J_subset` and `processed_cover` invariants of the extended
+refinement are discharged uniformly from the two subset
+hypotheses `hJsub` and `hcover`. -/
+private noncomputable def extend_refinement
+    {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
+    (pr : PartialRefinement ic (l + 1))
+    (i_star : Fin ic.n)
+    (Jnew : Set unitInterval)
+    (hJsub : Jnew ⊆ ic.I i_star)
+    (hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k' : Fin (l + 1), pr.J k') :
+    PartialRefinement ic (l + 2) where
+  J := Fin.lastCases Jnew pr.J
+  σ := Fin.lastCases i_star pr.σ
+  J_subset := by
+    intro k
+    induction k using Fin.lastCases with
+    | last =>
+      simp only [Fin.lastCases_last]
+      exact hJsub
+    | cast k' =>
+      simp only [Fin.lastCases_castSucc]
+      exact pr.J_subset k'
+  processed_cover := by
+    intro k t ht
+    induction k using Fin.lastCases with
+    | last =>
+      simp only [Fin.lastCases_last] at ht
+      rcases hcover ht with h_new | h_old
+      · exact Set.mem_iUnion.mpr ⟨Fin.last (l + 1), by
+          simp only [Fin.lastCases_last]; exact h_new⟩
+      · obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
+        exact Set.mem_iUnion.mpr ⟨k''.castSucc, by
+          simp only [Fin.lastCases_castSucc]; exact hk''⟩
+    | cast k' =>
+      simp only [Fin.lastCases_castSucc] at ht
+      obtain ⟨k'', hk''⟩ :=
+        Set.mem_iUnion.mp (pr.processed_cover k' ht)
+      exact Set.mem_iUnion.mpr ⟨k''.castSucc, by
+        simp only [Fin.lastCases_castSucc]; exact hk''⟩
+
+/-- The new piece's `J k castSucc` coincides with the old
+`pr.J k`, for every old index `k : Fin (l + 1)`. -/
+private lemma extend_refinement_J_castSucc
+    {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
+    (pr : PartialRefinement ic (l + 1))
+    (i_star : Fin ic.n) (Jnew : Set unitInterval)
+    (hJsub : Jnew ⊆ ic.I i_star)
+    (hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k' : Fin (l + 1), pr.J k')
+    (k' : Fin (l + 1)) :
+    (extend_refinement pr i_star Jnew hJsub hcover).J k'.castSucc
+      = pr.J k' := by
+  show Fin.lastCases Jnew pr.J k'.castSucc = pr.J k'
+  exact Fin.lastCases_castSucc k'
+
+/-- The new piece's `σ k castSucc` coincides with the old
+`pr.σ k`. -/
+private lemma extend_refinement_σ_castSucc
+    {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
+    (pr : PartialRefinement ic (l + 1))
+    (i_star : Fin ic.n) (Jnew : Set unitInterval)
+    (hJsub : Jnew ⊆ ic.I i_star)
+    (hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k' : Fin (l + 1), pr.J k')
+    (k' : Fin (l + 1)) :
+    (extend_refinement pr i_star Jnew hJsub hcover).σ k'.castSucc
+      = pr.σ k' := by
+  show Fin.lastCases i_star pr.σ k'.castSucc = pr.σ k'
+  exact Fin.lastCases_castSucc k'
+
+/-- The last slot of the extended `σ` returns `i_star`. -/
+private lemma extend_refinement_σ_last
+    {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
+    (pr : PartialRefinement ic (l + 1))
+    (i_star : Fin ic.n) (Jnew : Set unitInterval)
+    (hJsub : Jnew ⊆ ic.I i_star)
+    (hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k' : Fin (l + 1), pr.J k') :
+    (extend_refinement pr i_star Jnew hJsub hcover).σ
+        (Fin.last (l + 1)) = i_star := by
+  simp only [extend_refinement, Fin.lastCases_last]
+
+/-- `ic.I i_star` is covered by the extended union of `J`s. -/
+private lemma extend_refinement_covers
+    {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
+    (pr : PartialRefinement ic (l + 1))
+    (i_star : Fin ic.n) (Jnew : Set unitInterval)
+    (hJsub : Jnew ⊆ ic.I i_star)
+    (hcover : ic.I i_star ⊆ Jnew ∪ ⋃ k' : Fin (l + 1), pr.J k') :
+    ic.I i_star ⊆ ⋃ k : Fin (l + 2),
+      (extend_refinement pr i_star Jnew hJsub hcover).J k := by
+  intro t ht
+  rcases hcover ht with h_new | h_old
+  · exact Set.mem_iUnion.mpr ⟨Fin.last (l + 1), by
+      simp only [extend_refinement, Fin.lastCases_last]; exact h_new⟩
+  · obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
+    exact Set.mem_iUnion.mpr ⟨k''.castSucc, by
+      simp only [extend_refinement, Fin.lastCases_castSucc]; exact hk''⟩
+
 /-! ## Inductive step `step_succ` -/
 
 /-- **Inductive step**: extend a `PartialRefinement ic (l+1)` to
@@ -57,9 +172,7 @@ noncomputable def step_succ
     (h_remaining : ∃ i : Fin ic.n,
         ¬ (ic.I i ⊆ ⋃ k : Fin (l + 1), pr.J k)) :
     PartialRefinement ic (l + 2) := by
-  -- Previous piece index.
   let prev : Fin (l + 1) := Fin.last l
-  -- Filter-find the smallest uncovered index.
   let remaining : Finset (Fin ic.n) :=
     Finset.univ.filter
       (fun i => ¬ (ic.I i ⊆ ⋃ k : Fin (l + 1), pr.J k))
@@ -67,81 +180,17 @@ noncomputable def step_succ
     obtain ⟨i, hi⟩ := h_remaining
     exact ⟨i, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hi⟩⟩
   let i_star : Fin ic.n := remaining.min' h_ne
-  have h_i_star_mem : i_star ∈ remaining := remaining.min'_mem h_ne
-  -- Case split on the paper's predicate.
   by_cases hcase1 : ic.I i_star ⊆ pr.J prev ∪ ic.I (pr.σ prev)
-  · -- Case 1: J_{l+1} := ic.I i_star; σ_{l+1} := i_star.
-    refine {
-      J := Fin.lastCases (ic.I i_star) pr.J
-      σ := Fin.lastCases i_star pr.σ
-      J_subset := ?_
-      processed_cover := ?_ }
-    · -- J_subset
-      intro k
-      induction k using Fin.lastCases with
-      | last =>
-        simp only [Fin.lastCases_last]
-        exact subset_refl _
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc]
-        exact pr.J_subset k'
-    · -- processed_cover
-      intro k t ht
-      induction k using Fin.lastCases with
-      | last =>
-        -- σ(last) = i_star; ic.I i_star ⊆ ⋃ new J (the last slot is ic.I i_star).
-        simp only [Fin.lastCases_last] at ht
-        refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-        simp only [Fin.lastCases_last]
-        exact ht
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc] at ht
-        have h_old := pr.processed_cover k' ht
-        obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-        refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-        simp only [Fin.lastCases_castSucc]
-        exact hk''
-  · -- Case 2: J_{l+1} := ic.I i_star \ ic.I (pr.σ prev); σ_{l+1} := i_star.
-    refine {
-      J := Fin.lastCases (ic.I i_star \ ic.I (pr.σ prev)) pr.J
-      σ := Fin.lastCases i_star pr.σ
-      J_subset := ?_
-      processed_cover := ?_ }
-    · -- J_subset
-      intro k
-      induction k using Fin.lastCases with
-      | last =>
-        simp only [Fin.lastCases_last]
-        exact Set.diff_subset
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc]
-        exact pr.J_subset k'
-    · -- processed_cover
-      intro k t ht
-      induction k using Fin.lastCases with
-      | last =>
-        -- σ(last) = i_star.
-        -- Goal: t ∈ ⋃ new J.
-        -- Decompose by `t ∈ ic.I (pr.σ prev)` or not.
-        simp only [Fin.lastCases_last] at ht
-        by_cases h_in_prev : t ∈ ic.I (pr.σ prev)
-        · -- Use pr.processed_cover prev.
-          have h_old := pr.processed_cover prev h_in_prev
-          obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-          refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-          simp only [Fin.lastCases_castSucc]
-          exact hk''
-        · -- t ∈ ic.I i_star \ ic.I (pr.σ prev) = new J (Fin.last).
-          refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-          simp only [Fin.lastCases_last]
-          exact ⟨ht, h_in_prev⟩
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc] at ht
-        have h_old := pr.processed_cover k' ht
-        obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-        refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-        simp only [Fin.lastCases_castSucc]
-        exact hk''
+  · -- Case 1: append the full `ic.I i_star`.
+    exact extend_refinement pr i_star (ic.I i_star) (subset_refl _)
+      (fun _ ht => Or.inl ht)
+  · -- Case 2: append `ic.I i_star \ ic.I (pr.σ prev)`.
+    refine extend_refinement pr i_star (ic.I i_star \ ic.I (pr.σ prev))
+      Set.diff_subset ?_
+    intro t ht
+    by_cases h_in_prev : t ∈ ic.I (pr.σ prev)
+    · exact Or.inr (pr.processed_cover prev h_in_prev)
+    · exact Or.inl ⟨ht, h_in_prev⟩
 
 /-! ## Termination iteration via bounded `Nat.rec`
 
@@ -168,85 +217,31 @@ noncomputable def step_succ_at
       pr'.σ (Fin.last (l + 1)) = i_star ∧
       ic.I i_star ⊆ ⋃ k : Fin (l + 2), pr'.J k } := by
   let prev : Fin (l + 1) := Fin.last l
+  -- Build the Case-specific (`Jnew`, `hJsub`, `hcover`) and
+  -- assemble via `extend_refinement`. Then the four Subtype
+  -- properties follow from the extend_refinement_* lemmas.
   by_cases hcase1 : ic.I i_star ⊆ pr.J prev ∪ ic.I (pr.σ prev)
-  · -- Case 1: J_{l+1} := ic.I i_star.
-    refine ⟨{
-      J := Fin.lastCases (ic.I i_star) pr.J
-      σ := Fin.lastCases i_star pr.σ
-      J_subset := ?_
-      processed_cover := ?_ }, ?_, ?_, ?_, ?_⟩
-    · intro k
-      induction k using Fin.lastCases with
-      | last => simp only [Fin.lastCases_last]; exact subset_refl _
-      | cast k' => simp only [Fin.lastCases_castSucc]; exact pr.J_subset k'
-    · intro k t ht
-      induction k using Fin.lastCases with
-      | last =>
-        simp only [Fin.lastCases_last] at ht
-        refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-        simp only [Fin.lastCases_last]; exact ht
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc] at ht
-        have h_old := pr.processed_cover k' ht
-        obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-        refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-        simp only [Fin.lastCases_castSucc]; exact hk''
-    · intro k'
-      show Fin.lastCases _ pr.J k'.castSucc = pr.J k'
-      exact Fin.lastCases_castSucc k'
-    · intro k'
-      show Fin.lastCases _ pr.σ k'.castSucc = pr.σ k'
-      exact Fin.lastCases_castSucc k'
-    · show Fin.lastCases i_star pr.σ (Fin.last (l + 1)) = i_star
-      simp only [Fin.lastCases_last]
-    · -- covered: ic.I i_star = J (Fin.last), so directly in the union.
-      intro t ht
-      refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-      simp only [Fin.lastCases_last]; exact ht
-  · -- Case 2: J_{l+1} := ic.I i_star \ ic.I (pr.σ prev).
-    refine ⟨{
-      J := Fin.lastCases (ic.I i_star \ ic.I (pr.σ prev)) pr.J
-      σ := Fin.lastCases i_star pr.σ
-      J_subset := ?_
-      processed_cover := ?_ }, ?_, ?_, ?_, ?_⟩
-    · intro k
-      induction k using Fin.lastCases with
-      | last => simp only [Fin.lastCases_last]; exact Set.diff_subset
-      | cast k' => simp only [Fin.lastCases_castSucc]; exact pr.J_subset k'
-    · intro k t ht
-      induction k using Fin.lastCases with
-      | last =>
-        simp only [Fin.lastCases_last] at ht
-        by_cases h_in_prev : t ∈ ic.I (pr.σ prev)
-        · have h_old := pr.processed_cover prev h_in_prev
-          obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-          refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-          simp only [Fin.lastCases_castSucc]; exact hk''
-        · refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-          simp only [Fin.lastCases_last]; exact ⟨ht, h_in_prev⟩
-      | cast k' =>
-        simp only [Fin.lastCases_castSucc] at ht
-        have h_old := pr.processed_cover k' ht
-        obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-        refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-        simp only [Fin.lastCases_castSucc]; exact hk''
-    · intro k'
-      show Fin.lastCases _ pr.J k'.castSucc = pr.J k'
-      exact Fin.lastCases_castSucc k'
-    · intro k'
-      show Fin.lastCases _ pr.σ k'.castSucc = pr.σ k'
-      exact Fin.lastCases_castSucc k'
-    · show Fin.lastCases i_star pr.σ (Fin.last (l + 1)) = i_star
-      simp only [Fin.lastCases_last]
-    · -- covered: decompose t ∈ ic.I i_star by whether t ∈ ic.I (pr.σ prev).
+  · -- Case 1: Jnew := ic.I i_star.
+    refine ⟨extend_refinement pr i_star (ic.I i_star) (subset_refl _)
+      (fun _ ht => Or.inl ht), ?_, ?_, ?_, ?_⟩
+    · exact fun k' => extend_refinement_J_castSucc _ _ _ _ _ _
+    · exact fun k' => extend_refinement_σ_castSucc _ _ _ _ _ _
+    · exact extend_refinement_σ_last _ _ _ _ _
+    · exact extend_refinement_covers _ _ _ _ _
+  · -- Case 2: Jnew := ic.I i_star \ ic.I (pr.σ prev).
+    have hcover : ic.I i_star ⊆
+        (ic.I i_star \ ic.I (pr.σ prev))
+          ∪ ⋃ k' : Fin (l + 1), pr.J k' := by
       intro t ht
       by_cases h_in_prev : t ∈ ic.I (pr.σ prev)
-      · have h_old := pr.processed_cover prev h_in_prev
-        obtain ⟨k'', hk''⟩ := Set.mem_iUnion.mp h_old
-        refine Set.mem_iUnion.mpr ⟨k''.castSucc, ?_⟩
-        simp only [Fin.lastCases_castSucc]; exact hk''
-      · refine Set.mem_iUnion.mpr ⟨Fin.last (l + 1), ?_⟩
-        simp only [Fin.lastCases_last]; exact ⟨ht, h_in_prev⟩
+      · exact Or.inr (pr.processed_cover prev h_in_prev)
+      · exact Or.inl ⟨ht, h_in_prev⟩
+    refine ⟨extend_refinement pr i_star (ic.I i_star \ ic.I (pr.σ prev))
+      Set.diff_subset hcover, ?_, ?_, ?_, ?_⟩
+    · exact fun k' => extend_refinement_J_castSucc _ _ _ _ _ _
+    · exact fun k' => extend_refinement_σ_castSucc _ _ _ _ _ _
+    · exact extend_refinement_σ_last _ _ _ _ _
+    · exact extend_refinement_covers _ _ _ _ _
 
 /-- Iterating `step_succ_at` from `step_zero` eventually yields a
 `PartialRefinement` whose pieces cover every `ic.I i` AND whose
