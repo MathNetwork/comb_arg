@@ -222,14 +222,30 @@ lemma reducedEnergy_range_bddAbove [CompactSpace K] (hf : Continuous f)
 
 /-- **Supremum bound**: `sSup (range C.reducedEnergy) ≤ m₀ − ε`.
 
-From `reducedEnergy_le` (uniform pointwise `≤ m₀ − ε`) and
-`csSup_le`. -/
+Proved by reducing to the generic `sup_le_of_saving` lemma: the
+reduced energy is pointwise dominated by `f` (savings are positive,
+so their sum is non-negative), and on the `δ`-super-level set the
+sum of savings is bounded below by `ε` (a piece containing `t` has
+saving `≥ ε`, remaining savings are non-negative). -/
 lemma reducedEnergy_sSup_le [CompactSpace K] [Nonempty K]
     (hf : Continuous f) (hm : m₀ = sSup (Set.range f)) (hle : ε ≤ δ) :
     sSup (Set.range C.reducedEnergy) ≤ m₀ - ε := by
-  apply csSup_le (Set.range_nonempty _)
-  rintro x ⟨t, rfl⟩
-  exact C.reducedEnergy_le hf hm hle t
+  refine sup_le_of_saving hm
+    (IsCompact.bddAbove (isCompact_range hf)) hle ?hg_le ?h_sav
+  case hg_le =>
+    intro t
+    show f t - ∑ l ∈ C.piecesContaining t, C.saving l ≤ f t
+    have hnonneg : (0 : ℝ) ≤ ∑ l ∈ C.piecesContaining t, C.saving l :=
+      Finset.sum_nonneg fun l _ => le_of_lt (C.saving_pos l)
+    linarith
+  case h_sav =>
+    intro t ht
+    show f t - (f t - ∑ l ∈ C.piecesContaining t, C.saving l) ≥ ε
+    have htu : t ∈ ⋃ l, C.piece l := C.covers_delta_near_critical ht
+    obtain ⟨l, hl⟩ := Set.mem_iUnion.mp htu
+    have hbound : ε ≤ ∑ l' ∈ C.piecesContaining t, C.saving l' :=
+      C.eps_le_sum_saving hl
+    linarith
 
 end FiniteCoverWithWitnesses
 
