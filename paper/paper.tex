@@ -158,15 +158,13 @@ precise theorem we formalize, reads as follows.
 
 \begin{theorem}[Combinatorial core]
 \label{thm:intro-scalar}
-Let $X$ be a pseudo-metric space with an abstract paired-cover
-structure. Let $f : [0,1] \to \mathbb{R}$ be continuous with
-$m_0 = \sup f$ and $m_0 > 0$, and let $N \in \mathbb{N}$ with
-$N > 0$. Suppose that at every $t \in [0,1]$ with
-$f(t) \ge m_0 - 1/N$ there is a \emph{local witness}: an open
-neighborhood $U_t \ni t$, a paired cover $c_t$ in $X$, and a
+Let $f : [0,1] \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$. Suppose
+that at every $t \in [0,1]$ with $f(t) \ge m_0 - 1/N$ there is a
+\emph{local witness}: an open neighborhood $U_t \ni t$ and a
 continuous replacement energy $E_t : [0,1] \to \mathbb{R}$
 satisfying $f(s) - E_t(s) \ge 1/(4N)$ for every $s \in U_t$.
-Then there exist a finite family of closed intervals
+Then there exist a finite family of closed pieces
 $\{p_l \subseteq [0,1]\}_{l \in \iota}$, continuous replacement
 energies $\{E_l : [0,1] \to \mathbb{R}\}_{l \in \iota}$, and
 savings $\{s_l \ge 1/(4N)\}_{l \in \iota}$ satisfying:
@@ -191,6 +189,33 @@ piece-to-interval assignment; and a parity argument on the
 spacing condition delivers the two-fold overlap~(II). The
 bookkeeping corollary below (the existence of a competitor $f'$
 with reduced supremum) is a three-line arithmetic consequence.
+\end{remark}
+
+\begin{remark}[Lean scaffolding not load-bearing]
+\label{rem:lean-scaffolding}
+The Lean implementation
+\lean{exists\_refinement}{Refinement/Assembly.lean} carries
+additional scaffolding not exposed in the statement of
+Theorem~\ref{thm:intro-scalar}: a pseudo-metric ambient space
+$X$ with a \texttt{PairableCover X} typeclass
+(Definition~\ref{def:pcover}), and each local witness carries
+an abstract paired cover $c_t$ in $X$ (the \texttt{cover} field
+of \texttt{LocalWitness}, Definition~\ref{def:witness}). None of
+the \texttt{PairableCover} fields
+(\texttt{leftRegion}, \texttt{rightRegion}, \texttt{diameter},
+\texttt{regions\_disjoint}, \texttt{diameter\_nesting}) nor the
+\texttt{cover} field is consumed by the proof of the
+combinatorial core; they are retained as extension hooks for
+future GMT applications in which $E_t$ arises from a geometric
+replacement family on $X$. The
+\lean{exists\_sup\_reduction}{SupReduction.lean} signature
+additionally carries a vestigial $m_0 > 0$ hypothesis (marked
+\texttt{\_hm\_pos} to flag it as unused) inherited from an
+earlier design. The hypotheses and conclusion of
+Theorem~\ref{thm:intro-scalar} above reflect the load-bearing
+mathematical content; see
+\texttt{docs/design-notes.md~\S\S12--13} for the pending
+scaffolding resolution scheduled for v0.2.
 \end{remark}
 
 Translation from the De~Lellis--Tasnady setting to
@@ -403,18 +428,23 @@ statement (Theorem~\ref{thm:intro-scalar}); the output is a
 \begin{theorem}[Combinatorial core]
 \label{thm:core}
 \leanmargin{exists\_refinement}{Refinement/Assembly.lean}
-Let $X$ be a pseudo-metric space with a \texttt{PairableCover X}
-instance (Definition~\ref{def:pcover}). Let $f : \unit \to
-\mathbb{R}$ be continuous with $m_0 = \sup f$ and $m_0 > 0$, and
-$N \in \mathbb{N}$ with $N > 0$. Suppose every $t \in \NC$
-admits a \texttt{LocalWitness} at $t$ with saving $1/(4N)$
-(Definition~\ref{def:witness}). Then there exists a
+Let $f : \unit \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$.
+Suppose every $t \in \NC$ admits a \texttt{LocalWitness} at $t$
+with saving $1/(4N)$ (Definition~\ref{def:witness}). Then there
+exists a
 \texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$
-(Definition~\ref{def:ref}): a finite family of closed intervals
+(Definition~\ref{def:ref}): a finite family of closed pieces
 $\{p_l \subseteq \unit\}$, continuous replacement energies
 $\{E_l : \unit \to \mathbb{R}\}$, and savings
 $\{s_l \ge 1/(4N)\}$ satisfying conditions~(I)--(IV).
 \end{theorem}
+
+The Lean signature of \texttt{exists\_refinement} carries an
+ambient pseudo-metric $X$ and a \texttt{PairableCover X}
+instance via \texttt{LocalWitness}; neither is consumed by the
+proof of Theorem~\ref{thm:core}. See
+Remark~\ref{rem:lean-scaffolding}.
 
 The proof is given in~\S\ref{sec:proof} as three chained stages:
 Stage~A builds an initial cover from a Lebesgue-number argument
