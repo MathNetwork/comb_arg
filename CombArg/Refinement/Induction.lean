@@ -243,35 +243,21 @@ noncomputable def step_succ_at
     · exact extend_refinement_σ_last _ _ _ _ _
     · exact extend_refinement_covers _ _ _ _ _
 
-/-- Iterating `step_succ_at` from `step_zero` eventually yields a
-`PartialRefinement` whose pieces cover every `ic.I i` AND whose
-`σ` is injective. Proof by strong induction on `remaining.card`. -/
-lemma exists_terminal_refinement
-    (ic : InitialCover (X := X) f m₀ N) :
-    ∃ L : ℕ, ∃ pr : PartialRefinement ic L,
-      Function.Injective pr.σ ∧
-      ∀ i : Fin ic.n, ic.I i ⊆ ⋃ k : Fin L, pr.J k := by
-  suffices aux : ∀ (k l : ℕ) (pr : PartialRefinement ic (l + 1))
-      (_hσ : Function.Injective pr.σ),
+/-- **Termination core** — bounded iteration of `step_succ_at`.
+Given a `PartialRefinement` of length `l + 1` with injective `σ`
+and a budget `k` that bounds the remaining (uncovered) index
+count, produce a terminal refinement. Proof by induction on `k`.
+
+Extracted from `exists_terminal_refinement` below. -/
+private lemma exists_terminal_refinement_aux
+    {ic : InitialCover (X := X) f m₀ N} :
+    ∀ (k l : ℕ) (pr : PartialRefinement ic (l + 1)),
+      Function.Injective pr.σ →
       (Finset.univ.filter
         (fun i : Fin ic.n => ¬ (ic.I i ⊆ ⋃ k' : Fin (l + 1), pr.J k'))).card ≤ k →
       ∃ L : ℕ, ∃ pr' : PartialRefinement ic L,
         Function.Injective pr'.σ ∧
-        ∀ i : Fin ic.n, ic.I i ⊆ ⋃ j : Fin L, pr'.J j by
-    refine aux ic.n 0 (step_zero ic) ?_ ?_
-    · -- step_zero has σ = constant on Fin 1 — trivially injective.
-      intro a b _
-      apply Fin.ext
-      have ha : a.val < 1 := a.isLt
-      have hb : b.val < 1 := b.isLt
-      omega
-    · have h1 : (Finset.univ.filter
-            (fun i : Fin ic.n =>
-              ¬ (ic.I i ⊆ ⋃ k' : Fin 1, (step_zero ic).J k'))).card
-          ≤ (Finset.univ : Finset (Fin ic.n)).card :=
-        Finset.card_filter_le _ _
-      rw [Finset.card_univ, Fintype.card_fin] at h1
-      exact h1
+        ∀ i : Fin ic.n, ic.I i ⊆ ⋃ j : Fin L, pr'.J j := by
   intro k
   induction k with
   | zero =>
@@ -303,7 +289,7 @@ lemma exists_terminal_refinement
         result.property.2.2.1
       have h_i_covered : ic.I i_star ⊆ ⋃ k : Fin (l + 2), pr'.J k :=
         result.property.2.2.2
-      -- i_star ≠ pr.σ k' for all k': from h_uncov + J_subset + processed_cover.
+      -- i_star ≠ pr.σ k' for all k': from h_uncov + processed_cover.
       have h_i_star_fresh : ∀ k' : Fin (l + 1), pr.σ k' ≠ i_star := by
         intro k' h_eq
         apply h_uncov
@@ -330,9 +316,9 @@ lemma exists_terminal_refinement
             rw [this]
       -- Show new remaining.card ≤ n.
       set old_rem : Finset (Fin ic.n) := Finset.univ.filter
-        (fun i : Fin ic.n => ¬ (ic.I i ⊆ ⋃ k' : Fin (l + 1), pr.J k')) with hor
+        (fun i : Fin ic.n => ¬ (ic.I i ⊆ ⋃ k' : Fin (l + 1), pr.J k'))
       set new_rem : Finset (Fin ic.n) := Finset.univ.filter
-        (fun i : Fin ic.n => ¬ (ic.I i ⊆ ⋃ k' : Fin (l + 2), pr'.J k')) with hnr
+        (fun i : Fin ic.n => ¬ (ic.I i ⊆ ⋃ k' : Fin (l + 2), pr'.J k'))
       have h_i_star_old : i_star ∈ old_rem :=
         Finset.mem_filter.mpr ⟨Finset.mem_univ _, h_uncov⟩
       have h_i_star_new : i_star ∉ new_rem := by
@@ -348,8 +334,7 @@ lemma exists_terminal_refinement
         intro h_old
         apply h_not_new
         intro t ht
-        have h_t_in_old := h_old ht
-        obtain ⟨k', hk'⟩ := Set.mem_iUnion.mp h_t_in_old
+        obtain ⟨k', hk'⟩ := Set.mem_iUnion.mp (h_old ht)
         refine Set.mem_iUnion.mpr ⟨k'.castSucc, ?_⟩
         rw [h_J_castSucc]
         exact hk'
@@ -367,5 +352,30 @@ lemma exists_terminal_refinement
       intro i
       by_contra h_not
       exact h_rem ⟨i, h_not⟩
+
+/-- Iterating `step_succ_at` from `step_zero` eventually yields a
+`PartialRefinement` whose pieces cover every `ic.I i` AND whose
+`σ` is injective. Proof by strong induction on `remaining.card`,
+delegated to `exists_terminal_refinement_aux`. -/
+lemma exists_terminal_refinement
+    (ic : InitialCover (X := X) f m₀ N) :
+    ∃ L : ℕ, ∃ pr : PartialRefinement ic L,
+      Function.Injective pr.σ ∧
+      ∀ i : Fin ic.n, ic.I i ⊆ ⋃ k : Fin L, pr.J k := by
+  refine exists_terminal_refinement_aux ic.n 0 (step_zero ic) ?_ ?_
+  · -- step_zero has σ = constant on Fin 1 — trivially injective.
+    intro a b _
+    apply Fin.ext
+    have ha : a.val < 1 := a.isLt
+    have hb : b.val < 1 := b.isLt
+    omega
+  · -- remaining.card ≤ |Fin ic.n| = ic.n.
+    have h1 : (Finset.univ.filter
+          (fun i : Fin ic.n =>
+            ¬ (ic.I i ⊆ ⋃ k' : Fin 1, (step_zero ic).J k'))).card
+        ≤ (Finset.univ : Finset (Fin ic.n)).card :=
+      Finset.card_filter_le _ _
+    rw [Finset.card_univ, Fintype.card_fin] at h1
+    exact h1
 
 end CombArg.Refinement
