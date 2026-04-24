@@ -6,24 +6,33 @@ of minimal hypersurfaces.
 
 ## What this library provides
 
-A single main theorem, `CombArg.exists_sup_reduction`: given a
-continuous function `f : unitInterval → ℝ` on the unit interval, a
-supremum `m₀ = sSup (range f)`, a near-criticality parameter `N > 0`, and
-at every `1/N`-near-critical parameter a `LocalWitness` with saving
-`1/(4N)`, produce a modified function `f' : unitInterval → ℝ` with the
-quantitative improvement `sSup (range f') ≤ m₀ − 1/(4N)`.
+Two main theorems.
+
+**Abstract core** — `CombArg.exists_sup_reduction_of_cover`. Given a
+compact nonempty topological space `K`, a continuous `f : K → ℝ` with
+`m₀ = sSup (range f)`, scalars `0 < ε ≤ δ`, and a
+`FiniteCoverWithWitnesses` of the `δ`-super-level set (a finite cover
+with per-piece replacement energies, per-piece saving floor `ε`, and
+two-fold overlap), produce `f' : K → ℝ` with
+`sSup (range f') ≤ m₀ − ε`.
+
+**One-parameter application** — `CombArg.exists_sup_reduction`.
+Specializes the core to `K = unitInterval` with `δ = 1/N` and
+`ε = 1/(4N)`. Given a continuous `f` and a `LocalWitness` at every
+`1/N`-near-critical parameter (saving `1/(4N)` each), produce `f'` with
+`sSup (range f') ≤ m₀ − 1/(4N)`. The 1D cover-refinement that feeds the
+core is done internally.
 
 This is the combinatorial core of the argument appearing in Pitts (1981),
 Colding–De Lellis (2003), De Lellis–Tasnady (2013), De Lellis–Ramic
-(2017), Marques–Neves's Morse index work, and subsequent min-max
-literature, now extracted as a standalone machine-verified theorem with
-no geometric-measure-theoretic dependencies.
+(2017), and Marques–Neves (2014), extracted as a standalone
+machine-verified result with no geometric-measure-theoretic dependencies.
 
 ## Status
 
 - **Version**: 0.1.0 (initial release)
 - **License**: Apache 2.0
-- **Build**: `lake build` — all 1392 jobs green
+- **Build**: `lake build` — 1536 jobs, all green
 - **Verification**: zero `sorry`, depends only on the three standard Lean 4 /
   Mathlib foundational axioms (`propext`, `Classical.choice`, `Quot.sound`)
 
@@ -41,17 +50,28 @@ Axiom audit:
 
 ```bash
 echo 'import CombArg
+#print axioms CombArg.exists_sup_reduction_of_cover
 #print axioms CombArg.exists_sup_reduction' > /tmp/audit.lean
 lake env lean /tmp/audit.lean
-# Expected: depends on axioms: [propext, Classical.choice, Quot.sound]
+# Expected (both): depends on axioms: [propext, Classical.choice, Quot.sound]
 ```
 
 See [`examples/MinimalUsage.lean`](examples/MinimalUsage.lean) for a
 worked invocation pattern.
 
-## Core result
+## Public theorems
 
 ```lean
+-- Abstract core: generic compact K, parameters (δ, ε) with ε ≤ δ.
+theorem exists_sup_reduction_of_cover
+    {K : Type*} [TopologicalSpace K] [CompactSpace K] [Nonempty K]
+    {f : K → ℝ} (hf : Continuous f)
+    {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
+    {δ ε : ℝ} (_hδ : 0 < δ) (_hε : 0 < ε) (hle : ε ≤ δ)
+    (C : FiniteCoverWithWitnesses K f m₀ δ ε) :
+    ∃ f' : K → ℝ, sSup (Set.range f') ≤ m₀ - ε
+
+-- One-parameter application: K = unitInterval, δ = 1/N, ε = 1/(4N).
 theorem exists_sup_reduction
     {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} (hf : Continuous f)
@@ -69,43 +89,43 @@ tour of the definitions and proof structure.
 
 **This library provides**:
 
-- `exists_sup_reduction` — the main theorem
-- `LocalWitness` — input interface for per-point reducers
+- `exists_sup_reduction_of_cover` — abstract core (generic `K`)
+- `exists_sup_reduction` — one-parameter application on `unitInterval`
+- `FiniteCoverWithWitnesses` — input structure to the core
+- `LocalWitness` — per-point reducer data for the application
 - `PairableCover` — abstract class for paired-cover structures
-- `Refinement`, `InitialCover`, `PartialRefinement` — intermediate
-  structures
-- `exists_refinement` — explicit constructive refinement used
-  internally by the main theorem
+- `InitialCover`, `PartialRefinement` — intermediate 1D structures
+- `exists_refinement` — the 1D cover-refinement feeding the core
 
 **This library does NOT provide**:
 
-- Construction of `LocalWitness` instances (the downstream user's
-  responsibility; in GMT contexts, via replacement families)
-- Any geometric-measure-theoretic machinery (varifolds, integral
-  currents, Caccioppoli sets, etc.)
-- The full min-max theorem (only its combinatorial component)
+- Construction of `LocalWitness` instances (caller's responsibility;
+  in GMT contexts these come from replacement families)
+- Geometric-measure-theoretic machinery (varifolds, integral currents,
+  Caccioppoli sets, etc.)
+- The full min-max existence theorem (only its combinatorial core)
 - Stock instances of `PairableCover` beyond a trivial smoke-test
   instance on `ℝ`
-- Abstract-`K` generalization (the main theorem specializes to
-  `K = unitInterval`; see [`docs/design-notes.md §4`](docs/design-notes.md))
+- Multi-parameter application `K = unitInterval^m` (the core accepts
+  any compact `K`, but only the 1D cover construction is shipped)
 
 ## Public API (v0.1 stability)
 
 The following names are considered stable public API and will not change
 without a major version bump:
 
-- `CombArg.exists_sup_reduction` — main theorem
+- `CombArg.exists_sup_reduction_of_cover` — abstract core theorem
+- `CombArg.exists_sup_reduction` — one-parameter application
+- `CombArg.FiniteCoverWithWitnesses` (structure + fields)
 - `CombArg.LocalWitness` (structure + fields)
 - `CombArg.PairableCover` (class + fields)
-- `CombArg.EnergyBound.Refinement` (structure + fields)
 - `CombArg.Refinement.InitialCover` (structure + fields)
 - `CombArg.Refinement.PartialRefinement` (structure + fields)
 - `CombArg.Refinement.nearCritical`
 - `CombArg.Refinement.exists_refinement`
 
 Internal definitions (`step_succ`, `step_succ_at`, `terminal_twoFold`,
-chain-spacing lemmas, etc.) may change in minor releases. Consumers
-relying on internal definitions do so at their own risk.
+chain-spacing lemmas, etc.) may change in minor releases.
 
 ## Repository structure
 
@@ -116,12 +136,14 @@ comb-arg/
 ├── CITATION.cff
 ├── CHANGELOG.md
 ├── lakefile.lean, lake-manifest.json, lean-toolchain
-├── CombArg.lean             top-level module (re-exports)
+├── CombArg.lean               top-level module (re-exports)
 ├── CombArg/
 │   ├── Witness.lean           PairableCover class, LocalWitness structure
-│   ├── EnergyBound.lean       arithmetic: Refinement → quantitative bound
-│   ├── SupReduction.lean      top-level exists_sup_reduction
-│   ├── Refinement.lean        (facade re-exporting the 6 submodules)
+│   ├── Core.lean              FiniteCoverWithWitnesses +
+│   │                          exists_sup_reduction_of_cover (abstract core)
+│   ├── EnergyBound.lean       re-export stub (subsumed by Core as of v0.2)
+│   ├── SupReduction.lean      exists_sup_reduction (one-parameter application)
+│   ├── Refinement.lean        facade re-exporting the 6 submodules
 │   └── Refinement/
 │       ├── InitialCover.lean  nearCritical + InitialCover
 │       ├── CoverConstruction.lean   exists_initialCover (Lebesgue)
@@ -147,12 +169,13 @@ Reading order:
    status and definition tour.
 2. [`CombArg/Witness.lean`](CombArg/Witness.lean)
    — `PairableCover`, `LocalWitness`.
-3. [`CombArg/EnergyBound.lean`](CombArg/EnergyBound.lean)
-   — `Refinement` structure + arithmetic bookkeeping.
+3. [`CombArg/Core.lean`](CombArg/Core.lean)
+   — `FiniteCoverWithWitnesses` structure + the abstract core theorem
+   and its arithmetic bookkeeping.
 4. [`CombArg/Refinement.lean`](CombArg/Refinement.lean)
-   — refinement-construction facade + six submodules under `Refinement/`.
+   — 1D cover-construction facade + six submodules under `Refinement/`.
 5. [`CombArg/SupReduction.lean`](CombArg/SupReduction.lean)
-   — the top-level chain.
+   — the top-level chain for the one-parameter application.
 6. [`docs/design-notes.md`](docs/design-notes.md) — rationale for each
    structural choice.
 
