@@ -29,8 +29,9 @@ namespace CombArg.Refinement
 open CombArg
 open scoped Classical
 
+section GenericK
+
 variable {K : Type*} [TopologicalSpace K]
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : K → ℝ} {m₀ : ℝ} {N : ℕ}
 
 /-- The `1/N`-near-critical set of `f` with respect to `m₀`. -/
@@ -71,6 +72,8 @@ lemma nearCritical_nonempty [CompactSpace K] [Nonempty K]
   have hinv : (0 : ℝ) < 1 / (N : ℝ) :=
     one_div_pos.mpr (Nat.cast_pos.mpr hN)
   linarith
+
+end GenericK
 
 /-- **Initial cover** — the DLT paper's `{I_i}` family.
 
@@ -147,11 +150,14 @@ structure InitialCover
             Set.Ioo ((intervalCenter i).val - radius i)
                      ((intervalCenter i).val + radius i)
 
+section InitialCoverLemmas
+
+variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
+    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+
 /-- The `i`-th interval `I_i` of an initial cover, as a subset of
 `unitInterval`. Convenience abbreviation. -/
 def InitialCover.I
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) : Set unitInterval :=
   Subtype.val ⁻¹'
     Set.Ioo ((ic.intervalCenter i).val - ic.radius i)
@@ -163,8 +169,6 @@ local witnesses, and coverage of `nearCritical`. The disjointness
 lemmas in `CombArg.Refinement.Disjointness` delegate to this
 projection. -/
 def InitialCover.toSkippedSpacedIntervals
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     (ic : InitialCover (X := X) f m₀ N) : SkippedSpacedIntervals where
   n := ic.n
   intervalCenter := ic.intervalCenter
@@ -175,10 +179,10 @@ def InitialCover.toSkippedSpacedIntervals
 /-- The `I`-field on `InitialCover` agrees with the `I`-field on
 its `SkippedSpacedIntervals` projection (definitional). -/
 lemma InitialCover.toSkippedSpacedIntervals_I
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) :
     ic.toSkippedSpacedIntervals.I i = ic.I i := rfl
+
+end InitialCoverLemmas
 
 /-! ## Auxiliary: closed ball inside an open set on `unitInterval` -/
 

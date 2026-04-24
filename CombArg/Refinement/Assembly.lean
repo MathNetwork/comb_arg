@@ -36,13 +36,14 @@ namespace CombArg.Refinement
 open CombArg
 open scoped Classical
 
+variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
+    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+
 /-! ## TwoFold derivation and saving_bound closure extension -/
 
 /-- **TwoFold for terminal refinement**: if `σ` is injective then
 every point lies in `closure (pr.J k)` for at most two indices `k`. -/
 lemma terminal_twoFold
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     {ic : InitialCover (X := X) f m₀ N} {L : ℕ}
     (pr : PartialRefinement ic L)
     (hσ : Function.Injective pr.σ)
@@ -92,9 +93,7 @@ lemma terminal_twoFold
 `LocalWitness.saving_bound` is known, through
 `LocalWitness.replacementEnergy_continuous` + continuity of `f`. -/
 lemma saving_bound_closure
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} (hf : Continuous f)
-    {m₀ : ℝ} {N : ℕ}
+    (hf : Continuous f)
     {ic : InitialCover (X := X) f m₀ N} {L : ℕ}
     (pr : PartialRefinement ic L) (k : Fin L)
     (t : unitInterval) (ht : t ∈ closure (pr.J k)) :
@@ -130,10 +129,9 @@ Chains the preceding infrastructure:
    `twoFold` via `terminal_twoFold`; `saving_bound` via
    `saving_bound_closure`. -/
 lemma exists_refinement
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} (hf : Continuous f)
-    {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
-    {N : ℕ} (hN : 0 < N)
+    (hf : Continuous f)
+    (hm : m₀ = sSup (Set.range f))
+    (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
                  Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
     Nonempty (FiniteCoverWithWitnesses unitInterval f m₀

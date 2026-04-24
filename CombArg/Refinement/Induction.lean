@@ -26,6 +26,9 @@ namespace CombArg.Refinement
 open CombArg
 open scoped Classical
 
+variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
+    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+
 /-! ## Inductive step `step_succ` -/
 
 /-- **Inductive step**: extend a `PartialRefinement ic (l+1)` to
@@ -49,8 +52,6 @@ Case split on paper's predicate
   `ic.I i_star = (ic.I i_star ∩ ic.I (σ prev)) ∪ (ic.I i_star \ ic.I (σ prev))`
   with the first part handled by `pr.processed_cover prev`. -/
 noncomputable def step_succ
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
     (pr : PartialRefinement ic (l + 1))
     (h_remaining : ∃ i : Fin ic.n,
@@ -157,8 +158,6 @@ bundled with the "`i_star` gets covered" property. Returning a
 `Subtype` (result + property) avoids post-hoc unfolding of the
 tactic-mode `by_cases` dispatch. -/
 noncomputable def step_succ_at
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     {ic : InitialCover (X := X) f m₀ N} {l : ℕ}
     (pr : PartialRefinement ic (l + 1))
     (i_star : Fin ic.n)
@@ -253,8 +252,6 @@ noncomputable def step_succ_at
 `PartialRefinement` whose pieces cover every `ic.I i` AND whose
 `σ` is injective. Proof by strong induction on `remaining.card`. -/
 lemma exists_terminal_refinement
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
     (ic : InitialCover (X := X) f m₀ N) :
     ∃ L : ℕ, ∃ pr : PartialRefinement ic L,
       Function.Injective pr.σ ∧
