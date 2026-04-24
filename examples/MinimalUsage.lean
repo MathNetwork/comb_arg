@@ -3,10 +3,10 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma
+import CombArg
 
 /-!
-# Minimal-usage pattern for `CombLemma.exists_sup_reduction`
+# Minimal-usage pattern for `CombArg.exists_sup_reduction`
 
 This file sketches the invocation pattern for the library's main
 theorem from a downstream consumer's perspective. It is deliberately
@@ -57,14 +57,14 @@ section
   variable {m₀ : ℝ} (hm_pos : 0 < m₀) (hm : m₀ = sSup (Set.range f))
   variable {N : ℕ} (hN : 0 < N)
   variable (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
-      Nonempty (CombLemma.LocalWitness unitInterval X f t
+      Nonempty (CombArg.LocalWitness unitInterval X f t
                   (1 / (4 * (N : ℝ)))))
 
   -- Conclusion: a competitor function `f'` exists with supremum
   -- at most `m₀ - 1/(4N)`.
   example : ∃ f' : unitInterval → ℝ,
       sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) :=
-    CombLemma.exists_sup_reduction hf hm_pos hm hN witness
+    CombArg.exists_sup_reduction hf hm_pos hm hN witness
 end
 ```
 

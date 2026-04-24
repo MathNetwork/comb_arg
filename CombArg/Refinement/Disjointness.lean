@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Refinement.InitialCover
+import CombArg.Refinement.InitialCover
 
 /-!
 # Step 1 — Disjointness via chain spacing and parity rescue
@@ -24,9 +24,9 @@ in all three closures — the ingredient that powers `terminal_twoFold`
   lies in three `closure (ic.I _)` at distinct sorted indices.
 -/
 
-namespace CombLemma.Refinement
+namespace CombArg.Refinement
 
-open CombLemma
+open CombArg
 
 namespace InitialCover
 
@@ -168,4 +168,4 @@ lemma not_three_overlap
 
 end InitialCover
 
-end CombLemma.Refinement
+end CombArg.Refinement

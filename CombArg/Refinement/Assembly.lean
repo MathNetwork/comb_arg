@@ -3,10 +3,10 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Core
-import CombLemma.Refinement.CoverConstruction
-import CombLemma.Refinement.Disjointness
-import CombLemma.Refinement.Induction
+import CombArg.Core
+import CombArg.Refinement.CoverConstruction
+import CombArg.Refinement.Disjointness
+import CombArg.Refinement.Induction
 import Mathlib.Topology.Sequences
 
 /-!
@@ -16,7 +16,7 @@ Chains the preceding infrastructure into the Phase 2 terminal target
 `exists_refinement`, packaging the 1D cover construction as a
 `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
 application-specific input to the abstract core theorem
-`CombLemma.exists_sup_reduction_of_cover`.
+`CombArg.exists_sup_reduction_of_cover`.
 
 * `terminal_twoFold` — if `σ` is injective then at most two pieces of
   a terminal `PartialRefinement` have `t` in their closure. Uses the
@@ -31,9 +31,9 @@ application-specific input to the abstract core theorem
   `saving_bound` via `saving_bound_closure`.
 -/
 
-namespace CombLemma.Refinement
+namespace CombArg.Refinement
 
-open CombLemma
+open CombArg
 open scoped Classical
 
 /-! ## TwoFold derivation and saving_bound closure extension -/
@@ -129,7 +129,7 @@ Given continuous `f : unitInterval → ℝ`, the hypothesis
 `1/N`-near-critical parameter, produces a
 `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` — the
 1D-specialized input for the abstract core theorem
-`CombLemma.exists_sup_reduction_of_cover`.
+`CombArg.exists_sup_reduction_of_cover`.
 
 Chains the preceding infrastructure:
 
@@ -194,4 +194,4 @@ lemma exists_refinement
     intro t
     exact terminal_twoFold pr hσ_inj t
 
-end CombLemma.Refinement
+end CombArg.Refinement

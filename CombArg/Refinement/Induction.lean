@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Refinement.PartialRefinement
+import CombArg.Refinement.PartialRefinement
 import Mathlib.Data.Finset.Max
 
 /-!
@@ -21,9 +21,9 @@ import Mathlib.Data.Finset.Max
   and every `ic.I i ⊆ ⋃ pr.J k`.
 -/
 
-namespace CombLemma.Refinement
+namespace CombArg.Refinement
 
-open CombLemma
+open CombArg
 open scoped Classical
 
 /-! ## Inductive step `step_succ` -/
@@ -376,4 +376,4 @@ lemma exists_terminal_refinement
       by_contra h_not
       exact h_rem ⟨i, h_not⟩
 
-end CombLemma.Refinement
+end CombArg.Refinement

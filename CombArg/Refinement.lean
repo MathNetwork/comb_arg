@@ -3,18 +3,18 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Refinement.CoverConstruction
-import CombLemma.Refinement.Disjointness
-import CombLemma.Refinement.Induction
-import CombLemma.Refinement.InitialCover
-import CombLemma.Refinement.Assembly
-import CombLemma.Refinement.PartialRefinement
+import CombArg.Refinement.CoverConstruction
+import CombArg.Refinement.Disjointness
+import CombArg.Refinement.Induction
+import CombArg.Refinement.InitialCover
+import CombArg.Refinement.Assembly
+import CombArg.Refinement.PartialRefinement
 
 /-!
 # Step 1: Interval refinement construction — facade
 
-Re-exports the six submodules under `CombLemma.Refinement.*`.
-Downstream consumers can `import CombLemma.Refinement` to
+Re-exports the six submodules under `CombArg.Refinement.*`.
+Downstream consumers can `import CombArg.Refinement` to
 access the complete Step 1 API.
 
 From the witness hypothesis (a `LocalWitness` at every

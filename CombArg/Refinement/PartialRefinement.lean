@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Refinement.InitialCover
+import CombArg.Refinement.InitialCover
 
 /-!
 # Step 1 — PartialRefinement state + base case
@@ -15,9 +15,9 @@ import CombLemma.Refinement.InitialCover
   `PartialRefinement ic 1` by setting `J 0 := ic.I ⟨0, ic.n_pos⟩`.
 -/
 
-namespace CombLemma.Refinement
+namespace CombArg.Refinement
 
-open CombLemma
+open CombArg
 
 /-! ## `PartialRefinement` — mid-induction state
 
@@ -74,4 +74,4 @@ def step_zero
     intro t ht
     exact Set.mem_iUnion.mpr ⟨0, ht⟩
 
-end CombLemma.Refinement
+end CombArg.Refinement

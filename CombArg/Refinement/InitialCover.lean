@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Witness
+import CombArg.Witness
 import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.UnitInterval
 
@@ -23,9 +23,9 @@ The near-critical set and the paper's initial cover family.
   open neighborhoods on the unit interval.
 -/
 
-namespace CombLemma.Refinement
+namespace CombArg.Refinement
 
-open CombLemma
+open CombArg
 open scoped Classical
 
 variable {K : Type*} [TopologicalSpace K]
@@ -171,4 +171,4 @@ lemma exists_closedBall_subset_of_open
   simp only [Metric.mem_ball]
   linarith
 
-end CombLemma.Refinement
+end CombArg.Refinement

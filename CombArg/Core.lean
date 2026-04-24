@@ -22,12 +22,12 @@ covering, `LocalWitness`, `PairableCover`). Consumers with an
 application-specific cover construction feed it in; this file handles
 the scalar arithmetic uniformly in `(δ, ε)`.
 
-See `CombLemma/SupReduction.lean` for the 1D application (`K = [0,1]`,
+See `CombArg/SupReduction.lean` for the 1D application (`K = [0,1]`,
 `δ = 1/N`, `ε = 1/(4N)`) that composes the 1D cover construction
-(`CombLemma/Refinement/`) with this core.
+(`CombArg/Refinement/`) with this core.
 -/
 
-namespace CombLemma
+namespace CombArg
 
 open scoped Classical
 
@@ -39,7 +39,7 @@ pieces `{piece l ⊆ K}` covering the `δ`-near-critical set
 per-piece savings bounded below by `ε`, and multiplicity ≤ 2.
 
 Parameterized by the near-critical threshold `δ` and the per-piece
-saving floor `ε`. For the 1D application (`CombLemma/Refinement/`),
+saving floor `ε`. For the 1D application (`CombArg/Refinement/`),
 `δ = 1/N` and `ε = 1/(4N)`.
 
 The multiplicity bound is currently hardcoded to `2`, matching the
@@ -222,4 +222,4 @@ theorem exists_sup_reduction_of_cover
     ∃ f' : K → ℝ, sSup (Set.range f') ≤ m₀ - ε :=
   ⟨C.reducedEnergy, C.reducedEnergy_sSup_le hf hm hle⟩
 
-end CombLemma
+end CombArg

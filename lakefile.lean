@@ -1,7 +1,7 @@
 import Lake
 open Lake DSL
 
-package «comb-lemma» where
+package «comb-arg» where
   leanOptions := #[
     ⟨`pp.unicode.fun, true⟩,
     ⟨`autoImplicit, false⟩
@@ -11,7 +11,7 @@ require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git" @ "master"
 
 @[default_target]
-lean_lib «CombLemma» where
+lean_lib «CombArg» where
 
 lean_lib «test» where
   globs := #[.submodules `test]

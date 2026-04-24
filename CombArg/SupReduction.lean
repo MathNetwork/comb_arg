@@ -3,9 +3,9 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombLemma.Core
-import CombLemma.Refinement
-import CombLemma.Witness
+import CombArg.Core
+import CombArg.Refinement
+import CombArg.Witness
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Topology.Compactness.Compact
 
@@ -13,7 +13,7 @@ import Mathlib.Topology.Compactness.Compact
 # Application — 1D sup reduction
 
 The 1D application of the abstract core theorem
-`CombLemma.exists_sup_reduction_of_cover` (in `CombLemma/Core.lean`).
+`CombArg.exists_sup_reduction_of_cover` (in `CombArg/Core.lean`).
 
 Given a continuous energy `f : unitInterval → ℝ` with `m₀ = sSup
 (range f)`, `N > 0`, and pointwise `LocalWitness`es with saving
@@ -48,7 +48,7 @@ framework (min-max constructions in geometric analysis) layer their
 contradiction on top.
 -/
 
-namespace CombLemma
+namespace CombArg
 
 /-- **1D sup reduction** — application of the abstract core theorem
 `exists_sup_reduction_of_cover` to `K = unitInterval` with
@@ -84,4 +84,4 @@ theorem exists_sup_reduction
     linarith
   exact exists_sup_reduction_of_cover hf hm hδ hε hle C
 
-end CombLemma
+end CombArg

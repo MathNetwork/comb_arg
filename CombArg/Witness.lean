@@ -28,7 +28,7 @@ See `docs/design-notes.md` for the design rationale.
   (`SupReduction.lean`, `EnergyBound.lean`).
 -/
 
-namespace CombLemma
+namespace CombArg
 
 /-- **Abstract pairable-cover class.**
 
@@ -132,4 +132,4 @@ structure LocalWitness
     ∀ s ∈ neighborhood,
       f s - replacementEnergy s ≥ ε
 
-end CombLemma
+end CombArg
