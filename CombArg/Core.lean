@@ -31,6 +31,37 @@ namespace CombArg
 
 open scoped Classical
 
+/-- **Scalar sup reduction lemma** — the pure-arithmetic core.
+
+If `g : K → ℝ` is pointwise dominated by `f` and saves at least
+`ε` on the super-level set `{f ≥ m₀ − δ}`, and `ε ≤ δ`, then
+`sSup (range g) ≤ m₀ − ε`. No topology, no compactness, no cover:
+the content is the single case split on whether `t` belongs to
+the super-level set.
+
+This lemma is independent of the combinatorial-argument
+structure; it packages the single arithmetic fact that the rest
+of `CombArg.Core` composes with the cover-and-witness data. -/
+lemma sup_le_of_saving {K : Type*} [Nonempty K] {f g : K → ℝ}
+    {m₀ δ ε : ℝ}
+    (hm : m₀ = sSup (Set.range f))
+    (hbdd : BddAbove (Set.range f))
+    (hle : ε ≤ δ)
+    (hg_le : ∀ t, g t ≤ f t)
+    (h_sav : ∀ t, f t ≥ m₀ - δ → f t - g t ≥ ε) :
+    sSup (Set.range g) ≤ m₀ - ε := by
+  apply csSup_le (Set.range_nonempty _)
+  rintro y ⟨t, rfl⟩
+  have hft : f t ≤ m₀ := by
+    rw [hm]
+    exact le_csSup hbdd (Set.mem_range_self t)
+  by_cases h : f t ≥ m₀ - δ
+  · have := h_sav t h
+    linarith
+  · have hlt : f t < m₀ - δ := lt_of_not_ge h
+    have := hg_le t
+    linarith
+
 /-- **Finite cover with witnesses.**
 
 The abstract input to the core theorem: a finite index type `ι` of
