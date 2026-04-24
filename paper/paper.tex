@@ -53,18 +53,23 @@
 %   \lean{short_name}{File/Path.lean}
 \newcommand{\lean}[2]{{\normalfont\color{leangreen}%
   \ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}}}
-% Header tag: small right-flushed bracketed name with checkmark,
-% rendered right after the theorem/def/prop label.
+% Header tag: appears on its own line directly under the
+% theorem/def/prop heading, right-flushed. Consistent visual
+% position regardless of heading length.
 %   \leanmargin{short_name}{File/Path.lean}
 \newcommand{\leanmargin}[2]{%
-  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
-    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}]}\par\nopagebreak
+  \nopagebreak\mbox{}\hfill{\normalfont\small\color{leangreen}%
+    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}]}%
+  \par\nopagebreak\vspace{-0.3\baselineskip}%
+  \noindent\ignorespaces
 }
-% Two-decl header tag, comma-separated on one line.
+% Two-decl header tag on its own line.
 \newcommand{\leanmargintwo}[4]{%
-  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
+  \nopagebreak\mbox{}\hfill{\normalfont\small\color{leangreen}%
     [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}},
-     \ensuremath{\checkmark}\,\href{\leanrepo/#4}{\texttt{#3}}]}\par\nopagebreak
+     \ensuremath{\checkmark}\,\href{\leanrepo/#4}{\texttt{#3}}]}%
+  \par\nopagebreak\vspace{-0.3\baselineskip}%
+  \noindent\ignorespaces
 }
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
@@ -509,75 +514,74 @@ $t_{i^*}$. Figure~\ref{fig:step1} reproduces the
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-  font=\small,
-  int/.style={thick},
-  tick/.style={thick},
-  lbl/.style={font=\footnotesize}
+  font=\footnotesize,
+  bar/.style={line width=1.2pt},
+  tick/.style={line width=0.9pt},
+  lbl/.style={font=\footnotesize},
+  gridline/.style={dashed,gray!55,line width=0.4pt}
 ]
-% top row: initial cover {I_i} on a number line
-\draw[-{Latex[length=2mm]}] (-0.3,3) -- (10.5,3);
-\foreach \x/\name/\pos in {0.6/I_1/above, 2.5/I_2/above,
-                           4.4/I_3/above, 6.3/I_4/above,
-                           8.2/I_5/above}{%
-  \draw[int] (\x,3) -- (\x+1.4,3);
-  \node[lbl,\pos=3pt] at (\x+0.7,3) {$\name$};
-  % small ticks at endpoints
-  \draw[tick] (\x,3-0.08) -- (\x,3+0.08);
-  \draw[tick] (\x+1.4,3-0.08) -- (\x+1.4,3+0.08);
-}
-% witness centers t_i (dots below the line)
-\foreach \x/\name in {1.3/t_1, 3.2/t_2, 5.1/t_3, 7.0/t_4, 8.9/t_5}{%
-  \filldraw (\x,3) circle (0.04);
-  \node[lbl,below=2pt] at (\x,3) {$\name$};
-}
-\node[font=\scriptsize,anchor=west] at (-0.3,3.6) {initial cover $\{I_i\}$};
+% J_l bars, stacked vertically (staircase), in DLT Fig 1 left style.
+% Each bar sits at its own y-row; adjacent J_l overlap on the x-axis
+% to show the two-fold invariant.
+\def\ya{5}  \def\yb{4}  \def\yc{3}  \def\yd{2}  \def\ye{1}
 
-% bottom row: refined cover {J_l} -- I_2 split, others kept
-\draw[-{Latex[length=2mm]}] (-0.3,0) -- (10.5,0);
-% J_1 = I_1
-\draw[int,red!60!black] (0.6,0) -- (2.0,0);
-\draw[tick,red!60!black] (0.6,-0.08) -- (0.6,0.08);
-\draw[tick,red!60!black] (2.0,-0.08) -- (2.0,0.08);
-\node[lbl,above=3pt] at (1.3,0) {$J_1$};
-% I_2 is split into J_2 (smaller) and J_3 (smaller) — the split point
-\draw[int,red!60!black] (2.5,0) -- (3.3,0);
-\draw[tick,red!60!black] (2.5,-0.08) -- (2.5,0.08);
-\draw[tick,red!60!black] (3.3,-0.08) -- (3.3,0.08);
-\node[lbl,above=3pt] at (2.9,0) {$J_2$};
-\draw[int,red!60!black] (3.5,0) -- (3.9,0);
-\draw[tick,red!60!black] (3.5,-0.08) -- (3.5,0.08);
-\draw[tick,red!60!black] (3.9,-0.08) -- (3.9,0.08);
-\node[lbl,above=3pt] at (3.7,0) {$J_3$};
-% J_4 = I_3
-\draw[int,red!60!black] (4.4,0) -- (5.8,0);
-\draw[tick,red!60!black] (4.4,-0.08) -- (4.4,0.08);
-\draw[tick,red!60!black] (5.8,-0.08) -- (5.8,0.08);
-\node[lbl,above=3pt] at (5.1,0) {$J_4$};
-% J_5 = I_4
-\draw[int,red!60!black] (6.3,0) -- (7.7,0);
-\draw[tick,red!60!black] (6.3,-0.08) -- (6.3,0.08);
-\draw[tick,red!60!black] (7.7,-0.08) -- (7.7,0.08);
-\node[lbl,above=3pt] at (7.0,0) {$J_5$};
-% J_6 = I_5
-\draw[int,red!60!black] (8.2,0) -- (9.6,0);
-\draw[tick,red!60!black] (8.2,-0.08) -- (8.2,0.08);
-\draw[tick,red!60!black] (9.6,-0.08) -- (9.6,0.08);
-\node[lbl,above=3pt] at (8.9,0) {$J_6$};
-\node[font=\scriptsize,anchor=west] at (-0.3,-0.5) {refinement $\{J_l\}$};
+% vertical dashed guides at overlap boundaries
+\foreach \x in {2.5, 3.5, 4.8, 6.5, 7.8}
+  \draw[gridline] (\x,-0.7) -- (\x,\ya+0.35);
 
-% dashed vertical showing correspondence of split
-\draw[dashed,gray] (2.5,3) -- (2.5,0);
-\draw[dashed,gray] (3.9,3) -- (3.9,0);
+% J_1
+\node[lbl,anchor=east] at (-0.2,\ya) {$J_1$};
+\draw[bar] (0.3,\ya) -- (2.5,\ya);
+\draw[tick] (0.3,\ya-0.12) -- (0.3,\ya+0.12);
+\draw[tick] (2.5,\ya-0.12) -- (2.5,\ya+0.12);
+
+% J_2 (overlaps J_1 on the left)
+\node[lbl,anchor=east] at (-0.2,\yb) {$J_2$};
+\draw[bar] (1.9,\yb) -- (3.5,\yb);
+\draw[tick] (1.9,\yb-0.12) -- (1.9,\yb+0.12);
+\draw[tick] (3.5,\yb-0.12) -- (3.5,\yb+0.12);
+
+% J_3 (overlaps J_2)
+\node[lbl,anchor=east] at (-0.2,\yc) {$J_3$};
+\draw[bar] (3.0,\yc) -- (4.8,\yc);
+\draw[tick] (3.0,\yc-0.12) -- (3.0,\yc+0.12);
+\draw[tick] (4.8,\yc-0.12) -- (4.8,\yc+0.12);
+
+% J_4 (overlaps J_3)
+\node[lbl,anchor=east] at (-0.2,\yd) {$J_4$};
+\draw[bar] (4.3,\yd) -- (6.5,\yd);
+\draw[tick] (4.3,\yd-0.12) -- (4.3,\yd+0.12);
+\draw[tick] (6.5,\yd-0.12) -- (6.5,\yd+0.12);
+
+% J_5 (overlaps J_4)
+\node[lbl,anchor=east] at (-0.2,\ye) {$J_5$};
+\draw[bar] (6.0,\ye) -- (7.8,\ye);
+\draw[tick] (6.0,\ye-0.12) -- (6.0,\ye+0.12);
+\draw[tick] (7.8,\ye-0.12) -- (7.8,\ye+0.12);
+
+% parameter axis [0,1]
+\draw[-{Latex[length=2mm]},line width=0.8pt] (-0.2,-0.3) -- (8.4,-0.3);
+\node[lbl,right=2pt] at (8.4,-0.3) {$t$};
+\draw[tick] (0.0,-0.3-0.12) -- (0.0,-0.3+0.12);
+\draw[tick] (8.0,-0.3-0.12) -- (8.0,-0.3+0.12);
+\node[lbl,below=1pt] at (0.0,-0.4) {$0$};
+\node[lbl,below=1pt] at (8.0,-0.4) {$1$};
+
+% NC bracket underneath the axis
+\draw[line width=1pt,gray!70!black]
+  (0.8,-0.9) -- (7.2,-0.9);
+\node[lbl,below=1pt] at (4.0,-0.95) {$\NC \;=\; \{t : f(t) \ge m_0 - 1/N\}$};
 
 \end{tikzpicture}
-\caption{\label{fig:step1}Refinement of the covering on $[0,1]$,
-after~\cite[Fig.~1]{DLT13}. Top: the initial cover $\{I_i\}$ with
-witness centers $t_i \in \NC$. Bottom: the refined cover
-$\{J_l\}$; here $I_2$ is split into $J_2 \cup J_3$ because the
-paired cover at $t_3$ intersects the one at $t_2$, while
-$I_1, I_3, I_4, I_5$ are kept whole. In the resulting cover every
-$t \in [0,1]$ lies in at most two of the $\overline{J_l}$
-(two-fold invariant).}
+\caption{\label{fig:step1}Staircase layout of the refined cover
+$\{J_l\}$ on $[0,1]$, after~\cite[Fig.~1 left]{DLT13}. Each piece
+$J_l$ is drawn on its own row so that vertical sweeps are legible:
+at any parameter $t \in [0,1]$, the number of rows the vertical
+line crosses is the overlap multiplicity; the cover satisfies
+$|\{l : t \in \overline{J_l}\}| \le 2$ for every $t$ (two-fold
+invariant). The $\NC$ bracket on the parameter axis marks the
+$1/N$-near-critical set, which is contained in
+$\bigcup_l J_l$.}
 \end{figure}
 
 Formally, $\{J_l\}$ is built by induction from $\mathrm{step\_zero}$
