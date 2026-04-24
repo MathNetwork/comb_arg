@@ -12,19 +12,31 @@ formalization.
 
 #### Added
 
-- Main theorem `CombLemma.exists_sup_reduction`: given a
-  continuous `f : unitInterval → ℝ` with `m₀ = sSup (range f) > 0`,
-  a near-criticality parameter `N > 0`, and a `LocalWitness` with
-  saving `1/(4N)` at every `1/N`-near-critical parameter, produce a
-  competitor `f'` with `sSup (range f') ≤ m₀ − 1/(4N)`.
+- **Abstract core theorem** `CombLemma.exists_sup_reduction_of_cover`
+  (`CombLemma/Core.lean`): given a continuous `f : K → ℝ` on a
+  compact nonempty space `K` with `m₀ = sSup (range f)` and scalars
+  `0 < ε ≤ δ`, from a `FiniteCoverWithWitnesses K f m₀ δ ε` produce
+  a competitor `f'` with `sSup (range f') ≤ m₀ − ε`. Parameterizes
+  the near-critical threshold `δ` and the per-piece saving floor `ε`.
+- **One-parameter application** `CombLemma.exists_sup_reduction`
+  (`CombLemma/SupReduction.lean`): specializes the core to
+  `K = unitInterval`, `δ = 1/N`, `ε = 1/(4N)`. Given a continuous
+  `f : unitInterval → ℝ` with `m₀ = sSup (range f) > 0`, `N > 0`,
+  and a `LocalWitness` with saving `1/(4N)` at every
+  `1/N`-near-critical parameter, produce `f'` with
+  `sSup (range f') ≤ m₀ − 1/(4N)`.
+- Cover structure `FiniteCoverWithWitnesses` (`CombLemma/Core.lean`):
+  finite multiplicity-bounded cover of the `δ`-near-critical set,
+  per-piece savings `≥ ε`, with replacement energies and the
+  `twoFold` invariant. The abstract input to the core theorem.
 - Input interface: `LocalWitness` structure bundling an open
   neighborhood, a paired cover, a continuous replacement energy, and
   the quantitative saving bound.
 - Abstract cover class: `PairableCover` with `Cover`, `leftRegion`,
   `rightRegion`, `diameter`, `regions_disjoint`, and
   `diameter_nesting`.
-- Supporting structures: `EnergyBound.Refinement`,
-  `Refinement.InitialCover`, `Refinement.PartialRefinement`.
+- Supporting structures: `Refinement.InitialCover`,
+  `Refinement.PartialRefinement`.
 - Near-critical set analysis: `nearCritical`, `isCompact_nearCritical`,
   `nearCritical_nonempty`.
 - Initial cover construction: `exists_initialCover` — a grid plus
@@ -40,10 +52,8 @@ formalization.
   `InitialCover.closure_disjoint_of_even_gap`,
   `InitialCover.not_three_overlap` — the three-layer parity
   argument documented in `docs/design-notes.md §11`.
-- Assembly: `terminal_twoFold`, `saving_bound_closure`,
-  `exists_refinement`.
-- Arithmetic bookkeeping (`CombLemma/EnergyBound.lean`) tying the
-  quantitative `1/(4N)` bound.
+- 1D assembly: `terminal_twoFold`, `saving_bound_closure`,
+  `exists_refinement` (output now a `FiniteCoverWithWitnesses`).
 
 #### Verified
 
@@ -68,14 +78,15 @@ formalization.
 #### Known limitations
 
 - `PairableCover` is scaffolding: the class is carried in type
-  signatures but not referenced by the proof of
-  `exists_sup_reduction`. See
-  [`docs/design-notes.md §12`](docs/design-notes.md) for the pending
-  A/B/C decision (retain as extension point / rework to load-bearing /
-  simplify out). Resolution planned for v0.2.
-- Single-parameter sweepouts only: the main theorem specializes to
-  `K = unitInterval`. Abstract-`K` generalization is planned work
-  (see [`docs/design-notes.md §4`](docs/design-notes.md)).
+  signatures but not referenced by the proof of the core theorem.
+  See [`docs/design-notes.md §12`](docs/design-notes.md) for the
+  pending A/B/C decision (retain as extension point / rework to
+  load-bearing / simplify out). Resolution planned for v0.2.
+- Single-parameter applications only: a second application for
+  `K = unitInterval^m` (multi-parameter sweepouts) is planned for
+  a future release. The abstract core `exists_sup_reduction_of_cover`
+  is already generic in `K`; only an additional cover construction
+  is required.
 - No stock `PairableCover` instances shipped beyond the trivial one
   on `ℝ` in `test/Smoke.lean`.
 

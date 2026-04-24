@@ -186,176 +186,177 @@ own local-replacement lemma can then invoke the combinatorial
 step as a one-line import, with the verification following
 along.
 
-\S\ref{sec:def-thm} gives the definitions and the main theorem;
+\S\ref{sec:spec} gives the library specification (interface, public API, internal lemmas);
 \S\ref{sec:proof} sketches the proof; \S\ref{sec:discussion}
 records the structural details the formalization makes explicit.
 
-\section{Definitions and theorem}
-\label{sec:def-thm}
+\section{Specification}
+\label{sec:spec}
 
-Throughout this section, let $X$ be a pseudo-metric space carrying
-an abstract paired-cover structure (Definition~\ref{def:pcover}).
-Let $K$ be a topological space. The main theorem specializes to
-$K = \unit$ (see Remark~\ref{rem:K-unit}).
+We present the library specification following standard software
+documentation conventions: interface first
+(\S\ref{sec:interface}), public API
+(\S\ref{sec:core-spec}--\S\ref{sec:app-spec}), internal lemmas
+(\S\ref{sec:internal}).
 
-\subsection{Paired covers and local witnesses}
+\subsection{Interface: types and structures}
+\label{sec:interface}
 
-\begin{definition}[Pairable cover class]
+Throughout, \texttt{K} denotes a topological space (the parameter
+space), \texttt{X} a pseudo-metric space (the ambient space whose
+covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
+a continuous scalar energy.
+
+\begin{definition}[\texttt{PairableCover} class]
 \label{def:pcover}
-A \emph{pairable-cover} structure on $X$ consists of: a type
-$\mathrm{Cover}$, two functions
-$\mathrm{leftRegion}, \mathrm{rightRegion} : \mathrm{Cover}
-\to 2^X$, a diameter function
-$\mathrm{diameter} : \mathrm{Cover} \to \mathbb{R}_{\ge 0}$,
-a disjointness axiom
-$\mathrm{leftRegion}(c) \cap \mathrm{rightRegion}(c) = \emptyset$,
-and a diameter-nesting axiom stating that overlapping combined
-regions of diameter-comparable covers are ordered by
-inclusion \defref{PairableCover}{Witness.lean}.\footnote{See
-Remark~\ref{rem:scaffolding} on the scaffolding status of this
-class.}
+A \texttt{PairableCover X} instance declares, for each abstract
+\texttt{c : Cover}, a left region and a right region in $X$ and a
+scalar diameter, subject to two axioms: the two regions are
+disjoint, and overlapping combined regions of diameter-comparable
+covers are ordered by
+inclusion.\footnote{See Remark~\ref{rem:scaffolding} on the
+scaffolding status of this class.} Formal:
+\defref{PairableCover}{Witness.lean}.
 \end{definition}
 
-\begin{definition}[Local witness]
+\begin{definition}[\texttt{LocalWitness} structure]
 \label{def:witness}
-A \emph{local witness} at $t : K$ with saving threshold
-$\varepsilon \in \mathbb{R}$ is a tuple consisting of: an open
-set $U \ni t$ in $K$, a cover $c : \mathrm{Cover}$, a continuous
-function $E : K \to \mathbb{R}$, and the uniform inequality
-$\forall s \in U,\; f(s) - E(s) \ge \varepsilon$, where
-$f : K \to \mathbb{R}$ is the ambient energy \defref{LocalWitness}{Witness.lean}.
+A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
+neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
+continuous replacement energy $E : K \to \mathbb{R}$, and the
+inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
+Formal: \defref{LocalWitness}{Witness.lean}.
 \end{definition}
 
 \begin{definition}[Near-critical set]
 \label{def:NC}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
-$N \in \mathbb{N}$, the \emph{$1/N$-near-critical set} is
-$\NC = \{t \in K : f(t) \ge m_0 - 1/N\}$ \defref{nearCritical}{Refinement/InitialCover.lean}.
+$\delta \ge 0$, the $\delta$-near-critical set is
+$\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
+write $\NC$. Formal:
+\defref{nearCritical}{Refinement/InitialCover.lean}.
 \end{definition}
 
-\begin{proposition}[Compactness of the near-critical set]
+\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
+\label{def:ref}
+A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
+carries a finite nonempty index type $\iota$, pieces
+$\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
+$\{E_l : K \to \mathbb{R}\}$, and savings
+$\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
+(I) $f - E_l \ge s_l$ on $p_l$;
+(II) each $t \in K$ lies in at most two pieces;
+(III) $s_l \ge \varepsilon$ for all $l$;
+(IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
+Formal: \defref{FiniteCoverWithWitnesses}{Core.lean}.
+\end{definition}
+
+\begin{definition}[\texttt{InitialCover} structure]
+\label{def:ic}
+Specialized to $K = \unit$. An
+\texttt{InitialCover X f m\textsubscript{0} N} carries a finite
+family of open intervals $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
+for $i = 1, \ldots, n$, each paired with a witness center
+$w_i \in \NC$ and a local witness at $w_i$ with saving $1/(4N)$,
+subject to
+(a) spacing: $c_i + r_i < c_{i+2} - r_{i+2}$ for all valid $i$;
+(b) containment: $I_i \subseteq U_{w_i}$;
+(c) coverage: $\NC \subseteq \bigcup_i I_i$.\footnote{Conditions
+(a) and (b) transcribe DLT~\cite[\S3.2]{DLT13}'s spacing and
+subset conditions verbatim; the pair $(c_i, w_i)$ replaces DLT's
+single $t_i$, see Finding~2 in \S\ref{sec:discussion}.} Formal:
+\defref{InitialCover}{Refinement/InitialCover.lean}.
+\end{definition}
+
+\begin{definition}[\texttt{PartialRefinement} structure]
+\label{def:pr}
+Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
+\texttt{PartialRefinement ic $\ell$} carries pieces
+$J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
+$\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
+(i) $J_k \subseteq I_{\sigma(k)}$ for each $k$;
+(ii) $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each $k$.
+Formal:
+\defref{PartialRefinement}{Refinement/PartialRefinement.lean}.
+\end{definition}
+
+\subsection{Public API: abstract core}
+\label{sec:core-spec}
+
+\begin{theorem}[\texttt{exists\_sup\_reduction\_of\_cover}]
+\label{thm:core}
+\leavevmode\par\noindent
+\textbf{Input.} A compact, nonempty topological space $K$; a
+continuous $f : K \to \mathbb{R}$; $m_0 = \sup f$; scalars
+$0 < \varepsilon \le \delta$; a
+\texttt{FiniteCoverWithWitnesses}$(K, f, m_0, \delta, \varepsilon)$
+(Definition~\ref{def:ref}).
+
+\par\noindent
+\textbf{Output.} There exists $f' : K \to \mathbb{R}$ with
+$\sup f' \le m_0 - \varepsilon$.
+
+\par\noindent
+Formal: \defref{exists\_sup\_reduction\_of\_cover}{Core.lean}.
+\end{theorem}
+
+\subsection{Public API: one-parameter application}
+\label{sec:app-spec}
+
+\begin{theorem}[\texttt{exists\_sup\_reduction}]
+\label{thm:main}
+\leavevmode\par\noindent
+\textbf{Input.} A pseudo-metric space $X$ with a
+\texttt{PairableCover X} instance (Definition~\ref{def:pcover});
+a continuous $f : \unit \to \mathbb{R}$; $m_0 \in \mathbb{R}$
+with $m_0 > 0$ and $m_0 = \sup f$; $N \in \mathbb{N}$ with
+$N > 0$; for every $t \in \NC$ a \texttt{LocalWitness} at $t$
+with saving $1/(4N)$ (Definition~\ref{def:witness}).
+
+\par\noindent
+\textbf{Output.} There exists $f' : \unit \to \mathbb{R}$ with
+$\sup f' \le m_0 - 1/(4N)$.
+
+\par\noindent
+Specializes Theorem~\ref{thm:core} to $K = \unit$,
+$\delta = 1/N$, $\varepsilon = 1/(4N)$. Formal:
+\defref{exists\_sup\_reduction}{SupReduction.lean}.
+\end{theorem}
+
+\subsection{Internal lemmas}
+\label{sec:internal}
+
+The declarations below are consumed by Theorem~\ref{thm:main};
+proofs are sketched in \S\ref{sec:proof}.
+
+\begin{proposition}[Compactness of $\NC$]
 \label{prop:NC-compact}
-If $K$ is compact and $f$ is continuous, $\NC$ is closed in $K$,
-hence compact. If additionally $m_0 = \sup f$ and $N > 0$, $\NC$
-is nonempty \defref{isCompact\_nearCritical}{Refinement/InitialCover.lean}, \defref{nearCritical\_nonempty}{Refinement/InitialCover.lean}.
+If $K$ is compact and $f$ continuous, $\NC$ is compact. If
+additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
+Formal:
+\defref{isCompact\_nearCritical}{Refinement/InitialCover.lean},
+\defref{nearCritical\_nonempty}{Refinement/InitialCover.lean}.
 \end{proposition}
 
-\subsection{Intermediate structures}
-
-Fix now $K = \unit$.
-
-\begin{definition}[Initial cover]
-\label{def:ic}
-An \emph{initial cover} for $(f, m_0, N)$ is a finite family
-$\{I_i\}_{i=1}^n$ of open intervals in $\unit$, each
-$I_i = (c_i - r_i, c_i + r_i) \cap \unit$, together with a
-witness center $w_i \in \NC$ and a local witness at $w_i$ with
-saving $1/(4N)$, such that
-\begin{enumerate}
-\item[(a)] $c_i + r_i < c_{i+2} - r_{i+2}$ for all valid $i$
-  (non-overlap at index gap 2);
-\item[(b)] $I_i \subset U_{w_i}$ (the $i$-th interval is
-  contained in the $i$-th witness neighborhood);
-\item[(c)] $\NC \subset \bigcup_i I_i$.
-\end{enumerate}
-We write this structure
-$\mathrm{InitialCover}(X, f, m_0, N)$ \defref{InitialCover}{Refinement/InitialCover.lean}.\footnote{Conditions (a) and (b) transcribe DLT~\cite[\S3.2]{DLT13}'s spacing and subset conditions verbatim; the pair $(c_i, w_i)$ replaces DLT's single $t_i$, see Finding~2 in \S\ref{sec:discussion}.}
-\end{definition}
-
-\begin{definition}[Partial refinement]
-\label{def:pr}
-Given an initial cover $\mathrm{ic}$ and a natural $\ell$, a
-\emph{partial refinement of length $\ell$} consists of pieces
-$J_1,\ldots,J_\ell \subseteq \unit$ and an index assignment
-$\sigma : \{1,\ldots,\ell\} \to \{1,\ldots,n\}$ satisfying
-\begin{enumerate}
-\item[(i)] $J_k \subseteq I_{\sigma(k)}$ for each $k$;
-\item[(ii)] $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each
-  $k$.
-\end{enumerate}
-We write this structure
-$\mathrm{PartialRefinement}(\mathrm{ic}, \ell)$ \defref{PartialRefinement}{Refinement/PartialRefinement.lean}.
-\end{definition}
-
-\begin{definition}[Refinement]
-\label{def:ref}
-A \emph{refinement} of $(K, X, f, m_0, N)$ consists of a finite
-nonempty index set $\iota$, pieces $\{p_l\}_{l \in \iota}$
-covering $\NC$, a replacement-energy family
-$\{E_l : K \to \mathbb{R}\}_{l \in \iota}$, a saving
-family $\{s_l \in \mathbb{R}_{>0}\}_{l \in \iota}$, and three
-invariants: (I) $f - E_l \ge s_l$ on $p_l$; (II) each point of
-$K$ lies in at most two pieces; (III) $s_l \ge 1/(4N)$ for all
-$l$ \defref{EnergyBound.Refinement}{EnergyBound.lean}.
-\end{definition}
-
-\subsection{Main theorem}
-
-\begin{theorem}[$1/(4N)$ sup reduction]
-\label{thm:main}
-Let $X$ be a pseudo-metric space with a pairable-cover structure
-(Definition~\ref{def:pcover}). Let $f : \unit \to \mathbb{R}$
-be continuous, let $m_0 \in \mathbb{R}$ with $m_0 > 0$ and
-$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$. Assume
-that for every $t \in \NC$ there exists a local witness at $t$
-with saving $1/(4N)$ (Definition~\ref{def:witness}). Then there
-exists $f' : \unit \to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \frac{1}{4N}.
-\]
-\end{theorem}
-
-\begin{proof}
-Follows from Propositions~\ref{prop:exists-ic},
-\ref{prop:exists-terminal},
-and Theorem~\ref{thm:arithmetic} by
-Lemma~\ref{lem:assembly}; see \S\ref{sec:proof}. The full chain
-is \defref{exists\_sup\_reduction}{SupReduction.lean}, which
-composes \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}
-with \defref{EnergyBound.exists\_reducedEnergy\_sup\_lt}{EnergyBound.lean}.
-\end{proof}
-
-\begin{remark}
-\label{rem:K-unit}
-Theorem~\ref{thm:main} specializes to $K = \unit$. The
-specialization enters Definitions~\ref{def:ic}~and~\ref{def:pr}
-(intervals of $\unit$, $\sigma$ into a finite index set coming
-from the cover of $\NC \subset \unit$). The arithmetic step
-(Theorem~\ref{thm:arithmetic}) is formulated for general compact
-$K$.
-\end{remark}
-
-\begin{remark}[Reduction, not contradiction]
-\label{rem:reduction}
-The theorem is stated as an existence of $f'$ rather than as a
-contradiction $\bot$. This is deliberate: the hypothesis gives
-$m_0 = \sup f$ for a specific $f$, not that $m_0$ is a
-category-theoretic min-max level. Consumers who supply an
-admissible class $\mathcal{A}$ with $m_0 = \inf_{g \in
-\mathcal{A}} \sup g$ and $f \in \mathcal{A}$ layer the
-contradiction on top by showing $f' \in \mathcal{A}$. See~\cite[\S3.2]{DLT13} for the GMT instance.
-\end{remark}
-
-\subsection{The arithmetic half}
-
-The arithmetic half takes any refinement of $(K, X, f, m_0, N)$
-and builds $f'$ by scalar subtraction.
-
-\begin{theorem}[Arithmetic assembly]
-\label{thm:arithmetic}
-Let $K$ be compact and nonempty, $f : K \to \mathbb{R}$
-continuous, $m_0 = \sup f$ with $m_0 > 0$, $N > 0$, and let
-$R$ be a refinement of $(K, X, f, m_0, N)$
-(Definition~\ref{def:ref}). Then there exists
-$f' : K \to \mathbb{R}$ with $\sup f' \le m_0 - 1/(4N)$.
-\end{theorem}
-
-The proof constructs
-$f'(t) := f(t) - \sum_{l \in \iota : t \in p_l} s_l$
-and establishes the bound by a case split on whether $t \in \NC$,
-using invariants~(II) and~(III) from
-Definition~\ref{def:ref}. The formal
-statement is \defref{EnergyBound.exists\_reducedEnergy\_sup\_lt}{EnergyBound.lean}.
+\begin{itemize}
+\item \defref{exists\_initialCover}{Refinement/CoverConstruction.lean}
+--- existence of an \texttt{InitialCover} via a grid plus
+Lebesgue-number construction on the compact sublevel set $\NC$.
+\item \defref{exists\_terminal\_refinement}{Refinement/Induction.lean}
+--- existence of a terminal \texttt{PartialRefinement} with
+injective $\sigma$ via bounded smallest-index induction with
+two-case dispatch.
+\item \defref{InitialCover.not\_three\_overlap}{Refinement/Disjointness.lean}
+--- at most two among any three distinct \texttt{InitialCover}
+intervals overlap at a common point (parity rescue).
+\item \defref{saving\_bound\_closure}{Refinement/Assembly.lean}
+--- the open-neighborhood saving bound in \texttt{LocalWitness}
+extends to the closure via continuity of $E$.
+\item \defref{Refinement.exists\_refinement}{Refinement/Assembly.lean}
+--- packages the 1D cover construction output as a
+\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$,
+the input to Theorem~\ref{thm:core}.
+\end{itemize}
 
 \section{Proof structure}
 \label{sec:proof}
@@ -363,9 +364,9 @@ statement is \defref{EnergyBound.exists\_reducedEnergy\_sup\_lt}{EnergyBound.lea
 We split the proof of Theorem~\ref{thm:main} into three stages.
 Stage~A builds an initial cover from the witness hypothesis.
 Stage~B runs an induction producing a terminal partial refinement
-with injective $\sigma$. Stage~C assembles the refinement by
-extending saving bounds to closures and deriving TwoFold.
-Theorem~\ref{thm:arithmetic} closes.
+with injective $\sigma$. Stage~C assembles the finite cover with
+witnesses by extending saving bounds to closures and deriving
+TwoFold. Theorem~\ref{thm:core} closes.
 
 \subsection{Stage A: existence of the initial cover}
 
@@ -526,12 +527,13 @@ Coverage of $\NC$ chains $\NC \subseteq \bigcup_i I_i
 Theorem~\ref{thm:main} now follows: chain
 Propositions~\ref{prop:exists-ic}~and~\ref{prop:exists-terminal},
 invoke Lemma~\ref{lem:assembly}, and apply
-Theorem~\ref{thm:arithmetic}.
+Theorem~\ref{thm:core}.
 
 \section{Discussion}
 \label{sec:discussion}
 
 \subsection{Eight structural points}
+\label{ss:points}
 
 Formalizing the proof surfaces eight structural details that the
 prose exposition in~\cite{Pit81,CDL03,DLT13,DLR17,DL12,MN14}
@@ -543,7 +545,7 @@ formal proof must resolve.
 \item The witness saving must commit to $\varepsilon = 1/(4N)$
   exactly, not $\exists \varepsilon > 0$. The weaker hypothesis
   does not thread through the lower bound on the
-  sum-of-savings in Theorem~\ref{thm:arithmetic}.
+  sum-of-savings in Theorem~\ref{thm:core}.
 
 \item The single $t_i$ of DLT~\cite[\S3.2]{DLT13} must be
   decoupled into an interval center $c_i$ and a witness
@@ -851,8 +853,9 @@ in: CPP 2020, 367--381.
 CombLemma.lean          top-level re-export
 CombLemma/
   Witness.lean          PairableCover, LocalWitness
-  EnergyBound.lean      EnergyBound.Refinement, arithmetic
-  SupReduction.lean     exists_sup_reduction (main theorem)
+  Core.lean             FiniteCoverWithWitnesses, exists_sup_reduction_of_cover
+  EnergyBound.lean      re-export stub (subsumed by Core as of v0.2)
+  SupReduction.lean     exists_sup_reduction (one-parameter app)
   Refinement.lean       facade re-exporting six submodules
   Refinement/
     InitialCover.lean   nearCritical, InitialCover
@@ -867,9 +870,10 @@ test/Smoke.lean         trivial PairableCover on R
 examples/MinimalUsage.lean  invocation pattern for consumers
 \end{lstlisting}
 
-Thirteen Lean 4 files, approximately 1937 lines including
-docstrings and copyright headers; no individual file exceeds
-400 lines.
+Fourteen Lean 4 files. The \texttt{Core.lean} module is the
+abstract-core target; \texttt{SupReduction.lean} is a thin wrapper
+that composes the 1D cover construction in
+\texttt{Refinement/} with the core.
 
 \section{Build and axiom audit}
 \label{app:axioms}
