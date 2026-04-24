@@ -603,8 +603,65 @@ $\sigma(k)$ correspond to already-covered indices.
 
 \subsection{Stage C: assembly}
 
-The final stage extends the saving bound from open $J_k$ to
-$\overline{J_k}$ and derives TwoFold from spacing~(a).
+Stage C packages the refined covering into a
+\texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}),
+which the core theorem then converts into the sup-reducing $f'$.
+For comparison, we quote the corresponding passage in DLT, where
+the packaging and the final arithmetic live side by side.
+
+\begin{quote}\small
+\textbf{DLT \cite[\S3.2, Step~2]{DLT13}.}
+We apply Lemma~3.1 to conclude the existence of a family
+$\{\partial \Omega_{i,t}\}$ with: $\Omega_{i,t} = \Omega_t$ if
+$t \notin (a_i, b_i)$ and $\Omega_{i,t} \setminus U_i' =
+\Omega_t \setminus U_i'$ if $t \in (a_i, b_i)$;
+$\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) + 1/(4N)$ for every $t$;
+$\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) - 1/(2N)$ if
+$t \in (a_i + \delta, b_i - \delta)$. If
+$t \in (a_i, b_i) \cap (a_j, b_j)$ then $j = i+1$ and
+$\mathrm{dist}(U_i', U_{i+1}') > 0$; define
+$\Omega'_t = \Omega_t$ outside $\bigcup J_i$,
+$\Omega'_t = \Omega_{i,t}$ inside a single $J_i$, and
+$\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')] \cup
+[\Omega_{i,t} \cap U_i'] \cup [\Omega_{i+1,t} \cap U_{i+1}']$
+on $J_i \cap J_{i+1}$. If $t \notin K$ then $\partial \Omega'_t$
+loses at most $2 \cdot (4N)^{-1}$ in area; if $t \in K$ then
+$\partial \Omega'_t$ gains at least $(2N)^{-1}$ in some $U_i'$
+and loses at most $(4N)^{-1}$ in at most one $U_l'$, so
+$\mathcal{H}^n(\partial \Omega'_t) \le \mathcal{H}^n(\partial
+\Omega_t) - (4N)^{-1}$.
+\end{quote}
+
+Our formalization splits DLT's passage along the structural
+boundary between the cover and the arithmetic. The three bullets
+on $\{\partial \Omega_{i,t}\}$ are the data we bundle into a
+\texttt{LocalWitness} at each near-critical parameter: the scalar
+replacement energy $E_{\sigma(k)}$ plays the role of
+$\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood $U_t$
+plays $(a_i, b_i)$, and the $1/(4N)$ saving is the bullet
+``$\mathcal{H}^n(\partial \Omega_{i,t}) \le \mathcal{H}^n(\partial
+\Omega_t) - 1/(2N)$'' already at the cover-refinement stage (our
+Stage~B produces pieces on which the witness saving holds). The
+observation ``$t \in (a_i, b_i) \cap (a_j, b_j) \Rightarrow j =
+i+1$'' is our TwoFold invariant
+(Proposition~\ref{prop:twofold}). The case split at $t \notin K$
+versus $t \in K$ is the two-branch case split in the pointwise
+argument for \texttt{reducedEnergy\_le} inside the abstract core
+(\S\ref{sec:core-spec}). The piecewise definition of
+$\Omega'_t$ corresponds to the scalar formula
+$f'(t) = f(t) - \sum_{l : t \in \overline{J_l}} s_l$; DLT's
+piecewise construction is an explicit sum over the at-most-two
+pieces containing $t$. The $(4N)^{-1}$ appearing at the end of
+DLT's paragraph is our $\varepsilon$; the abstract core generalises
+the pair $(1/N, 1/(4N))$ to $(\delta, \varepsilon)$ with
+$\varepsilon \le \delta$ and reads off the same arithmetic
+unchanged.
+
+The present stage proves the two propositions that feed the core:
+the saving bound extends from open $J_k$ to $\overline{J_k}$
+(continuity), and the TwoFold invariant holds (from spacing~(a)).
 
 \begin{proposition}[TwoFold via parity]
 \label{prop:twofold}
