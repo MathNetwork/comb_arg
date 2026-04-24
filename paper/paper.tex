@@ -17,6 +17,7 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,calc}
 \geometry{margin=1in}
+\setlength{\emergencystretch}{3em}
 
 \lstset{
   basicstyle=\small\ttfamily,
@@ -44,23 +45,26 @@
 \newcommand{\unit}{\mathbf{I}}
 \newcommand{\NC}{\mathrm{NC}}
 \newcommand{\leanrepo}{https://github.com/MathNetwork/comb_arg/blob/v0.1.0/CombArg}
-% Clickable Lean declaration tags — Lean-logo purple, inline.
-\definecolor{leanpurple}{HTML}{6F2DA8}
+% Clickable Lean declaration tags — verified-green with checkmark.
+% \normalfont inside each tag forces upright texttt even when the
+% enclosing theorem body is italic (amsthm default).
+\definecolor{leangreen}{HTML}{2E7D32}
 % Inline clickable tag.
 %   \lean{short_name}{File/Path.lean}
-\newcommand{\lean}[2]{\href{\leanrepo/#2}{\color{leanpurple}\texttt{#1}}}
-% Header tag: small right-flushed bracketed name on its own line,
+\newcommand{\lean}[2]{{\normalfont\color{leangreen}%
+  \ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}}}
+% Header tag: small right-flushed bracketed name with checkmark,
 % rendered right after the theorem/def/prop label.
 %   \leanmargin{short_name}{File/Path.lean}
 \newcommand{\leanmargin}[2]{%
-  \nopagebreak\hfill{\small\color{leanpurple}%
-    [\href{\leanrepo/#2}{\texttt{#1}}]}\par\nopagebreak
+  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
+    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}}]}\par\nopagebreak
 }
 % Two-decl header tag, comma-separated on one line.
 \newcommand{\leanmargintwo}[4]{%
-  \nopagebreak\hfill{\small\color{leanpurple}%
-    [\href{\leanrepo/#2}{\texttt{#1}},
-     \href{\leanrepo/#4}{\texttt{#3}}]}\par\nopagebreak
+  \nopagebreak\hfill{\normalfont\small\color{leangreen}%
+    [\ensuremath{\checkmark}\,\href{\leanrepo/#2}{\texttt{#1}},
+     \ensuremath{\checkmark}\,\href{\leanrepo/#4}{\texttt{#3}}]}\par\nopagebreak
 }
 
 \title{Compiling the Almgren--Pitts Combinatorial Argument}
@@ -315,9 +319,10 @@ intervals overlap at a common point (parity rescue).
 --- the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
 \item \lean{exists\_refinement}{Refinement/Assembly.lean}
---- packages the 1D cover construction output as a
-\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$,
-the input to Theorem~\ref{thm:core}.
+--- packages the 1D construction output as a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$; the input
+to Theorem~\ref{thm:core}.
 \end{itemize}
 
 Figure~\ref{fig:arch} shows the layered architecture.
