@@ -29,13 +29,12 @@ namespace CombArg.Refinement
 
 namespace InitialCover
 
-variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+variable {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
 
 /-- **Chain spacing**, delegated from
 `SkippedSpacedIntervals.chain_spacing`. -/
 lemma chain_spacing
-    (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) :
+    (ic : InitialCover f m₀ N) (i : Fin ic.n) :
     ∀ (m : ℕ) (j : Fin ic.n), j.val = i.val + 2 * (m + 1) →
       (ic.intervalCenter i).val + ic.radius i <
         (ic.intervalCenter j).val - ic.radius j :=
@@ -44,7 +43,7 @@ lemma chain_spacing
 /-- **Even-gap disjointness**, delegated from
 `SkippedSpacedIntervals.disjoint_of_even_gap`. -/
 lemma disjoint_of_even_gap
-    (ic : InitialCover (X := X) f m₀ N) (i j : Fin ic.n)
+    (ic : InitialCover f m₀ N) (i j : Fin ic.n)
     (m : ℕ) (h_gap : j.val = i.val + 2 * (m + 1)) :
     Disjoint (ic.I i) (ic.I j) := by
   simpa only [ic.toSkippedSpacedIntervals_I] using
@@ -53,7 +52,7 @@ lemma disjoint_of_even_gap
 /-- **Closed-interval disjointness**, delegated from
 `SkippedSpacedIntervals.closure_disjoint_of_even_gap`. -/
 lemma closure_disjoint_of_even_gap
-    (ic : InitialCover (X := X) f m₀ N) (i j : Fin ic.n)
+    (ic : InitialCover f m₀ N) (i j : Fin ic.n)
     (m : ℕ) (h_gap : j.val = i.val + 2 * (m + 1)) :
     Disjoint (closure (ic.I i)) (closure (ic.I j)) := by
   simpa only [ic.toSkippedSpacedIntervals_I] using
@@ -62,7 +61,7 @@ lemma closure_disjoint_of_even_gap
 /-- **Parity rescue**, delegated from
 `SkippedSpacedIntervals.not_three_overlap`. -/
 lemma not_three_overlap
-    (ic : InitialCover (X := X) f m₀ N)
+    (ic : InitialCover f m₀ N)
     (a b c : Fin ic.n) (hab : a.val < b.val) (hbc : b.val < c.val)
     (t : unitInterval)
     (ha : t ∈ closure (ic.I a)) (hb : t ∈ closure (ic.I b))

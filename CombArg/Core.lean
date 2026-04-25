@@ -18,9 +18,9 @@ competitor `f' : K → ℝ` with `sSup (range f') ≤ m₀ − ε`.
 This is the **bookkeeping corollary** of the combinatorial main
 theorem `CombArg.Refinement.exists_refinement`, stripped of any
 parameter-space specifics (`unitInterval`, 1D covering,
-`LocalWitness`, `PairableCover`) and uniform in `(δ, ε)`.
-Consumers with an application-specific cover construction feed it
-in; this file handles the scalar arithmetic only.
+`LocalWitness`) and uniform in `(δ, ε)`. Consumers with an
+application-specific cover construction feed it in; this file
+handles the scalar arithmetic only.
 
 See `CombArg/SupReduction.lean` for the 1D application (`K = [0,1]`,
 `δ = 1/N`, `ε = 1/(4N)`) that composes the 1D cover construction
@@ -42,7 +42,7 @@ the super-level set.
 This lemma is independent of the combinatorial-argument
 structure; it packages the single arithmetic fact that the rest
 of `CombArg.Core` composes with the cover-and-witness data. -/
-lemma sup_le_of_saving {K : Type*} [Nonempty K] {f g : K → ℝ}
+lemma csSup_range_le_of_pointwise_saving {K : Type*} [Nonempty K] {f g : K → ℝ}
     {m₀ δ ε : ℝ}
     (hm : m₀ = sSup (Set.range f))
     (hbdd : BddAbove (Set.range f))
@@ -73,11 +73,10 @@ Parameterized by the near-critical threshold `δ` and the per-piece
 saving floor `ε`. For the 1D application (`CombArg/Refinement/`),
 `δ = 1/N` and `ε = 1/(4N)`.
 
-The multiplicity bound is currently hardcoded to `2`, matching the
-DLT parity-rescue construction. It is recorded as a structural
-invariant but is **not arithmetically load-bearing** for the output
-`m₀ − ε`: the pointwise bound uses only `saving_ge_eps` and
-`saving_pos`. -/
+The multiplicity bound is hardcoded to `2`, matching the DLT
+parity-rescue construction. It is recorded as a structural invariant
+but is **not arithmetically load-bearing** for the output `m₀ − ε`:
+the pointwise bound uses only `saving_ge_eps` and `saving_pos`. -/
 structure FiniteCoverWithWitnesses
     (K : Type*) [TopologicalSpace K]
     (f : K → ℝ) (m₀ δ ε : ℝ) where
@@ -158,7 +157,7 @@ pieces containing `t` is at least `ε`.
 
 Load-bearing consumption of `saving_ge_eps` (one summand `≥ ε`)
 combined with `saving_pos` (other summands non-negative). -/
-lemma eps_le_sum_saving {t : K} {l : C.ι} (hl : t ∈ C.piece l) :
+lemma ε_le_sum_saving {t : K} {l : C.ι} (hl : t ∈ C.piece l) :
     ε ≤ ∑ l' ∈ C.piecesContaining t, C.saving l' := by
   have hmem : l ∈ C.piecesContaining t := C.mem_piecesContaining.mpr hl
   have hnonneg : ∀ l' ∈ C.piecesContaining t, 0 ≤ C.saving l' :=
@@ -170,7 +169,7 @@ lemma eps_le_sum_saving {t : K} {l : C.ι} (hl : t ∈ C.piece l) :
 
 /-- `f t ≤ m₀` on compact `K`: `m₀ = sSup (range f)`, `f t ∈ range f`,
 `range f` bounded above by compactness plus continuity. -/
-lemma f_le_m0 [CompactSpace K] (hf : Continuous f)
+lemma f_le_m₀ [CompactSpace K] (hf : Continuous f)
     (hm : m₀ = sSup (Set.range f)) (t : K) : f t ≤ m₀ := by
   rw [hm]
   exact le_csSup (IsCompact.bddAbove (isCompact_range hf)) (Set.mem_range_self t)
@@ -206,8 +205,8 @@ lemma reducedEnergy_eq_of_not_mem_iUnion_piece {t : K}
 /-- **Pointwise bound**: `reducedEnergy t ≤ m₀ − ε` for every `t`.
 
 * **Case `t ∈ ⋃ pieces`** (count ≥ 1): sum `≥ ε` by
-  `eps_le_sum_saving`, so `reducedEnergy t = f t − sum ≤ f t − ε
-  ≤ m₀ − ε` (using `f_le_m0`).
+  `ε_le_sum_saving`, so `reducedEnergy t = f t − sum ≤ f t − ε
+  ≤ m₀ − ε` (using `f_le_m₀`).
 * **Case `t ∉ ⋃ pieces`** (count = 0): sum = 0, so
   `reducedEnergy t = f t`. By `lt_of_not_mem_iUnion_piece`,
   `f t < m₀ − δ ≤ m₀ − ε` (using `ε ≤ δ`). -/
@@ -218,9 +217,9 @@ lemma reducedEnergy_le [CompactSpace K] (hf : Continuous f)
   by_cases h : (C.piecesContaining t).Nonempty
   · obtain ⟨l, hl⟩ := h
     have hl_mem : t ∈ C.piece l := C.mem_piecesContaining.mp hl
-    have hf_m₀ : f t ≤ m₀ := f_le_m0 hf hm t
+    have hf_m₀ : f t ≤ m₀ := f_le_m₀ hf hm t
     have hsum : ε ≤ ∑ l' ∈ C.piecesContaining t, C.saving l' :=
-      C.eps_le_sum_saving hl_mem
+      C.ε_le_sum_saving hl_mem
     linarith
   · rw [Finset.not_nonempty_iff_eq_empty] at h
     have ht_not : t ∉ ⋃ l, C.piece l := by
@@ -243,7 +242,7 @@ lemma reducedEnergy_range_bddAbove [CompactSpace K] (hf : Continuous f)
 
 /-- **Supremum bound**: `sSup (range C.reducedEnergy) ≤ m₀ − ε`.
 
-Proved by reducing to the generic `sup_le_of_saving` lemma: the
+Proved by reducing to the generic `csSup_range_le_of_pointwise_saving` lemma: the
 reduced energy is pointwise dominated by `f` (savings are positive,
 so their sum is non-negative), and on the `δ`-super-level set the
 sum of savings is bounded below by `ε` (a piece containing `t` has
@@ -251,7 +250,7 @@ saving `≥ ε`, remaining savings are non-negative). -/
 lemma reducedEnergy_sSup_le [CompactSpace K] [Nonempty K]
     (hf : Continuous f) (hm : m₀ = sSup (Set.range f)) (hle : ε ≤ δ) :
     sSup (Set.range C.reducedEnergy) ≤ m₀ - ε := by
-  refine sup_le_of_saving hm
+  refine csSup_range_le_of_pointwise_saving hm
     (IsCompact.bddAbove (isCompact_range hf)) hle ?hg_le ?h_sav
   case hg_le =>
     intro t
@@ -265,7 +264,7 @@ lemma reducedEnergy_sSup_le [CompactSpace K] [Nonempty K]
     have htu : t ∈ ⋃ l, C.piece l := C.covers_delta_near_critical ht
     obtain ⟨l, hl⟩ := Set.mem_iUnion.mp htu
     have hbound : ε ≤ ∑ l' ∈ C.piecesContaining t, C.saving l' :=
-      C.eps_le_sum_saving hl
+      C.ε_le_sum_saving hl
     linarith
 
 end FiniteCoverWithWitnesses
@@ -303,7 +302,7 @@ theorem exists_sup_reduction_of_cover
     {K : Type*} [TopologicalSpace K] [CompactSpace K] [Nonempty K]
     {f : K → ℝ} (hf : Continuous f)
     {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
-    {δ ε : ℝ} (_hδ : 0 < δ) (_hε : 0 < ε) (hle : ε ≤ δ)
+    {δ ε : ℝ} (hle : ε ≤ δ)
     (C : FiniteCoverWithWitnesses K f m₀ δ ε) :
     ∃ f' : K → ℝ,
       (∀ t, f' t ≤ f t) ∧

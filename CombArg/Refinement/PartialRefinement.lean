@@ -35,11 +35,10 @@ The structure carries **two** invariants:
 * `processed_cover` — derived, load-bearing in Case 2:
   `I_{σ(k)} ⊆ ⋃ J_{k'}` for each `k`. -/
 structure PartialRefinement
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
-    (ic : InitialCover (X := X) f m₀ N) (l : ℕ) where
+    (ic : InitialCover f m₀ N) (l : ℕ) where
   /-- The `l` pieces `J_1, …, J_l` as raw subsets of `unitInterval`.
-  No topological structure assumed; in Case 2 of `step_succ`, `J k`
+  No topological structure assumed; in Case 2 of `step_succ_at`, `J k`
   may be open-minus-open. -/
   J : Fin l → Set unitInterval
   /-- Cover-index assignment: the `k`-th piece lies inside
@@ -50,7 +49,7 @@ structure PartialRefinement
   J_subset : ∀ k : Fin l, J k ⊆ ic.I (σ k)
   /-- **Derived termination invariant**: each processed interval
   `I_{σ(k)}` is contained in `⋃ J_{k'}`. Used explicitly in Case 2
-  of `step_succ` to argue the step reduces the remaining set, and
+  of `step_succ_at` to argue the step reduces the remaining set, and
   implies `σ` is injective (derivable, not maintained). -/
   processed_cover : ∀ k : Fin l, ic.I (σ k) ⊆ ⋃ k' : Fin l, J k'
 
@@ -64,9 +63,8 @@ definitional equality: `J 0 = ic.I (σ 0)`, and `⋃ k' : Fin 1, J k'`
 unfolds to `J 0` (since `Fin 1` is a singleton), so
 `ic.I (σ 0) = J 0 ⊆ ⋃ k', J k'`. -/
 def step_zero
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
-    (ic : InitialCover (X := X) f m₀ N) : PartialRefinement ic 1 where
+    (ic : InitialCover f m₀ N) : PartialRefinement ic 1 where
   J := fun _ => ic.I ⟨0, ic.n_pos⟩
   σ := fun _ => ⟨0, ic.n_pos⟩
   J_subset := fun _ => subset_refl _

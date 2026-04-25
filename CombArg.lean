@@ -9,7 +9,6 @@ import CombArg.SupReduction
 
 -- Shared infrastructure (input structures, utilities).
 import CombArg.Witness
-import CombArg.EnergyBound
 import CombArg.Util
 
 /-!

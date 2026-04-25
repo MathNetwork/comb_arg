@@ -36,10 +36,6 @@ The theorem is the composition of two steps:
    takes the cover and produces the sup-reducing competitor by
    scalar arithmetic.
 
-Future applications (e.g. `K = [0,1]^m`) add a second
-cover-construction path into the same bookkeeping corollary;
-step 2 is unchanged.
-
 ## Framing: reduction, not contradiction
 
 The theorem is stated in **reduction** form: given the witness
@@ -83,12 +79,11 @@ the DLT-style interval refinement induction;
 sup-reducing competitor by scalar arithmetic. The modification
 set `S` is exposed as `⋃ l, C.piece l`. -/
 theorem exists_sup_reduction
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} (hf : Continuous f)
-    {m₀ : ℝ} (_hm_pos : 0 < m₀) (hm : m₀ = sSup (Set.range f))
+    {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
     {N : ℕ} (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
-                  Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
+                  LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))) :
     ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
       {t : unitInterval | f t ≥ m₀ - 1 / (N : ℝ)} ⊆ S ∧
       (∀ t, f' t ≤ f t) ∧
@@ -96,13 +91,11 @@ theorem exists_sup_reduction
       sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) := by
   obtain ⟨C⟩ := Refinement.exists_refinement hf hm hN witness
   have hN_real : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN
-  have hδ : (0 : ℝ) < 1 / (N : ℝ) := one_div_pos.mpr hN_real
-  have hε : (0 : ℝ) < 1 / (4 * (N : ℝ)) := by positivity
   have hle : 1 / (4 * (N : ℝ)) ≤ 1 / (N : ℝ) := by
     apply one_div_le_one_div_of_le hN_real
     linarith
   obtain ⟨f', h_le, h_eq, h_sup⟩ :=
-    exists_sup_reduction_of_cover hf hm hδ hε hle C
+    exists_sup_reduction_of_cover hf hm hle C
   exact ⟨f', ⋃ l, C.piece l, C.covers_delta_near_critical, h_le, h_eq, h_sup⟩
 
 end CombArg

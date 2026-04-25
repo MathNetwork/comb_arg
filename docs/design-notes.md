@@ -340,7 +340,7 @@ prose-level argument compresses.
 This is one of the findings logged in
 [`note-draft.md`](note-draft.md) for the eventual arXiv write-up.
 
-## §12. PairableCover scaffolding vs. load-bearing: decision pending
+## §12. PairableCover scaffolding vs. load-bearing
 
 The `reusability-audit.md` found that `PairableCover` and
 `LocalWitness.cover` are carried in the type signatures but not
@@ -349,7 +349,7 @@ core is effectively scalar-only (uses `LocalWitness.neighborhood`,
 `t_mem`, `replacementEnergy`, `replacementEnergy_continuous`, and
 `saving_bound`).
 
-Three options under consideration:
+Three options were considered:
 
 - **A (scaffolding)**: Retain `PairableCover` as extension point for
   future Phase 3 work. Document the scalar projection as a finding.
@@ -361,9 +361,9 @@ Three options under consideration:
 - **C (simplification)**: Remove `PairableCover` and `LocalWitness.cover`.
   Scalar-only formulation as final form; dead code eliminated.
 
-**Decision**: TBD.
+**Decision** *(2026-04-25)*: **C** — see §14 for the v0.2 implementation.
 
-**Date raised**: 2026-04-23. **Date resolved**: TBD.
+**Date raised**: 2026-04-23. **Date resolved**: 2026-04-25.
 
 ## §13. Reframe v0.1.1: combinatorial core vs. bookkeeping corollary
 
@@ -470,3 +470,63 @@ careful combinatorial construction — not as an unmotivated input
   planned for v0.2) will introduce a second combinatorial main
   theorem alongside `exists_refinement`, not a second
   sup-reduction corollary.
+
+## §14. v0.2 API simplification: PairableCover removal and witness shape
+
+**Resolved 2026-04-25.** A reviewer-style audit at the v0.1.1
+follow-up identified four classes of public-API issues. This
+section records the resolutions; implementation lands in v0.2.
+
+### Decisions
+
+| Item | Decision | Rationale |
+|------|----------|-----------|
+| §12 (PairableCover) | **Option C — remove** | Class and `LocalWitness.cover` are scaffolding only; deleting them removes a typeclass burden the consumer cannot satisfy meaningfully. The `X` ambient-space parameter goes with it: with `Cover` gone, `LocalWitness` no longer references `X`. |
+| Continuity field in `LocalWitness` | **Keep** (reconsidered) | Initial reviewer pass leaned toward moving `replacementEnergy_continuous` out as a separate predicate; on second look, every cover construction taking closures structurally needs continuity, so bundling it inside `LocalWitness` is the right shape. Splitting would add API surface (an extra hypothesis on every public theorem) for marginal cleanliness gain. |
+| Witness wrapping | **Drop `Nonempty`** | Public theorems take `witness : ∀ t, … → LocalWitness …` directly. The `Nonempty` wrapper required the receiver to call `Classical.choice` for no purpose: any caller capable of producing nonemptiness can produce an explicit witness. |
+| Output existential shape | **Keep `∃ f' …`** | Returning a structure (`SupReducer K f m₀ ε`) instead of an `∃` was considered. Mathlib `exists_*` convention prefers `∃`, and the existing 4-/5-tuple is destructured fluently with `obtain`. Not worth a new public structure. |
+| Unused positivity hypotheses | **Drop** | `_hδ : 0 < δ`, `_hε : 0 < ε` on `exists_sup_reduction_of_cover` and `_hm_pos : 0 < m₀` on `exists_sup_reduction` are bound but never consumed in proofs. Underscored binders in the public API mislead readers and trip Mathlib's unused-arg linter. |
+| `EnergyBound.lean` stub | **Delete** | The 19-line re-export stub from the v0.1 → v0.1.1 reframe (when `EnergyBound` content moved into `Core`) is dead path-compatibility. Nothing imports it; Mathlib hygiene says delete rather than keep a stub with a "see Core" comment. |
+
+### Public API changes (v0.2)
+
+- `LocalWitness K f t ε` (was `LocalWitness K X f t ε`): drops the
+  `X : Type*` parameter and the `[PseudoMetricSpace X]` /
+  `[PairableCover X]` instance constraints; drops the `cover`
+  field. Retains `neighborhood`, `isOpen_neighborhood`, `t_mem`,
+  `replacementEnergy`, `replacementEnergy_continuous`,
+  `saving_bound`.
+- `class PairableCover X`: **deleted**. `combinedRegion` and
+  `diameter_nesting_combined` go with it.
+- `exists_refinement`, `exists_sup_reduction`: drop the implicit
+  `{X : Type*} [PseudoMetricSpace X] [PairableCover X]` block.
+  `witness` hypothesis returns `LocalWitness …` directly (not
+  `Nonempty`).
+- `exists_sup_reduction_of_cover`: drop `_hδ`, `_hε` arguments.
+- `exists_sup_reduction`: drop `_hm_pos` argument.
+
+### Naming alignment with Mathlib
+
+- `f_le_m0` → `f_le_m₀` (Unicode subscript matches the variable).
+- `eps_le_sum_saving` → `ε_le_sum_saving`.
+- `sup_le_of_saving` → `csSup_range_le_of_pointwise_saving`
+  (the `c` prefix flags the conditionally complete sSup; the new
+  name reflects the actual hypothesis structure).
+
+### Smoke test pivot
+
+`test/Smoke.lean` previously instantiated `PairableCover` on `ℝ`
+with empty regions — a typeclass-instantiation drill with no
+mathematical content. With `PairableCover` gone, the smoke test
+is rewritten to:
+
+1. construct a non-trivial `LocalWitness` on a constant `f` (the
+   replacement is `f` itself, saving zero — but with a positive
+   `ε` chosen at the witness-construction site this would be vacuous,
+   so we take a piecewise-linear witness instead);
+2. assert via `#print axioms` that the public theorems still depend
+   only on `propext`, `Classical.choice`, `Quot.sound` (regression
+   guard for accidental new axioms).
+
+A non-trivial `LocalWitness` example is also added under
+`examples/` so that a downstream reader sees one full instantiation.

@@ -5,6 +5,7 @@ Authors: Xinze Li
 -/
 import CombArg.Refinement.SpacedIntervals
 import CombArg.Witness
+import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.Order.Compact
 import Mathlib.Topology.UnitInterval
 
@@ -100,7 +101,6 @@ The **saving is `1/(4N)` exactly**; this fixes the threshold the
 refinement induction maintains through to
 `FiniteCoverWithWitnesses.saving_ge_eps`. -/
 structure InitialCover
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     (f : unitInterval → ℝ) (m₀ : ℝ) (N : ℕ) where
   /-- Number of intervals `I_i` in the cover. -/
   n : ℕ
@@ -123,7 +123,7 @@ structure InitialCover
   /-- `LocalWitness` at the `i`-th witness center with saving exactly
   `1/(4N)`. -/
   wit : (i : Fin n) →
-    LocalWitness unitInterval X f (witnessCenter i) (1 / (4 * (N : ℝ)))
+    LocalWitness unitInterval f (witnessCenter i) (1 / (4 * (N : ℝ)))
   /-- **DLT condition (a)** — strict non-overlap between non-adjacent
   intervals, stated on `intervalCenter`:
   `intervalCenter i + η_i < intervalCenter (i+2) - η_{i+2}` for every
@@ -137,31 +137,22 @@ structure InitialCover
   `η_i < η_{t_i}`; here we decouple and state the downstream-usable
   subset directly. -/
   I_subset_neighborhood : ∀ i : Fin n,
-      Subtype.val ⁻¹'
-          Set.Ioo ((intervalCenter i).val - radius i)
-                   ((intervalCenter i).val + radius i) ⊆
-        (wit i).neighborhood
+      openInterval (intervalCenter i) (radius i) ⊆ (wit i).neighborhood
   /-- The `I_i = (intervalCenter i - η_i, intervalCenter i + η_i) ∩ [0,1]`
   together cover the near-critical set. -/
   covers :
       nearCritical f m₀ N ⊆
-        ⋃ i : Fin n,
-          Subtype.val ⁻¹'
-            Set.Ioo ((intervalCenter i).val - radius i)
-                     ((intervalCenter i).val + radius i)
+        ⋃ i : Fin n, openInterval (intervalCenter i) (radius i)
 
 section InitialCoverLemmas
 
-variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+variable {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
 
 /-- The `i`-th interval `I_i` of an initial cover, as a subset of
 `unitInterval`. Convenience abbreviation. -/
 def InitialCover.I
-    (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) : Set unitInterval :=
-  Subtype.val ⁻¹'
-    Set.Ioo ((ic.intervalCenter i).val - ic.radius i)
-             ((ic.intervalCenter i).val + ic.radius i)
+    (ic : InitialCover f m₀ N) (i : Fin ic.n) : Set unitInterval :=
+  openInterval (ic.intervalCenter i) (ic.radius i)
 
 /-- The geometric part of an `InitialCover`: the skip-2 spaced
 open intervals on `unitInterval`, forgetting the witness centers,
@@ -169,7 +160,7 @@ local witnesses, and coverage of `nearCritical`. The disjointness
 lemmas in `CombArg.Refinement.Disjointness` delegate to this
 projection. -/
 def InitialCover.toSkippedSpacedIntervals
-    (ic : InitialCover (X := X) f m₀ N) : SkippedSpacedIntervals where
+    (ic : InitialCover f m₀ N) : SkippedSpacedIntervals where
   n := ic.n
   intervalCenter := ic.intervalCenter
   radius := ic.radius
@@ -179,7 +170,7 @@ def InitialCover.toSkippedSpacedIntervals
 /-- The `I`-field on `InitialCover` agrees with the `I`-field on
 its `SkippedSpacedIntervals` projection (definitional). -/
 lemma InitialCover.toSkippedSpacedIntervals_I
-    (ic : InitialCover (X := X) f m₀ N) (i : Fin ic.n) :
+    (ic : InitialCover f m₀ N) (i : Fin ic.n) :
     ic.toSkippedSpacedIntervals.I i = ic.I i := rfl
 
 end InitialCoverLemmas

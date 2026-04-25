@@ -14,9 +14,9 @@ import CombArg.Refinement.SpacedIntervals
 /-!
 # Step 1: Interval refinement construction — facade
 
-Re-exports the six submodules under `CombArg.Refinement.*`.
-Downstream consumers can `import CombArg.Refinement` to
-access the complete Step 1 API.
+Re-exports the seven submodules under `CombArg.Refinement.*`.
+Downstream consumers can `import CombArg.Refinement` to access the
+complete Step 1 API.
 
 From the witness hypothesis (a `LocalWitness` at every
 `1/N`-near-critical parameter), this module constructs a
@@ -29,10 +29,10 @@ Step 1 (De Lellis–Tasnady 2013,
 ## Module layout
 
 * [`Refinement.SpacedIntervals`](Refinement/SpacedIntervals.lean) —
-  abstract `SkippedSpacedIntervals` structure with its `chain_spacing`,
-  `disjoint_of_even_gap`, `closure_disjoint_of_even_gap`, and
-  `not_three_overlap` lemmas (pure 1D geometry, independent of
-  witnesses).
+  `openInterval` helper plus the abstract `SkippedSpacedIntervals`
+  structure with its `chain_spacing`, `disjoint_of_even_gap`,
+  `closure_disjoint_of_even_gap`, and `not_three_overlap` lemmas
+  (pure 1D geometry, independent of witnesses).
 * [`Refinement.InitialCover`](Refinement/InitialCover.lean) —
   `nearCritical`, `InitialCover` structure, `InitialCover.I`,
   `toSkippedSpacedIntervals` projection,
@@ -41,9 +41,10 @@ Step 1 (De Lellis–Tasnady 2013,
   `exists_initialCover` via a grid + Lebesgue-number construction.
 * [`Refinement.PartialRefinement`](Refinement/PartialRefinement.lean) —
   `PartialRefinement` mid-induction state and the base case `step_zero`.
-* [`Refinement.Induction`](Refinement/Induction.lean) — `step_succ`,
-  `step_succ_at`, and `exists_terminal_refinement` (bounded iteration
-  on `remaining.card`).
+* [`Refinement.Induction`](Refinement/Induction.lean) —
+  `ExtendResult`, `step_succ_at`, and
+  `exists_terminal_refinement` (bounded iteration on
+  `remaining.card`).
 * [`Refinement.Disjointness`](Refinement/Disjointness.lean) — the
   `InitialCover.*` chain-spacing and parity-rescue lemmas
   (`chain_spacing`, `disjoint_of_even_gap`,

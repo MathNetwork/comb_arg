@@ -31,6 +31,13 @@ disjointness lemmas are derived by delegating to this file.
 
 namespace CombArg.Refinement
 
+/-- The open interval of radius `r` around `c : unitInterval`, as
+a subset of `unitInterval` via the subtype preimage. Used as the
+canonical shape of pieces in `SkippedSpacedIntervals` and
+`InitialCover`. -/
+def openInterval (c : unitInterval) (r : ℝ) : Set unitInterval :=
+  Subtype.val ⁻¹' Set.Ioo (c.val - r) (c.val + r)
+
 /-- A finite family of open intervals on `unitInterval`, indexed by
 `Fin n`, with positive radii and the skip-2 spacing condition. -/
 structure SkippedSpacedIntervals where
@@ -53,9 +60,7 @@ namespace SkippedSpacedIntervals
 
 /-- The `i`-th open interval `I_i` as a subset of `unitInterval`. -/
 def I (sp : SkippedSpacedIntervals) (i : Fin sp.n) : Set unitInterval :=
-  Subtype.val ⁻¹'
-    Set.Ioo ((sp.intervalCenter i).val - sp.radius i)
-             ((sp.intervalCenter i).val + sp.radius i)
+  openInterval (sp.intervalCenter i) (sp.radius i)
 
 /-- **Chain spacing**: iterated `two_fold_spacing` at gap `2(m+1)`. -/
 lemma chain_spacing (sp : SkippedSpacedIntervals) (i : Fin sp.n) :
@@ -103,7 +108,7 @@ lemma disjoint_of_even_gap (sp : SkippedSpacedIntervals)
   have h_strict := sp.chain_spacing i m j h_gap
   rw [Set.disjoint_iff]
   intro t ht
-  simp only [I, Set.mem_inter_iff, Set.mem_preimage, Set.mem_Ioo] at ht
+  simp only [I, openInterval, Set.mem_inter_iff, Set.mem_preimage, Set.mem_Ioo] at ht
   obtain ⟨⟨_, h1⟩, ⟨h2, _⟩⟩ := ht
   linarith
 
@@ -121,7 +126,7 @@ lemma closure_disjoint_of_even_gap (sp : SkippedSpacedIntervals)
     intro x
     apply closure_minimal
     · intro s hs
-      simp only [I, Set.mem_preimage, Set.mem_Ioo] at hs
+      simp only [I, openInterval, Set.mem_preimage, Set.mem_Ioo] at hs
       simp only [Set.mem_preimage, Set.mem_Icc]
       exact ⟨le_of_lt hs.1, le_of_lt hs.2⟩
     · exact isClosed_Icc.preimage continuous_subtype_val

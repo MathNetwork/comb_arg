@@ -40,15 +40,14 @@ namespace CombArg.Refinement
 open CombArg
 open scoped Classical
 
-variable {X : Type*} [PseudoMetricSpace X] [PairableCover X]
-    {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
+variable {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
 
 /-! ## TwoFold derivation and saving_bound closure extension -/
 
 /-- **TwoFold for terminal refinement**: if `σ` is injective then
 every point lies in `closure (pr.J k)` for at most two indices `k`. -/
 lemma terminal_twoFold
-    {ic : InitialCover (X := X) f m₀ N} {L : ℕ}
+    {ic : InitialCover f m₀ N} {L : ℕ}
     (pr : PartialRefinement ic L)
     (hσ : Function.Injective pr.σ)
     (t : unitInterval) :
@@ -84,7 +83,7 @@ lemma terminal_twoFold
 `LocalWitness.replacementEnergy_continuous` + continuity of `f`. -/
 lemma saving_bound_closure
     (hf : Continuous f)
-    {ic : InitialCover (X := X) f m₀ N} {L : ℕ}
+    {ic : InitialCover f m₀ N} {L : ℕ}
     (pr : PartialRefinement ic L) (k : Fin L)
     (t : unitInterval) (ht : t ∈ closure (pr.J k)) :
     f t - (ic.wit (pr.σ k)).replacementEnergy t ≥ 1 / (4 * (N : ℝ)) := by
@@ -98,8 +97,7 @@ lemma saving_bound_closure
 
 /-! ## Terminal target: `exists_refinement`
 
-Specialized to `K = unitInterval` per `docs/design-notes.md §4`. The
-abstract-`K` generalization is left to future work. -/
+Specialized to `K = unitInterval` per `docs/design-notes.md §4`. -/
 
 /-- **Combinatorial main theorem** (combinatorial core of
 Almgren--Pitts for a 1D sweepout).
@@ -135,7 +133,7 @@ lemma exists_refinement
     (hm : m₀ = sSup (Set.range f))
     (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
-                 Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
+                 LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))) :
     Nonempty (FiniteCoverWithWitnesses unitInterval f m₀
               (1 / (N : ℝ)) (1 / (4 * (N : ℝ)))) := by
   -- Step 1: initial cover.

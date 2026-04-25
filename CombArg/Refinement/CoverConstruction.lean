@@ -99,20 +99,19 @@ Grid + Lebesgue construction using the `intervalCenter` /
    strictly (condition (a)); and every NC point is within `1/(2M) < r`
    of its rounded grid neighbor, which is kept (coverage). -/
 lemma exists_initialCover
-    {X : Type*} [PseudoMetricSpace X] [PairableCover X]
     {f : unitInterval → ℝ} (hf : Continuous f)
     {m₀ : ℝ} (hm : m₀ = sSup (Set.range f))
     {N : ℕ} (hN : 0 < N)
     (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
-                 Nonempty (LocalWitness unitInterval X f t (1 / (4 * (N : ℝ))))) :
-    Nonempty (InitialCover (X := X) f m₀ N) := by
+                 LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))) :
+    Nonempty (InitialCover f m₀ N) := by
   -- ---------- Phase 1: Lebesgue number + grid spacing ----------
   -- NC compact, nonempty; pick a witness at each NC point.
   set NC := nearCritical f m₀ N with hNC_def
   have hNC_compact : IsCompact NC := isCompact_nearCritical hf
   have hNC_ne : NC.Nonempty := nearCritical_nonempty hf hm hN
-  have w : ∀ t : NC, LocalWitness unitInterval X f t.val (1 / (4 * (N : ℝ))) :=
-    fun t => Classical.choice (witness t.val t.property)
+  have w : ∀ t : NC, LocalWitness unitInterval f t.val (1 / (4 * (N : ℝ))) :=
+    fun t => witness t.val t.property
   set U : NC → Set unitInterval := fun t => (w t).neighborhood
   have hU_open : ∀ t : NC, IsOpen (U t) := fun t => (w t).isOpen_neighborhood
   have hU_cover : NC ⊆ ⋃ t : NC, U t := fun x hx =>
@@ -139,7 +138,6 @@ lemma exists_initialCover
   -- ---------- Phase 2: kept grid + witness selection ----------
   let nearNC : Fin (M + 1) → Prop :=
     fun k => ∃ t : NC, dist (c k) t.val < lam / 4
-  haveI : ∀ k, Decidable (nearNC k) := fun _ => Classical.dec _
   let kept : Finset (Fin (M + 1)) := Finset.univ.filter nearNC
   -- Kept is nonempty: use round_bound on any NC point.
   have h_half_lt_quarter : (1 : ℝ) / (2 * M) < lam / 4 := by
