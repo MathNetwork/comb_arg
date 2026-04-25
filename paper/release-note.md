@@ -1,5 +1,13 @@
 # Release note — CombArg v0.1.0
 
+> **Note (2026-04-25).** This release note documents the v0.1.0 state.
+> v0.1.1 reframed the main theorem (combinatorial core vs. bookkeeping
+> corollary) and v0.2 simplified the public API (removed
+> `PairableCover`, the ambient space `X`, the `Nonempty`-wrapping of
+> `LocalWitness`, and several unused hypotheses). For the current
+> public signatures, see `README.md` and `CHANGELOG.md`. The known
+> limitations below labelled "v0.1" are largely resolved in v0.2.
+
 **Accompanying paper:** *Compiling the Almgren–Pitts Combinatorial Argument*.
 **Library:** CombArg v0.1.0, Apache-2.0,
 <https://github.com/MathNetwork/comb_arg>.

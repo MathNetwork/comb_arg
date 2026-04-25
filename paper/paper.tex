@@ -196,33 +196,6 @@ bookkeeping corollary below (the existence of a competitor $f'$
 with reduced supremum) is a three-line arithmetic consequence.
 \end{remark}
 
-\begin{remark}[Lean scaffolding not load-bearing]
-\label{rem:lean-scaffolding}
-The Lean implementation
-\lean{exists\_refinement}{Refinement/Assembly.lean} carries
-additional scaffolding not exposed in the statement of
-Theorem~\ref{thm:intro-scalar}: a pseudo-metric ambient space
-$X$ with a \texttt{PairableCover X} typeclass
-(Definition~\ref{def:pcover}), and each local witness carries
-an abstract paired cover $c_t$ in $X$ (the \texttt{cover} field
-of \texttt{LocalWitness}, Definition~\ref{def:witness}). None of
-the \texttt{PairableCover} fields
-(\texttt{leftRegion}, \texttt{rightRegion}, \texttt{diameter},
-\texttt{regions\_disjoint}, \texttt{diameter\_nesting}) nor the
-\texttt{cover} field is consumed by the proof of the
-combinatorial core; they are retained as extension hooks for
-future GMT applications in which $E_t$ arises from a geometric
-replacement family on $X$. The
-\lean{exists\_sup\_reduction}{SupReduction.lean} signature
-additionally carries a vestigial $m_0 > 0$ hypothesis (marked
-\texttt{\_hm\_pos} to flag it as unused) inherited from an
-earlier design. The hypotheses and conclusion of
-Theorem~\ref{thm:intro-scalar} above reflect the load-bearing
-mathematical content; see
-\texttt{docs/design-notes.md~\S\S12--13} for the pending
-scaffolding resolution scheduled for v0.2.
-\end{remark}
-
 Translation from the De~Lellis--Tasnady setting to
 Theorem~\ref{thm:intro-scalar}: the boundary $\partial \Omega_t$
 becomes a continuous $f : [0,1] \to \mathbb{R}$; the
@@ -311,41 +284,28 @@ documentation conventions: interface first
 \label{sec:interface}
 
 Throughout, \texttt{K} denotes a topological space (the parameter
-space), \texttt{X} a pseudo-metric space (the ambient space whose
-covers witness replacements), and \texttt{f : K $\to$ $\mathbb{R}$}
-a continuous scalar energy.
+space) and \texttt{f : K $\to$ $\mathbb{R}$} a continuous scalar
+energy.
 
 In the proof of Theorem~\ref{thm:AP-combinatorial}, the
 Lemma~3.1 of~\cite{DLT13} supplies, for each near-critical
-parameter $t$, an $\mathcal{H}^n$-disjoint pair of open sets
-$(U_{1,t}', U_{2,t}')$ in $M^{n+1}$ inside which a local
-replacement is performed. We abstract this pair as an instance of
-a class, stripped of its GMT content.
-
-\begin{definition}[\texttt{PairableCover} class]
-\label{def:pcover}
-\leanmargin{PairableCover}{Witness.lean}
-A \texttt{PairableCover X} instance declares, for each abstract
-\texttt{c : Cover}, a left region and a right region in $X$ and a
-scalar diameter, subject to two axioms: the two regions are
-disjoint, and overlapping combined regions of diameter-comparable
-covers are ordered by inclusion.
-\end{definition}
-
-The replacement family
-$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ at a near-critical
-$t$ has its Hausdorff measure decreased by at least $1/(4N)$
-inside $U_t'$. We keep only the scalar \emph{replacement energy}
-$E : K \to \mathbb{R}$ and the uniform saving inequality; the
-geometric family is discarded.
+parameter $t$, a local replacement on an
+$\mathcal{H}^n$-disjoint pair of open sets in $M^{n+1}$ whose
+boundary energy is reduced by at least $1/(4N)$ on a
+neighborhood of $t$. The replacement family
+$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ at a
+near-critical $t$ has its Hausdorff measure decreased by at
+least $1/(4N)$ inside $U_t'$. We keep only the scalar
+\emph{replacement energy} $E : K \to \mathbb{R}$ and the
+uniform saving inequality; the geometric family is discarded.
 
 \begin{definition}[\texttt{LocalWitness} structure]
 \label{def:witness}
 \leanmargin{LocalWitness}{Witness.lean}
-A \texttt{LocalWitness K X f t $\varepsilon$} carries an open
-neighborhood $U \ni t$ in $K$, a cover \texttt{c : Cover}, a
-continuous replacement energy $E : K \to \mathbb{R}$, and the
-inequality $\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
+A \texttt{LocalWitness K f t $\varepsilon$} carries an open
+neighborhood $U \ni t$ in $K$, a continuous replacement energy
+$E : K \to \mathbb{R}$, and the inequality
+$\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
 \end{definition}
 
 The proof of the Claim works on the set $K \subset [0,1]$ of
@@ -459,12 +419,6 @@ $\{p_l \subseteq \unit\}$, continuous replacement energies
 $\{E_l : \unit \to \mathbb{R}\}$, and savings
 $\{s_l \ge 1/(4N)\}$ satisfying conditions~(I)--(IV).
 \end{theorem}
-
-The Lean signature of \texttt{exists\_refinement} carries an
-ambient pseudo-metric $X$ and a \texttt{PairableCover X}
-instance via \texttt{LocalWitness}; neither is consumed by the
-proof of Theorem~\ref{thm:core}. See
-Remark~\ref{rem:lean-scaffolding}.
 
 The proof is given in~\S\ref{sec:proof} as three chained stages:
 Stage~A builds an initial cover from a Lebesgue-number argument
