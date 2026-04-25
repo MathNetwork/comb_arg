@@ -11,6 +11,8 @@
 }
 \usepackage{listings}
 \usepackage{xcolor}
+\newcommand{\yev}[1]{\textcolor{red}{[#1]}}
+\newcommand{\me}[1]{\textcolor{blue}{#1}}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{geometry}
@@ -98,11 +100,9 @@ $M = S^{n+1}$), direct minimization of the $n$-dimensional
 Hausdorff measure over integral currents yields only the empty
 hypersurface; a non-trivial minimal hypersurface must be
 constructed as a saddle-type critical point of the area
-functional. The construction, following Birkhoff (1917) for
-closed geodesics and Almgren--Pitts for higher-dimensional
-varifolds, is a \emph{min-max} scheme; regularity of the output
-is due to Pitts \cite{Pit81} in ambient dimension up to $7$ and
-to Schoen--Simon \cite{SS81} in higher dimensions. [wording needs to be modified: Birkhoff is a classical and much simpler construction of a different space (and works for geodesics in any codimension), so misleading to state it like this; regularity is due to both works of Pitts and Schoen-Simon, what's written is not quite historically accurate]
+functional. \me{The construction, due to Almgren and Pitts, is a
+\emph{min-max} scheme on varifolds; regularity of the output is
+due to Pitts \cite{Pit81} and Schoen--Simon \cite{SS81}.}
 
 \begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
 \label{thm:minmax}
@@ -130,11 +130,13 @@ $(U^1, U^2) \in \mathcal{CO}$ of $\mathcal{H}^n$-disjoint open
 sets, for all $N$ sufficiently large.
 \end{theorem}
 
-The proof of Theorem~\ref{thm:AP-combinatorial} reduces to
- a one-parameter claim on the sweepout~\cite[\S3.2]{DLT13}:
- [Is that correct? DLT13 only proves existence for 1-parameter;
- i don't think argument for p-parameter follows from argument
- for 1-parameter (although they are similar)]
+\me{The proof of Theorem~\ref{thm:AP-combinatorial} reduces,
+following~\cite[\S3.2]{DLT13}, to the following claim on the
+sweepout:\footnote{Throughout this paper, ``sweepout'' denotes a
+one-parameter family $\{\Gamma_t\}_{t \in [0,1]}$ in the sense of
+\cite[Def.~3.1]{DLT13}; the multi-parameter min-max setting of
+\cite{MN14} requires separate combinatorial machinery and lies
+outside our scope.}}
 
 \begin{quote}
 \textbf{Claim.} For each $N$ sufficiently large, there exists
@@ -156,24 +158,70 @@ class, and no ambient regularity; it is a bookkeeping
 construction on continuous real-valued functions, yet has no
 canonical reference.
 
-The scalar formulation of the proof of the Claim, which is the
+The combinatorial core of the proof of the Claim, which is the
 precise theorem we formalize, reads as follows.
 
-\begin{theorem}[Extracted scalar version]
+\begin{theorem}[Combinatorial core]
 \label{thm:intro-scalar}
-Let $X$ be a pseudo-metric space with an abstract paired-cover
-structure. Let $f : [0,1] \to \mathbb{R}$ be continuous with
-$m_0 = \sup f$ and $m_0 > 0$, and let $N \in \mathbb{N}$ with
-$N > 0$. Suppose that at every $t \in [0,1]$ with
-$f(t) \ge m_0 - 1/N$ there is a \emph{local witness}: an open
-neighborhood $U_t \ni t$, a paired cover $c_t$ in $X$, and a
+Let $f : [0,1] \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$. Suppose
+that at every $t \in [0,1]$ with $f(t) \ge m_0 - 1/N$ there is a
+\emph{local witness}: an open neighborhood $U_t \ni t$ and a
 continuous replacement energy $E_t : [0,1] \to \mathbb{R}$
 satisfying $f(s) - E_t(s) \ge 1/(4N)$ for every $s \in U_t$.
-Then there exists $f' : [0,1] \to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \frac{1}{4N}.
-\]
+Then there exist a finite family of closed pieces
+$\{p_l \subseteq [0,1]\}_{l \in \iota}$, continuous replacement
+energies $\{E_l : [0,1] \to \mathbb{R}\}_{l \in \iota}$, and
+savings $\{s_l \ge 1/(4N)\}_{l \in \iota}$ satisfying:
+\begin{enumerate}
+\item[\textup{(I)}] $f - E_l \ge s_l$ on $p_l$;
+\item[\textup{(II)}] every $t \in [0,1]$ belongs to at most
+  two of the pieces $p_l$;
+\item[\textup{(III)}] $\{t \in [0,1] : f(t) \ge m_0 - 1/N\}
+  \subseteq \bigcup_l p_l$.
+\end{enumerate}
 \end{theorem}
+
+\begin{remark}
+\label{rem:intro-core-nontrivial}
+The non-trivial content of Theorem~\ref{thm:intro-scalar} is the
+\emph{construction} of the cover $\{p_l\}$ from unstructured
+witness data: a Lebesgue-number argument on the compact
+near-critical set produces an initial cover satisfying the
+skip-2 spacing condition (a) of~\cite{DLT13}; a bounded
+smallest-index induction refines it to an injective
+piece-to-interval assignment; and a parity argument on the
+spacing condition delivers the two-fold overlap~(II). The
+bookkeeping corollary below (the existence of a competitor $f'$
+with reduced supremum) is a three-line arithmetic consequence.
+\end{remark}
+
+\begin{remark}[Lean scaffolding not load-bearing]
+\label{rem:lean-scaffolding}
+The Lean implementation
+\lean{exists\_refinement}{Refinement/Assembly.lean} carries
+additional scaffolding not exposed in the statement of
+Theorem~\ref{thm:intro-scalar}: a pseudo-metric ambient space
+$X$ with a \texttt{PairableCover X} typeclass
+(Definition~\ref{def:pcover}), and each local witness carries
+an abstract paired cover $c_t$ in $X$ (the \texttt{cover} field
+of \texttt{LocalWitness}, Definition~\ref{def:witness}). None of
+the \texttt{PairableCover} fields
+(\texttt{leftRegion}, \texttt{rightRegion}, \texttt{diameter},
+\texttt{regions\_disjoint}, \texttt{diameter\_nesting}) nor the
+\texttt{cover} field is consumed by the proof of the
+combinatorial core; they are retained as extension hooks for
+future GMT applications in which $E_t$ arises from a geometric
+replacement family on $X$. The
+\lean{exists\_sup\_reduction}{SupReduction.lean} signature
+additionally carries a vestigial $m_0 > 0$ hypothesis (marked
+\texttt{\_hm\_pos} to flag it as unused) inherited from an
+earlier design. The hypotheses and conclusion of
+Theorem~\ref{thm:intro-scalar} above reflect the load-bearing
+mathematical content; see
+\texttt{docs/design-notes.md~\S\S12--13} for the pending
+scaffolding resolution scheduled for v0.2.
+\end{remark}
 
 Translation from the De~Lellis--Tasnady setting to
 Theorem~\ref{thm:intro-scalar}: the boundary $\partial \Omega_t$
@@ -185,42 +233,54 @@ to a single continuous $E_t$; and the almost-minimizing
 hypothesis, which in the original proof is the input to
 Lemma~3.1 of~\cite{DLT13}, is absorbed into the existence of the
 local witness (the caller must supply witnesses wherever they
-would be produced in the ambient GMT setting).
+would be produced in the ambient GMT setting). The output of
+Theorem~\ref{thm:intro-scalar} is the combinatorially assembled
+cover data $\{(p_l, E_l, s_l)\}$; the modified sweepout in the
+original proof is the geometric lift of the scalar competitor
+produced by the corollary below.
 
-The Lean library actually proves a more general statement, of
-which Theorem~\ref{thm:intro-scalar} is a direct specialization:
-the parameter interval $[0,1]$ may be replaced by any compact,
-nonempty topological space $K$, and the specific pair
-$(1/N, 1/(4N))$ by arbitrary scalars $(\delta, \varepsilon)$ with
-$0 < \varepsilon \le \delta$. The input is then a finite covering
-of the $\delta$-super-level set of $f$ carrying per-piece
-replacements with uniform saving $\varepsilon$.
-
-\begin{theorem}[Abstract core]
+\begin{corollary}[Sup reduction]
 \label{thm:intro-core}
-Let $K$ be a compact, nonempty topological space, $f : K \to
-\mathbb{R}$ a continuous energy with $m_0 = \sup f$, and let
-$0 < \varepsilon \le \delta$. Suppose there is a finite family of
-pieces $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
-$\{E_l : K \to \mathbb{R}\}$, and savings
-$\{s_l \ge \varepsilon\}$ with: (I) $f - E_l \ge s_l$ on $p_l$;
-(II) every $t \in K$ lies in at most two pieces; (III)
-$\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
-Then there exists $f' : K \to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \varepsilon.
-\]
-\end{theorem}
+Under the hypotheses of Theorem~\ref{thm:intro-scalar}, with the
+pieces $\{p_l\}$ produced there, there exists
+$f' : [0,1] \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in [0,1]$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
+\end{corollary}
 
-Theorem~\ref{thm:intro-scalar} follows by taking $K = [0,1]$,
-$\delta = 1/N$, $\varepsilon = 1/(4N)$, and running a 1D
-cover-refinement construction on the local witnesses to produce
-the family $\{p_l\}$ with two-fold overlap. Both theorems reappear
-in §\ref{sec:spec}: Theorem~\ref{thm:intro-core} as the library's
-abstract API (Theorem~\ref{thm:core},
-\S\ref{sec:core-spec}), and Theorem~\ref{thm:intro-scalar} as the
-one-parameter application (Theorem~\ref{thm:main},
-\S\ref{sec:app-spec}).
+\begin{remark}[Why (a)+(b) are stated]
+\label{rem:anchor-f-prime}
+The bound (c) alone is trivialized by any constant
+$f' \equiv c \le m_0 - 1/(4N)$. Condition (a) ties $f'$
+pointwise below $f$; condition (b) forces $f'$ to coincide with
+$f$ wherever no piece modifies it. Together they anchor $f'$ to
+$f$, so generic non-constant $f$ rules out constant competitors,
+and (c) becomes a non-trivial quantitative assertion about the
+specific competitor the proof produces
+(concretely, $f'(t) = f(t) - \sum_{l :\, t \in p_l} s_l$).
+\end{remark}
+
+The bookkeeping underlying Corollary~\ref{thm:intro-core} is
+strictly more general than the one-parameter statement it
+certifies: the same arithmetic applies to any compact, nonempty
+topological space $K$ with continuous $f : K \to \mathbb{R}$ and
+any scalars $(\delta, \varepsilon)$ with
+$0 < \varepsilon \le \delta$, taking as input any finite cover of
+the $\delta$-super-level set of $f$ with per-piece savings $\ge
+\varepsilon$ and at-most-two overlap. The Lean library ships
+both forms (Corollaries~\ref{cor:core-sup}~and~\ref{thm:main} in
+\S\ref{sec:app-spec}); Theorem~\ref{thm:intro-scalar} is the
+combinatorial construction that turns local-witness data into
+such a cover in the 1D case.
+
+Both results reappear in §\ref{sec:spec}:
+Theorem~\ref{thm:intro-scalar} as the library's main theorem
+(Theorem~\ref{thm:core},~\S\ref{sec:core-spec}), and
+Corollary~\ref{thm:intro-core} as the one-parameter sup-reduction
+corollary (Corollary~\ref{thm:main},~\S\ref{sec:app-spec}).
 
 \textbf{Scope.} This note formalizes the proof of the Claim
 (the combinatorial argument on $[0,1]$) as a Lean 4 library,
@@ -230,12 +290,12 @@ $(U^1, U^2) \in \mathcal{CO}$ disjoint-pair structure, or the
 final contradiction against $m_0 = \inf_\Lambda \mathcal{F}$;
 these depend on the GMT and admissible-class framework of the
 ambient construction and remain the consumer's responsibility.
-The library ships a single abstract theorem
-(§\ref{sec:core-spec}) parametric in the sweepout space together
-with a one-parameter specialization to $[0,1]$
-(§\ref{sec:app-spec}); the formalization is machine-verified
-against \Mathlib, declares no custom axioms, and contains no
-\texttt{sorry}. Source:
+The library ships one main theorem (the combinatorial core,
+§\ref{sec:core-spec}) on $[0,1]$, together with two
+sup-reduction corollaries (§\ref{sec:app-spec}): a generic
+compact-$K$ form and its one-parameter specialization. The
+formalization is machine-verified against \Mathlib, declares no
+custom axioms, and contains no \texttt{sorry}. Source:
 \url{https://github.com/MathNetwork/comb_arg}.
 
 \section{Specification}
@@ -375,13 +435,54 @@ $\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
 (ii) $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each $k$.
 \end{definition}
 
-\subsection{Public API: abstract core}
+\subsection{Public API: combinatorial core}
 \label{sec:core-spec}
 
-The arithmetic heart of the abstract core is a short lemma
+The library's main theorem is the existence of a refined
+multiplicity-bounded cover of the near-critical set carrying the
+witness savings: the non-trivial combinatorial content extracted
+from the original proof. Its hypotheses coincide with the intro
+statement (Theorem~\ref{thm:intro-scalar}); the output is a
+\texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}).
+
+\begin{theorem}[Combinatorial core]
+\label{thm:core}
+\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
+Let $f : \unit \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$.
+Suppose every $t \in \NC$ admits a \texttt{LocalWitness} at $t$
+with saving $1/(4N)$ (Definition~\ref{def:witness}). Then there
+exists a
+\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$
+(Definition~\ref{def:ref}): a finite family of closed pieces
+$\{p_l \subseteq \unit\}$, continuous replacement energies
+$\{E_l : \unit \to \mathbb{R}\}$, and savings
+$\{s_l \ge 1/(4N)\}$ satisfying conditions~(I)--(IV).
+\end{theorem}
+
+The Lean signature of \texttt{exists\_refinement} carries an
+ambient pseudo-metric $X$ and a \texttt{PairableCover X}
+instance via \texttt{LocalWitness}; neither is consumed by the
+proof of Theorem~\ref{thm:core}. See
+Remark~\ref{rem:lean-scaffolding}.
+
+The proof is given in~\S\ref{sec:proof} as three chained stages:
+Stage~A builds an initial cover from a Lebesgue-number argument
+on $\NC$; Stage~B runs a bounded smallest-index induction to a
+terminal partial refinement; Stage~C assembles the output by
+extending the open-neighborhood saving bound to the closure via
+continuity and deriving two-fold overlap via the parity-gap
+disjointness argument.
+
+\subsection{Public API: sup-reduction corollaries}
+\label{sec:app-spec}
+
+The arithmetic that turns a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+into a competitor with reduced supremum is a short scalar lemma
 independent of covers, pieces, or multiplicity: any competitor
-that saves a fixed amount on the relevant super-level set
-yields the same amount of supremum reduction.
+that saves a fixed amount on the relevant super-level set yields
+the same amount of supremum reduction.
 
 \begin{lemma}[Scalar sup reduction]
 \label{lem:scalar-sup-reduction}
@@ -406,70 +507,71 @@ $t$ completes the proof.
 \end{proof}
 
 Lemma~\ref{lem:scalar-sup-reduction} is a general statement
-about lowering the supremum of a bounded real-valued function
-by exhibiting a competitor with a pointwise saving on the
+about lowering the supremum of a bounded real-valued function by
+exhibiting a competitor with a pointwise saving on the
 super-level set $\{f \ge m_0 - \delta\}$; no sweepout, cover, or
 multiplicity hypothesis enters. It applies verbatim whenever a
 pointwise saving can be established on the ``where it matters''
-super-level set. In the combinatorial argument, the competitor
-$g$ is constructed piecewise from per-parameter local witnesses;
-Theorem~\ref{thm:core} records how such data delivers the
-hypotheses of the lemma.
+super-level set. The Lean library ships two corollaries of
+Theorem~\ref{thm:core} via this lemma: the generic-$K$ form (any
+\texttt{FiniteCoverWithWitnesses}), and the one-parameter
+specialization to $\unit$ that chains through
+Theorem~\ref{thm:core}.
 
-\begin{theorem}[Abstract core]
-\label{thm:core}
+\begin{corollary}[Sup reduction, generic form]
+\label{cor:core-sup}
 \leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
 Let $K$ be a compact, nonempty topological space,
 $f : K \to \mathbb{R}$ continuous with $m_0 = \sup f$, and
 $0 < \varepsilon \le \delta$. Given a
 \texttt{FiniteCoverWithWitnesses}$(K, f, m_0, \delta, \varepsilon)$
-(Definition~\ref{def:ref}), there exists $f' : K \to \mathbb{R}$
-with
-\[
-\sup f' \;\le\; m_0 - \varepsilon.
-\]
-\end{theorem}
+(Definition~\ref{def:ref}) with pieces $\{p_l\}$, there exists
+$f' : K \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in K$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - \varepsilon$.
+\end{enumerate}
+\end{corollary}
 
 \begin{proof}
-Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$ and verify the
-hypotheses of Lemma~\ref{lem:scalar-sup-reduction}. Condition~(i):
-each $s_l > 0$, so $f'(t) \le f(t)$. Condition~(ii): suppose
-$f(t) \ge m_0 - \delta$. By (IV) of Definition~\ref{def:ref},
-$t \in p_l$ for some $l$; by (III), $s_l \ge \varepsilon$. The
-remaining savings in the sum (at most one more, by the two-fold
-overlap (II)) are non-negative, so $f(t) - f'(t) \ge \varepsilon$.
-The lemma yields $\sup f' \le m_0 - \varepsilon$.
+Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$. Since each
+$s_l > 0$, (a) holds. If $t \notin \bigcup_l p_l$ the sum is
+empty, giving (b). For (c), apply
+Lemma~\ref{lem:scalar-sup-reduction}: (i) follows from (a);
+(ii) holds because when $f(t) \ge m_0 - \delta$, (IV) gives
+some $p_l \ni t$, (III) gives $s_l \ge \varepsilon$, and the
+remaining at-most-one saving (by two-fold overlap (II)) is
+non-negative, so $f(t) - f'(t) \ge \varepsilon$. The lemma
+yields $\sup f' \le m_0 - \varepsilon$.
 \end{proof}
 
-\subsection{Public API: one-parameter application}
-\label{sec:app-spec}
-
-\begin{theorem}[One-parameter application]
+\begin{corollary}[One-parameter sup reduction]
 \label{thm:main}
 \leanmargin{exists\_sup\_reduction}{SupReduction.lean}
-Let $X$ be a pseudo-metric space with a \texttt{PairableCover X}
-instance (Definition~\ref{def:pcover}). Let $f : \unit \to
-\mathbb{R}$ be continuous with $m_0 = \sup f$ and $m_0 > 0$, and
-$N \in \mathbb{N}$ with $N > 0$. Suppose every $t \in \NC$
-admits a \texttt{LocalWitness} at $t$ with saving $1/(4N)$
-(Definition~\ref{def:witness}). Then there exists $f' : \unit
-\to \mathbb{R}$ with
-\[
-\sup f' \;\le\; m_0 - \tfrac{1}{4N}.
-\]
-\end{theorem}
+Under the hypotheses of Theorem~\ref{thm:core}, there exist
+$f' : \unit \to \mathbb{R}$ and a set $S \subseteq \unit$
+containing $\NC$ such that:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in \unit$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin S$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
+\end{corollary}
 
-Theorem~\ref{thm:main} is the specialization of
-Theorem~\ref{thm:core} to $K = \unit$, $\delta = 1/N$,
-$\varepsilon = 1/(4N)$; the 1D cover-refinement of
-\S\ref{sec:proof} turns the local-witness data into the
-\texttt{FiniteCoverWithWitnesses} required by the core.
+Corollary~\ref{thm:main} is Corollary~\ref{cor:core-sup} applied
+to the \texttt{FiniteCoverWithWitnesses} produced by
+Theorem~\ref{thm:core}, with
+$(\delta, \varepsilon) = (1/N, 1/(4N))$; the modification set
+$S$ is the union of the cover pieces, which contains $\NC$ by
+condition~(IV) of Definition~\ref{def:ref}.
 
 \subsection{Internal lemmas}
 \label{sec:internal}
 
-The declarations below are consumed by Theorem~\ref{thm:main};
-proofs are sketched in \S\ref{sec:proof}.
+The declarations below are the sub-lemmas of
+Theorem~\ref{thm:core}; proofs are sketched in
+\S\ref{sec:proof}.
 
 \begin{proposition}[Compactness of $\NC$]
 \label{prop:NC-compact}
@@ -493,12 +595,14 @@ intervals overlap at a common point (parity rescue).
 \item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
 : the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
-\item \lean{exists\_refinement}{Refinement/Assembly.lean}
-: packages the 1D construction output as a
-\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
-with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$; the input
-to Theorem~\ref{thm:core}.
 \end{itemize}
+
+The assembly itself---packaging the Stage A--B--C output as a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$---is
+Theorem~\ref{thm:core} itself, whose Lean declaration
+\lean{exists\_refinement}{Refinement/Assembly.lean} chains the
+sub-lemmas above.
 
 Figure~\ref{fig:arch} shows the layered architecture.
 
@@ -516,27 +620,33 @@ Figure~\ref{fig:arch} shows the layered architecture.
   arrlab/.style={font=\scriptsize, midway, fill=white, inner sep=1pt, text=black!70}
 ]
 
-% Tier 1: abstract core
+% Tier 1: combinatorial core
 \node[box, minimum width=85mm] (core) at (0, 8) {%
-  \texttt{exists\_sup\_reduction\_of\_cover} \ (generic $K$)
+  \texttt{exists\_refinement} \ (combinatorial core, $K = [0,1]$)
 };
-\node[tierlbl] at (-7, 8) {Tier 1\\abstract core};
+\node[tierlbl] at (-7, 8) {Tier 1\\combinatorial core};
 
-% Tier 2: one-parameter application
-\node[box, minimum width=65mm] (app) at (0, 6) {%
+% Tier 2: sup-reduction corollaries (side by side)
+\node[box, minimum width=45mm] (app) at (-3.2, 6) {%
   \texttt{exists\_sup\_reduction} \ ($K = [0,1]$)
 };
-\node[tierlbl] at (-7, 6) {Tier 2\\application};
-\draw[arr] (app) -- node[arrlab] {specializes} (core);
+\node[box, minimum width=60mm] (genc) at ( 3.2, 6) {%
+  \texttt{exists\_sup\_reduction\_of\_cover} \ (generic $K$)
+};
+\node[tierlbl] at (-7, 6) {Tier 2\\corollaries};
+\draw[arr] (core.south) -- node[arrlab, pos=0.5, left]
+  {via core} (app.north east);
+\draw[arr] (genc.west) -- node[arrlab, above]
+  {via bookkeeping} (app.east);
 
 % Tier 3: three pillars
 \node[pillar] (P1) at (-5.2, 4) {cover construction};
 \node[pillar] (P2) at ( 0,   4) {refinement induction};
 \node[pillar] (P3) at ( 5.2, 4) {bookkeeping arithmetic};
 \node[tierlbl] at (-7, 4) {Tier 3\\pillars};
-\draw[arr] (P1.north) -- ++(0,0.15) -| (app.south west) ;
-\draw[arr] (P2.north) -- node[arrlab] {composes} (app.south);
-\draw[arr] (P3.north) -- ++(0,0.15) -| (app.south east) ;
+\draw[arr] (P1.north) -- ++(-0.4, 0) |- (core.south west);
+\draw[arr] (P2.north) -- node[arrlab, pos=0.4] {composes} (core.south);
+\draw[arr] (P3.north) -- (genc.south);
 
 % Pillar annotations (italic, under each pillar)
 \node[note] at (-5.2, 3.5) {Lebesgue number on $\{f \geq m_0 - \delta\}$};
@@ -572,32 +682,44 @@ Figure~\ref{fig:arch} shows the layered architecture.
 \draw[arr] (SP.north) -- node[arrlab] {proves} (TF.south);
 
 \end{tikzpicture}
-\caption{\label{fig:arch}\CombArg{} v0.1 architecture. The abstract
-core (Tier 1) is parametric in the sweepout space; the
-one-parameter application (Tier 2) instantiates $K = [0,1]$ and
-composes three construction pillars (Tier 3). Each pillar's key
-declarations appear in Tier 4. The disjointness sub-module
-(Tier 5) is an abstract \texttt{SkippedSpacedIntervals} structure
-whose three lemmas combine into the two-fold overlap invariant
-consumed by bookkeeping.}
+\caption{\label{fig:arch}\CombArg{} v0.1 architecture. The
+combinatorial core (Tier 1) is the main theorem
+\texttt{exists\_refinement}: the 1D cover-refinement producing a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+from local witnesses on $\NC$.
+Two sup-reduction corollaries (Tier 2) follow by scalar
+bookkeeping: the generic-$K$ form
+\texttt{exists\discretionary{-}{}{}\_\discretionary{-}{}{}sup\discretionary{-}{}{}\_\discretionary{-}{}{}reduction\discretionary{-}{}{}\_\discretionary{-}{}{}of\discretionary{-}{}{}\_\discretionary{-}{}{}cover}
+and the one-parameter specialization
+\texttt{exists\discretionary{-}{}{}\_\discretionary{-}{}{}sup\discretionary{-}{}{}\_\discretionary{-}{}{}reduction}.
+Tier 1 is supplied by pillars P1
+(cover construction) and P2 (refinement induction); the generic
+corollary is supplied by pillar P3 (bookkeeping arithmetic).
+Each pillar's key declarations appear in Tier 4. The disjointness
+sub-module (Tier 5) is an abstract
+\texttt{SkippedSpacedIntervals} structure whose three lemmas
+combine into the two-fold overlap invariant consumed by Tier 1.}
 \end{figure}
 
 \section{Proof structure}
 \label{sec:proof}
 
-We split the proof of Theorem~\ref{thm:main} into three stages.
+We split the proof of Theorem~\ref{thm:core} into three stages.
 Stage~A builds an initial cover from the witness hypothesis.
-Stage~B runs an induction producing a terminal partial refinement
-with injective $\sigma$. Stage~C assembles the finite cover with
-witnesses by extending saving bounds to closures and deriving
-TwoFold. Theorem~\ref{thm:core} closes.
+Stage~B runs an induction producing a terminal partial
+refinement with injective $\sigma$. Stage~C assembles the finite
+cover with witnesses by extending saving bounds to closures and
+deriving TwoFold. The sup-reduction corollaries
+(Corollary~\ref{cor:core-sup} and Corollary~\ref{thm:main})
+follow by Lemma~\ref{lem:scalar-sup-reduction} applied to the
+resulting cover; we sketch that 3-line argument after Stage~C.
 
 \subsection{Stage A: existence of the initial cover}
 
 \begin{proposition}[Existence of an initial cover]
 \label{prop:exists-ic}
 \leanmargin{exists\_initialCover}{Refinement/CoverConstruction.lean}
-Under the hypotheses of Theorem~\ref{thm:main}, an initial cover
+Under the hypotheses of Theorem~\ref{thm:core}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
 
@@ -830,32 +952,28 @@ a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
 limits.
 \end{proof}
 
-\begin{lemma}[Assembly]
-\label{lem:assembly}
-\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
-A partial refinement $\mathrm{pr}$ of length $L$ with $\sigma$
-injective and $I_i \subseteq \bigcup_k J_k$ for every $i$ yields
-a refinement of $(\unit, X, f, m_0, N)$ in the sense of
-Definition~\ref{def:ref}, with
-$p_k := \overline{J_k}$, uniform saving
-$s_k := 1/(4N)$, and
-$E_k := $ the replacement energy of the
-$\sigma(k)$-th witness.
-\end{lemma}
-
-\begin{proof}
-Invariant~(I) is Proposition~\ref{prop:saving-bound}.
-Invariant~(II) is Proposition~\ref{prop:twofold}.
-Invariant~(III) holds by construction ($s_k = 1/(4N)$).
-Coverage of $\NC$ chains $\NC \subseteq \bigcup_i I_i
-\subseteq \bigcup_k J_k \subseteq \bigcup_k
-\overline{J_k}$.
+\begin{proof}[Proof of Theorem~\ref{thm:core}]
+Chain Propositions~\ref{prop:exists-ic}~and~\ref{prop:exists-terminal}:
+the former produces an \texttt{InitialCover} from the witness
+hypothesis, and the latter yields a terminal
+\texttt{PartialRefinement} $\mathrm{pr}$ of length $L$ with
+$\sigma$ injective and $I_i \subseteq \bigcup_k J_k$ for every
+$i$. Assemble the
+\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$
+by taking pieces $p_k := \overline{J_k}$, uniform saving
+$s_k := 1/(4N)$, and $E_k$ the replacement energy of the
+$\sigma(k)$-th local witness. Invariant~(I) is
+Proposition~\ref{prop:saving-bound}; invariant~(II) is
+Proposition~\ref{prop:twofold}; invariant~(III) holds by
+construction ($s_k = 1/(4N)$); coverage of $\NC$ chains as
+$\NC \subseteq \bigcup_i I_i \subseteq \bigcup_k J_k \subseteq
+\bigcup_k \overline{J_k}$.
 \end{proof}
 
-Theorem~\ref{thm:main} now follows: chain
-Propositions~\ref{prop:exists-ic}~and~\ref{prop:exists-terminal},
-invoke Lemma~\ref{lem:assembly}, and apply
-Theorem~\ref{thm:core}.
+Corollary~\ref{cor:core-sup} then follows by the three-line
+bookkeeping proved in \S\ref{sec:app-spec} applied to this
+\texttt{FiniteCoverWithWitnesses}; Corollary~\ref{thm:main} is
+the specialization to $(\delta, \varepsilon) = (1/N, 1/(4N))$.
 
 \begin{thebibliography}{Mathlib}
 
