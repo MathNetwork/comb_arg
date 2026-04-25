@@ -3,6 +3,103 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.2.0] — 2026-04-25
+
+### API simplification: PairableCover removed, witness shape unwrapped
+
+Reviewer-driven cleanup pass. **Breaking** changes to public
+signatures: the `X : Type*` ambient-space parameter, the
+`[PseudoMetricSpace X] [PairableCover X]` instance constraints,
+the `Nonempty` wrapper around `LocalWitness` in witness
+hypotheses, and several unused positivity arguments are all
+removed. Axiom audit unchanged.
+
+#### Removed (breaking)
+
+- `class PairableCover X`, `PairableCover.combinedRegion`, and
+  `PairableCover.diameter_nesting_combined`. These were
+  scaffolding from Phase 0/1 that never became load-bearing in
+  the proof; see `docs/design-notes.md` §12 for the option-A/B/C
+  analysis and §14 for the v0.2 resolution (option C).
+- `LocalWitness.cover` field. The `X` type parameter on
+  `LocalWitness` (and on `InitialCover`, `PartialRefinement`,
+  `exists_refinement`, `exists_sup_reduction`) goes with it.
+- `CombArg/EnergyBound.lean` (re-export stub from the v0.1.1
+  reframe, unused).
+
+#### Changed (breaking)
+
+- `LocalWitness K X f t ε` → `LocalWitness K f t ε`.
+- `exists_refinement`, `exists_sup_reduction`: witness hypothesis
+  takes `LocalWitness …` directly; the `Nonempty (LocalWitness …)`
+  wrapping is removed. Callers that previously relied on
+  non-constructive nonemptiness now must produce explicit
+  witnesses.
+- `exists_sup_reduction_of_cover`: drops the unused
+  `_hδ : 0 < δ` and `_hε : 0 < ε` arguments.
+- `exists_sup_reduction`: drops the unused `_hm_pos : 0 < m₀`
+  argument.
+
+#### Renamed
+
+- `f_le_m0` → `f_le_m₀`.
+- `eps_le_sum_saving` → `ε_le_sum_saving`.
+- `sup_le_of_saving` → `csSup_range_le_of_pointwise_saving`.
+
+#### Added
+
+- `CombArg.Refinement.openInterval` — canonical
+  `Subtype.val ⁻¹' Set.Ioo (c.val − r) (c.val + r)` shape on
+  `unitInterval`. Replaces five inline duplications across
+  `SpacedIntervals.lean` and `InitialCover.lean`.
+- `CombArg.Refinement.ExtendResult` — private structure bundling
+  one inductive step's output (`pr'`, `J_castSucc`, `σ_castSucc`,
+  `σ_last`, `covers_i_star`). Replaces an ad-hoc 4-property
+  `Subtype` and four standalone `extend_refinement_*` lemmas.
+- `test/Smoke.lean` rewritten: a non-trivial `LocalWitness`
+  construction on `f ≡ 1`, an end-to-end `exists_sup_reduction`
+  invocation parameterized in `N`, and a `#print axioms` block on
+  all three public theorems (regression guard against new axioms).
+- `examples/MinimalUsage.lean` rewritten as a runnable worked
+  example, parameterized in `N`.
+- `docs/design-notes.md` §14 records the v0.2 decisions.
+
+#### Removed (internal cleanup)
+
+- `step_succ` (was `Refinement/Induction.lean`): the paper-faithful
+  `Finset.min'`-internal variant was never invoked outside its own
+  file. `step_succ_at` (the externally-parameterized variant) is
+  the only step function the termination proof uses; `step_succ`
+  was 30 lines of dead code.
+- `extend_refinement_J_castSucc`, `extend_refinement_σ_castSucc`,
+  `extend_refinement_σ_last`, `extend_refinement_covers`: the four
+  helper lemmas now appear as named fields of `ExtendResult`.
+- `_h_uncov : ¬ (ic.I i_star ⊆ ⋃ pr.J k')` argument from
+  `step_succ_at`: bound but never consumed in the proof. (Caller
+  in `exists_terminal_refinement_aux` retains its own copy of the
+  hypothesis for downstream use.)
+
+#### Changed (internal)
+
+- `step_succ_at` now returns `ExtendResult` directly instead of a
+  4-property `Subtype`. Callers access `result.pr'`,
+  `result.J_castSucc`, etc. by named field instead of
+  `result.property.2.2.1`-style projections.
+- `CombArg/Witness.lean` import narrowed from
+  `Mathlib.Topology.Instances.Real.Lemmas` to
+  `Mathlib.Topology.MetricSpace.Defs` (smaller transitive dep
+  tree; `Witness.lean` builds with ~1090 jobs vs ~1500+).
+
+#### Unchanged
+
+- All proof bodies for the combinatorial argument (cover
+  construction, refinement induction, parity rescue, scalar
+  bookkeeping) — only signatures are simplified.
+- `#print axioms` for all public theorems: still
+  `[propext, Classical.choice, Quot.sound]`.
+- LoC: 2052 (v0.1.1) → 1848 (v0.2), a −204 line / −10% reduction
+  in library size with zero loss of mathematical content.
+
 ## [0.1.1] — 2026-04-24
 
 ### Reframe: combinatorial core vs. bookkeeping corollary, with
@@ -96,6 +193,7 @@ names.
   with the paper framing in the next substantive documentation
   pass (tracked alongside the PairableCover §12 resolution).
 
+[0.2.0]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.2.0
 [0.1.1]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.1.1
 
 ## [0.1.0] — 2026-04-23
