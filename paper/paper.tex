@@ -11,6 +11,8 @@
 }
 \usepackage{listings}
 \usepackage{xcolor}
+\newcommand{\yev}[1]{\textcolor{red}{[#1]}}
+\newcommand{\me}[1]{\textcolor{blue}{#1}}
 \usepackage{array}
 \usepackage{booktabs}
 \usepackage{geometry}
@@ -98,11 +100,9 @@ $M = S^{n+1}$), direct minimization of the $n$-dimensional
 Hausdorff measure over integral currents yields only the empty
 hypersurface; a non-trivial minimal hypersurface must be
 constructed as a saddle-type critical point of the area
-functional. The construction, following Birkhoff (1917) for
-closed geodesics and Almgren--Pitts for higher-dimensional
-varifolds, is a \emph{min-max} scheme; regularity of the output
-is due to Pitts \cite{Pit81} in ambient dimension up to $7$ and
-to Schoen--Simon \cite{SS81} in higher dimensions.
+functional. \me{The construction, due to Almgren and Pitts, is a
+\emph{min-max} scheme on varifolds; regularity of the output is
+due to Pitts \cite{Pit81} and Schoen--Simon \cite{SS81}.}
 
 \begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
 \label{thm:minmax}
@@ -130,8 +130,13 @@ $(U^1, U^2) \in \mathcal{CO}$ of $\mathcal{H}^n$-disjoint open
 sets, for all $N$ sufficiently large.
 \end{theorem}
 
-The proof of Theorem~\ref{thm:AP-combinatorial} reduces to
-a one-parameter claim on the sweepout~\cite[\S3.2]{DLT13}:
+\me{The proof of Theorem~\ref{thm:AP-combinatorial} reduces,
+following~\cite[\S3.2]{DLT13}, to the following claim on the
+sweepout:\footnote{Throughout this paper, ``sweepout'' denotes a
+one-parameter family $\{\Gamma_t\}_{t \in [0,1]}$ in the sense of
+\cite[Def.~3.1]{DLT13}; the multi-parameter min-max setting of
+\cite{MN14} requires separate combinatorial machinery and lies
+outside our scope.}}
 
 \begin{quote}
 \textbf{Claim.} For each $N$ sufficiently large, there exists
