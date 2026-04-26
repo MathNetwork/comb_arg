@@ -15,7 +15,7 @@ resulting cover; we sketch that 3-line argument after Stage~C.
 
 \begin{proposition}[Existence of an initial cover]
 \label{prop:exists-ic}
-\leanmargin{exists\_initialCover}{Refinement/CoverConstruction.lean}
+\leanmargin{exists\_initialCover}{OneDim/CoverConstruction.lean}
 Under the hypotheses of Theorem~\ref{thm:core}, an initial cover
 (Definition~\ref{def:ic}) exists.
 \end{proposition}
@@ -46,7 +46,7 @@ Starting from an initial cover, one builds pieces inductively.
 
 \begin{definition}[Base case]
 \label{def:step0}
-\leanmargin{step\_zero}{Refinement/PartialRefinement.lean}
+\leanmargin{step\_zero}{OneDim/PartialRefinement.lean}
 $\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
 refinement with
 $J_1 := I_1$ and $\sigma(1) := 1$.
@@ -54,7 +54,7 @@ $J_1 := I_1$ and $\sigma(1) := 1$.
 
 \begin{definition}[Inductive step]
 \label{def:step-succ}
-\leanmargin{step\_succ\_at}{Refinement/Induction.lean}
+\leanmargin{step\_succ\_at}{OneDim/Induction.lean}
 Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
 an index $i^* \in \{1,\ldots,n\}$ with
 $I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
@@ -79,7 +79,7 @@ explicit argument and returns the extension bundled with the
 
 \begin{proposition}[Termination]
 \label{prop:exists-terminal}
-\leanmargin{exists\_terminal\_refinement}{Refinement/Induction.lean}
+\leanmargin{exists\_terminal\_refinement}{OneDim/Induction.lean}
 Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
 $\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
 partial refinement of some length $L$ with $\sigma$ injective
@@ -199,7 +199,7 @@ invariant holds (a parity argument on the spacing condition~(a)).
 
 \begin{proposition}[TwoFold via parity]
 \label{prop:twofold}
-\leanmargin{terminal\_twoFold}{Refinement/Assembly.lean}
+\leanmargin{terminal\_twoFold}{OneDim/Assembly.lean}
 For a partial refinement $\mathrm{pr}$ of length $L$ with
 $\sigma$ injective, every $t \in \unit$ lies in at most two of
 $\overline{J_1}, \ldots, \overline{J_L}$.
@@ -211,8 +211,8 @@ that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
 2$) have strict separation between $\overline{I_i}$ and
 $\overline{I_j}$, hence
 $\overline{I_i} \cap \overline{I_j} = \emptyset$
-(\lean{chain\_spacing}{Refinement/Disjointness.lean},
-\lean{closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}).
+(\lean{chain\_spacing}{OneDim/SpacedIntervals.lean},
+\lean{closure\_disjoint\_of\_even\_gap}{OneDim/SpacedIntervals.lean}).
 
 Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
 admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
@@ -226,12 +226,12 @@ $c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
 and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
 parities and one of them is the even gap. The pair with even
 gap has disjoint closures, contradicting the common point
-(\lean{not\_three\_overlap}{Refinement/Disjointness.lean}).
+(\lean{not\_three\_overlap}{OneDim/SpacedIntervals.lean}).
 \end{proof}
 
 \begin{proposition}[Closure extension of saving bound]
 \label{prop:saving-bound}
-\leanmargin{saving\_bound\_closure}{Refinement/Assembly.lean}
+\leanmargin{saving\_bound\_closure}{OneDim/Assembly.lean}
 Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
 every $t \in \overline{J_k}$,
 $f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where

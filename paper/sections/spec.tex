@@ -41,7 +41,7 @@ value. We use the same convention.
 
 \begin{definition}[Near-critical set]
 \label{def:NC}
-\leanmargin{nearCritical}{Refinement/InitialCover.lean}
+\leanmargin{nearCritical}{OneDim/InitialCover.lean}
 For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
 $\delta \ge 0$, the $\delta$-near-critical set is
 $\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
@@ -57,7 +57,7 @@ $1/(4N)$ a parameter $\varepsilon \le \delta$.
 
 \begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
 \label{def:ref}
-\leanmargin{FiniteCoverWithWitnesses}{Core.lean}
+\leanmargin{FiniteCoverWithWitnesses}{Cover.lean}
 A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
 carries a finite nonempty index type $\iota$, pieces
 $\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
@@ -77,7 +77,7 @@ independently of the witness data.
 
 \begin{definition}[\texttt{SkippedSpacedIntervals} structure]
 \label{def:spaced}
-\leanmargin{SkippedSpacedIntervals}{Refinement/SpacedIntervals.lean}
+\leanmargin{SkippedSpacedIntervals}{OneDim/SpacedIntervals.lean}
 A \texttt{SkippedSpacedIntervals} records a natural number $n$,
 centers $c_1, \ldots, c_n \in \unit$, positive radii
 $r_1, \ldots, r_n > 0$, and the skip-2 spacing axiom
@@ -96,7 +96,7 @@ lie in $\NC$.
 
 \begin{definition}[\texttt{InitialCover} structure]
 \label{def:ic}
-\leanmargin{InitialCover}{Refinement/InitialCover.lean}
+\leanmargin{InitialCover}{OneDim/InitialCover.lean}
 Specialized to $K = \unit$. An
 \texttt{InitialCover f m\textsubscript{0} N} carries the data of
 a \texttt{SkippedSpacedIntervals} (Definition~\ref{def:spaced},
@@ -113,7 +113,7 @@ state of this iteration after $\ell$ moves is the following.
 
 \begin{definition}[\texttt{PartialRefinement} structure]
 \label{def:pr}
-\leanmargin{PartialRefinement}{Refinement/PartialRefinement.lean}
+\leanmargin{PartialRefinement}{OneDim/PartialRefinement.lean}
 Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
 \texttt{PartialRefinement ic $\ell$} carries pieces
 $J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
@@ -134,7 +134,7 @@ statement (Theorem~\ref{thm:intro-scalar}); the output is a
 
 \begin{theorem}[Combinatorial core]
 \label{thm:core}
-\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
+\leanmargin{exists\_refinement}{OneDim/Assembly.lean}
 Let $f : \unit \to \mathbb{R}$ be continuous with
 $m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$.
 Suppose every $t \in \NC$ admits a \texttt{LocalWitness} at $t$
@@ -167,7 +167,7 @@ the same amount of supremum reduction.
 
 \begin{lemma}[Scalar sup reduction]
 \label{lem:scalar-sup-reduction}
-\leanmargin{sup\_le\_of\_saving}{Core.lean}
+\leanmargin{csSup\_range\_le\_of\_pointwise\_saving}{Cover.lean}
 Let $K$ be a nonempty set and $f : K \to \mathbb{R}$ a bounded
 function with $m_0 = \sup f$. Let $g : K \to \mathbb{R}$ satisfy
 \begin{enumerate}
@@ -201,7 +201,7 @@ Theorem~\ref{thm:core}.
 
 \begin{corollary}[Sup reduction, generic form]
 \label{cor:core-sup}
-\leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
+\leanmargin{exists\_sup\_reduction\_of\_cover}{Cover.lean}
 Let $K$ be a compact, nonempty topological space,
 $f : K \to \mathbb{R}$ continuous with $m_0 = \sup f$, and
 $0 < \varepsilon \le \delta$. Given a
@@ -256,24 +256,24 @@ Theorem~\ref{thm:core}; proofs are sketched in
 
 \begin{proposition}[Compactness of $\NC$]
 \label{prop:NC-compact}
-\leanmargintwo{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
-              {nearCritical\_nonempty}{Refinement/InitialCover.lean}
+\leanmargintwo{isCompact\_nearCritical}{OneDim/InitialCover.lean}%
+              {nearCritical\_nonempty}{OneDim/InitialCover.lean}
 If $K$ is compact and $f$ continuous, $\NC$ is compact. If
 additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
 \end{proposition}
 
 \begin{itemize}
-\item \lean{exists\_initialCover}{Refinement/CoverConstruction.lean}
+\item \lean{exists\_initialCover}{OneDim/CoverConstruction.lean}
 : existence of an \texttt{InitialCover} via a grid plus
 Lebesgue-number construction on the compact sublevel set $\NC$.
-\item \lean{exists\_terminal\_refinement}{Refinement/Induction.lean}
+\item \lean{exists\_terminal\_refinement}{OneDim/Induction.lean}
 : existence of a terminal \texttt{PartialRefinement} with
 injective $\sigma$ via bounded smallest-index induction with
 two-case dispatch.
-\item \lean{not\_three\_overlap}{Refinement/Disjointness.lean}
+\item \lean{not\_three\_overlap}{OneDim/SpacedIntervals.lean}
 : at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
-\item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
+\item \lean{saving\_bound\_closure}{OneDim/Assembly.lean}
 : the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
 \end{itemize}
@@ -283,7 +283,7 @@ as a
 \texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
 with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$, is
 Theorem~\ref{thm:core} itself, whose Lean declaration
-\lean{exists\_refinement}{Refinement/Assembly.lean} chains the
+\lean{exists\_refinement}{OneDim/Assembly.lean} chains the
 sub-lemmas above.
 
 Figure~\ref{fig:arch} shows the layered architecture.
