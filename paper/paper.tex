@@ -933,17 +933,23 @@ the specialization to $(\delta, \varepsilon) = (1/N, 1/(4N))$.
 \section{Use as a software dependency}
 \label{sec:integration}
 
-This section is for downstream consumers --- authors building
-their own geometric-measure-theoretic min-max formalization in
-Lean --- who want to plug \CombArg{} in as the combinatorial
-step. The library treats De~Lellis--Tasnady's
-Lemma~3.1~\cite{DLT13} (the geometric replacement step) as
-\emph{abstract input}: it asks for a
-\texttt{LocalWitness} (Definition~\ref{def:witness}) at every
-near-critical parameter and gives back a scalar sup reduction
-(Corollary~\ref{thm:main}). What the GMT-side formalization
-must produce is exactly the data that fits
-the four fields of \texttt{LocalWitness}.
+Suppose a Lean formalization of the geometric-measure-theoretic
+infrastructure for an Almgren--Pitts min-max construction has
+been carried out --- in particular, the Hausdorff measure of
+boundary surfaces, the local-replacement construction
+(De~Lellis--Tasnady's Lemma~3.1~\cite{DLT13}), and an admissible
+class of sweepouts. This section describes how \CombArg{}
+integrates with such a formalization as the combinatorial step.
+
+The library treats the GMT side as \emph{abstract input}: it
+asks for a \texttt{LocalWitness} (Definition~\ref{def:witness})
+at every near-critical parameter and gives back a scalar sup
+reduction (Corollary~\ref{thm:main}). The interface is
+project-agnostic: the same \texttt{LocalWitness} shape works
+for any GMT formalization, whether a one-off proof in a single
+repository or a community-scale Mathlib extension. What the
+GMT-side formalization must produce is exactly the data that
+fits the five fields of \texttt{LocalWitness}.
 
 \subsection{What the consumer supplies}
 \label{sec:integration-supplies}
@@ -954,8 +960,8 @@ supplies:
 
 \begin{itemize}
 \item A continuous boundary energy
-  $f : \unit \to \mathbb{R}$ --- the consumer's sweepout's
-  energy as a function of the path parameter.
+  $f : \unit \to \mathbb{R}$ --- the sweepout's energy as a
+  function of the path parameter.
 \item A scalar $m_0 \in \mathbb{R}$ with
   $m_0 = \sup_{t \in \unit} f(t)$. In a min-max setting, this
   is the level at which the sweepout sits.
@@ -1016,8 +1022,7 @@ satisfy (c) vacuously.
 \subsection{Plugging into a min-max contradiction}
 \label{sec:integration-contradiction}
 
-If the consumer's admissible class $\mathcal{A}$ has the
-characterization
+If the admissible class $\mathcal{A}$ has the characterization
 $m_0 = \inf_{\Omega \in \mathcal{A}} \sup f_\Omega$ and the
 sweepout $\Omega$ realizes the inf with $f = f_\Omega$, the
 contradiction is three steps:
@@ -1041,8 +1046,11 @@ domain-specific.
 \subsection{Skeleton client code}
 \label{sec:integration-skeleton}
 
-The pattern below adapts \texttt{examples/MinimalUsage.lean}
-in the repository to a hypothetical GMT consumer:
+The pattern below shows how a downstream GMT formalization
+would invoke \CombArg{}; it adapts
+\texttt{examples/MinimalUsage.lean} in the repository, with
+\texttt{YourGMT.*} stubs standing in for the GMT-side
+declarations a consumer formalization would supply:
 
 \begin{verbatim}
 import CombArg

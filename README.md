@@ -170,23 +170,29 @@ The runnable form lives in
   bookkeeping corollary is already generic in `K`; only an
   additional cover construction is needed.
 
-## Integrating with a GMT formalization
+## Using this library once the GMT side is formalized
 
-This section is for downstream consumers building a
-geometric-measure-theoretic min-max formalization in Lean who want
-to plug this library in as the combinatorial step. The library
-treats the geometric-replacement step (De Lellis–Tasnady's
-Lemma 3.1 / Pitts replacement) as **abstract input**: it asks for
-a `LocalWitness` and gives back a scalar sup-reduction. What you
-have to formalize on your GMT side is exactly the
-`LocalWitness`-shaped data.
+Suppose a Lean formalization of the geometric-measure-theoretic
+infrastructure for an Almgren–Pitts min-max construction has been
+carried out — in particular, the Hausdorff measure of boundary
+surfaces, the local-replacement construction (De Lellis–Tasnady's
+Lemma 3.1 / Pitts replacement), and an admissible class of
+sweepouts. This section describes how `CombArg` plugs into such a
+formalization as the combinatorial step.
 
-### What you supply (per call)
+The library treats the GMT side as **abstract input**: it asks
+for a `LocalWitness` at every near-critical parameter and gives
+back a scalar sup reduction. The interface is project-agnostic —
+the same `LocalWitness` shape works for any GMT formalization,
+whether it's a one-off proof in a single repository or a
+community-scale Mathlib extension.
 
-1. A continuous boundary energy `f : unitInterval → ℝ` — your
+### What the consumer supplies (per call)
+
+1. A continuous boundary energy `f : unitInterval → ℝ` — the
    sweepout's energy as a function of the path parameter.
 2. `m₀ : ℝ` with `m₀ = sSup (Set.range f)` — the sup of `f` (or
-   your min-max level if your sweepout sits at it).
+   the min-max level when the sweepout sits at it).
 3. `N : ℕ` with `0 < N` — the near-criticality parameter; the
    library's quantitative output is `1/(4·N)`.
 4. For every `t : unitInterval` with `f t ≥ m₀ − 1/N`, a
@@ -194,12 +200,12 @@ have to formalize on your GMT side is exactly the
 
 ### `LocalWitness` ↔ DLT Lemma 3.1 correspondence
 
-| Field | What you produce on the GMT side |
+| Field | What the GMT side produces |
 |---|---|
 | `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i)` around `t` on which the local replacement saves energy. |
 | `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
-| `replacementEnergy : unitInterval → ℝ` | Boundary energy of the **replaced** sweepout: `s ↦ ℋⁿ(∂Ω̃_s)`, where `Ω̃_s` is your sweepout with the replacement inserted at parameter `s`. |
-| `replacementEnergy_continuous` | Continuity of `replacementEnergy` as a function of `s`. DLT treats this implicitly; usually follows from "the replaced sweepout depends continuously on the inserted parameter" + "Hausdorff measure depends continuously on the boundary". You must discharge it. |
+| `replacementEnergy : unitInterval → ℝ` | Boundary energy of the **replaced** sweepout: `s ↦ ℋⁿ(∂Ω̃_s)`, where `Ω̃_s` is the consumer's sweepout with the replacement inserted at parameter `s`. |
+| `replacementEnergy_continuous` | Continuity of `replacementEnergy` as a function of `s`. DLT treats this implicitly; usually follows from "the replaced sweepout depends continuously on the inserted parameter" + "Hausdorff measure depends continuously on the boundary". The consumer must discharge it. |
 | `saving_bound` | The quantitative DLT 3.1 inequality `f s − replacementEnergy s ≥ 1/(4·N)` for every `s ∈ neighborhood`. The substantive non-combinatorial content. |
 
 ### What you get back
@@ -218,16 +224,16 @@ pieces) so that `f' = f` outside `S` and `f' ≤ f` everywhere.
 
 ### Plugging into a min-max contradiction
 
-If your admissible class `𝒜` has `m₀ = inf_{𝒜} sup`, and your
+If the admissible class `𝒜` has `m₀ = inf_{𝒜} sup` and the
 sweepout `Ω` realizes the inf, the standard contradiction is
 three steps:
 
 1. Apply `CombArg.exists_sup_reduction` to obtain `f'` with
    `sSup (range f') ≤ m₀ − 1/(4N)`.
-2. Lift `f'` back to a sweepout `Ω' ∈ 𝒜` — your GMT side. The
-   `f' = f` off `S` guarantee usually makes this routine: `Ω'`
-   agrees with `Ω` outside `S` and uses the local replacement
-   inside.
+2. Lift `f'` back to a sweepout `Ω' ∈ 𝒜` — the GMT side does
+   this. The `f' = f` off `S` guarantee usually makes the lift
+   routine: `Ω'` agrees with `Ω` outside `S` and uses the local
+   replacement inside.
 3. `sup of Ω' < m₀ = inf_{𝒜} sup` contradicts the admissibility
    of `Ω'`.
 
@@ -264,13 +270,13 @@ theorem minmax_contradiction
   exact absurd h_lt (YourGMT.le_of_admissible hΩ' h_minmax)
 ```
 
-Three identifiers carry your GMT responsibility:
+Three identifiers carry the GMT-side responsibility:
 
 - `YourGMT.choose_N` — pick `N` large enough that `1/(4N)` beats
-  the contradiction window your admissible class needs.
-- `YourGMT.localWitness_of_DLT` — your formalization of DLT
-  Lemma 3.1 (the substantive geometric work). Output is the
-  per-`t` `LocalWitness`.
+  the contradiction window the admissible class requires.
+- `YourGMT.localWitness_of_DLT` — the GMT formalization of DLT
+  Lemma 3.1 (the substantive geometric work, returning a per-`t`
+  `LocalWitness`).
 - `YourGMT.lift_sweepout` — convert the scalar `f'` (with its
   modification set `S`) back to a sweepout in `𝒜`.
 
@@ -279,26 +285,26 @@ Three identifiers carry your GMT responsibility:
 - **1D parameter space only.** Multi-parameter sweepouts
   (`unitInterval^m`, Almgren cycles) need the multi-parameter
   cover construction; planned for v0.3.
-- **Output is scalar, not geometric.** You get `f'` with a sup
-  bound and a modification set `S`; lifting back to a sweepout
-  is on your side. The `f' = f` off `S` guarantee is designed
-  to make this lift mechanical.
-- **`replacementEnergy_continuous` is your obligation.** DLT 3.1
-  outputs continuity implicitly via "continuous family of
-  replacements"; you have to write the Lean-level proof.
+- **Output is scalar, not geometric.** The consumer receives
+  `f'` with a sup bound and a modification set `S`; lifting back
+  to a sweepout is the GMT side's work. The `f' = f` off `S`
+  guarantee is designed to make this lift mechanical.
+- **`replacementEnergy_continuous` is a GMT-side obligation.**
+  DLT 3.1 outputs continuity implicitly via "continuous family of
+  replacements"; the Lean-level proof obligation falls on the
+  consumer.
 - **Lean / Mathlib version pin.** `v4.30.0-rc2` + the Mathlib
   revision in `lake-manifest.json`. Bumps on either side may
-  require coordination on the GMT side.
+  require coordination.
 - **Axiom budget.** This library uses only the three standard
-  foundational axioms. Your GMT side will likely add no further
-  foundational axioms (standard measure-theory work in Mathlib
-  stays within the same three).
+  foundational axioms. Standard Mathlib measure-theory work
+  stays within the same three.
 
 For a runnable end-to-end invocation on a trivial `f ≡ 1`, see
 [`examples/MinimalUsage.lean`](examples/MinimalUsage.lean). The
-client-code skeleton above is what an actual GMT-backed instance
-would look like by replacing the `YourGMT.*` stubs with their
-real definitions.
+client-code skeleton above is what an actual GMT-backed
+instantiation would look like once the `YourGMT.*` stubs are
+replaced with their real definitions.
 
 ## Public API stability
 
