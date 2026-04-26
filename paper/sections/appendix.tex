@@ -2,21 +2,21 @@
 \label{app:lean-script}
 
 The Lean script in Listing~\ref{lst:end-to-end} below realizes
-the chain of \S\ref{sec:integration-chain}. The identifiers
-\texttt{YourGMT.SweepoutType}, \texttt{YourGMT.admissibleClass},
-\texttt{YourGMT.choose\_N}, \texttt{YourGMT.localWitness\_of\_DLT},
-and \texttt{YourGMT.lift\_sweepout} stand for the surrounding
-formalization's geometric machinery; the four
-\texttt{CombArg.*} declarations are those provided by the
-formalization presented in this paper.
+the chain of \S\ref{sec:integration-chain}. Identifiers prefixed
+by \texttt{YourGMT.*} stand for the surrounding formalization's
+geometric machinery --- the sweepout type, the admissible class,
+the choice of the near-criticality parameter $N$, the local
+replacement lemma, and the geometric lift back to a sweepout
+--- while the \texttt{CombArg.*} identifier is the chained
+sup-reduction theorem of the present paper.
 
 The script reads from top to bottom as the three steps of
-\S\ref{sec:integration-chain}: the per-parameter local witness
-is constructed by \texttt{YourGMT.local\-Witness\_of\_DLT}; the
-sup-reducing competitor $(f', S)$ is obtained from
-\texttt{CombArg.exists\_sup\_reduction}; and the geometric
-lift to $\Omega' \in \mathcal{A}$ followed by the inf-sup
-contradiction occupies the closing block.
+\S\ref{sec:integration-chain}. The per-parameter local witness
+is first constructed from the geometric replacement lemma. The
+combinatorial step of this paper is then invoked to produce the
+sup-reducing competitor $(f', S)$. Finally, the geometric lift
+to $\Omega' \in \mathcal{A}$, followed by the inf-sup
+contradiction, occupies the closing block.
 
 \begin{lstlisting}[caption={End-to-end script for a min-max
 contradiction.}, label=lst:end-to-end]

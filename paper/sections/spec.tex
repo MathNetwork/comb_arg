@@ -98,13 +98,13 @@ lie in $\NC$.
 \label{def:ic}
 \leanmargin{InitialCover}{Refinement/InitialCover.lean}
 Specialized to $K = \unit$. An
-\texttt{InitialCover X f m\textsubscript{0} N} carries the data
-of a \texttt{SkippedSpacedIntervals} (Definition~\ref{def:spaced},
+\texttt{InitialCover f m\textsubscript{0} N} carries the data of
+a \texttt{SkippedSpacedIntervals} (Definition~\ref{def:spaced},
 satisfying spacing condition (a)), plus, for each
 $i = 1, \ldots, n$, a witness center $w_i \in \NC$ and a local
-witness at $w_i$ with saving $1/(4N)$, subject to
-(b) containment: $I_i \subseteq U_{w_i}$;
-(c) coverage: $\NC \subseteq \bigcup_i I_i$.
+witness at $w_i$ with saving $1/(4N)$, subject to (b)~the
+containment $I_i \subseteq U_{w_i}$ and (c) the coverage
+$\NC \subseteq \bigcup_i I_i$.
 \end{definition}
 
 The refinement is described as an iteration: each $I_j$ with
@@ -320,7 +320,7 @@ Figure~\ref{fig:arch} shows the layered architecture.
   \texttt{exists\_refinement} \\
   {\scriptsize combinatorial core, $K = [0,1]$}
 };
-\node[thm] (genc) at ( 3.0, 1) {%
+\node[thm, text width=54mm] (genc) at ( 3.0, 1) {%
   \texttt{exists\_sup\_reduction\_of\_cover} \\
   {\scriptsize bookkeeping corollary, generic $K$}
 };
