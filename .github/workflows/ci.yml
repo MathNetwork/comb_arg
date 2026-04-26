@@ -53,24 +53,28 @@ jobs:
 
       - name: Axiom audit
         run: |
-          echo "Checking axioms of the two public theorems..."
+          echo "Checking axioms of the three public theorems..."
           cat > /tmp/axiom_audit.lean <<'EOF'
           import CombArg
           #print axioms CombArg.exists_sup_reduction_of_cover
           #print axioms CombArg.exists_sup_reduction
+          #print axioms CombArg.OneDim.exists_refinement
           EOF
           OUTPUT=$(lake env lean /tmp/axiom_audit.lean 2>&1)
           echo "$OUTPUT"
-          # Expected: only [propext, Classical.choice, Quot.sound] for both.
+          # Expected: only [propext, Classical.choice, Quot.sound] for all three.
           if echo "$OUTPUT" | grep -qE '(sorryAx|axioms: \[.*(sorryAx))'; then
             echo "FAIL: sorryAx detected in axiom list."
             exit 1
           fi
           EXPECTED_AXIOMS="propext, Classical.choice, Quot.sound"
-          EXPECTED_COUNT=2
+          EXPECTED_COUNT=3
           MATCH_COUNT=$(echo "$OUTPUT" | grep -c "\[$EXPECTED_AXIOMS\]" || true)
           if [ "$MATCH_COUNT" -ne "$EXPECTED_COUNT" ]; then
             echo "FAIL: expected $EXPECTED_COUNT theorems with exactly [$EXPECTED_AXIOMS]; got $MATCH_COUNT."
             exit 1
           fi
           echo "Axiom audit: clean."
+
+      - name: lake exe combarg-audit (single-command health check)
+        run: lake exe combarg-audit
