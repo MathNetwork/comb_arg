@@ -3,7 +3,7 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased: 0.3.0]
+## [0.3.0] — 2026-04-26
 
 ### Restructure for clarity + developer-tooling pass
 
@@ -288,6 +288,7 @@ names.
   with the paper framing in the next substantive documentation
   pass (tracked alongside the PairableCover §12 resolution).
 
+[0.3.0]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.3.0
 [0.2.0]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.2.0
 [0.1.1]: https://github.com/MathNetwork/comb_arg/releases/tag/v0.1.1
 
