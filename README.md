@@ -10,7 +10,7 @@ geometric-measure-theoretic dependencies.
 
 Two public theorems.
 
-### Combinatorial main theorem — `CombArg.Refinement.exists_refinement`
+### Combinatorial main theorem — `CombArg.OneDim.exists_refinement`
 
 From a continuous `f : unitInterval → ℝ` with `m₀ = sSup (range f)`,
 `N > 0`, and a `LocalWitness` at every `1/N`-near-critical
@@ -49,23 +49,26 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
 
 ## Status
 
-- **Version**: 0.1.1 (April 2026); v0.2 in progress.
+- **Version**: 0.2.0 (April 2026); v0.3 in progress.
 - **License**: Apache 2.0.
 - **Build**: `lake build` succeeds with no warnings; zero `sorry`.
 - **Verification**: depends only on the three standard Lean 4 /
   Mathlib foundational axioms (`propext`, `Classical.choice`,
-  `Quot.sound`). Smoke test (`test/Smoke.lean`) prints the audit
-  on every CI run.
+  `Quot.sound`). Run `lake exe combarg-audit` for a one-command
+  health check (axiom audit + public-API listing); CI runs the
+  same on every push.
 
 ## Quick start
 
 ```bash
 git clone https://github.com/MathNetwork/comb_arg.git
 cd comb_arg
-lake exe cache get   # download Mathlib pre-compiled oleans (first run)
-lake build           # main library
-lake build test      # smoke test + axiom audit
-lake build examples  # worked example
+lake exe cache get          # download Mathlib pre-compiled oleans (first run)
+lake build                  # main library
+lake build test             # smoke test + axiom audit
+lake build examples         # worked example
+lake exe combarg-audit      # one-command health check
+lake exe combarg-skeleton   # emit a starter min-max-contradiction script
 ```
 
 See [`examples/MinimalUsage.lean`](examples/MinimalUsage.lean) for
@@ -148,7 +151,7 @@ The runnable form lives in
 
 **Provided**:
 
-- `CombArg.Refinement.exists_refinement` — combinatorial main
+- `CombArg.OneDim.exists_refinement` — combinatorial main
   theorem on `unitInterval`.
 - `CombArg.exists_sup_reduction_of_cover` — bookkeeping corollary,
   generic `K`.
@@ -346,16 +349,16 @@ replaced with their real definitions.
 The following names are considered stable public API and will not
 change without a major version bump:
 
-- `CombArg.Refinement.exists_refinement`
+- `CombArg.OneDim.exists_refinement`
 - `CombArg.exists_sup_reduction_of_cover`
 - `CombArg.exists_sup_reduction`
 - `CombArg.FiniteCoverWithWitnesses` (structure + fields)
 - `CombArg.LocalWitness` (structure + fields)
-- `CombArg.Refinement.InitialCover` (structure + fields)
-- `CombArg.Refinement.PartialRefinement` (structure + fields)
-- `CombArg.Refinement.SkippedSpacedIntervals` (structure + fields)
-- `CombArg.Refinement.nearCritical`
-- `CombArg.Refinement.openInterval`
+- `CombArg.OneDim.InitialCover` (structure + fields)
+- `CombArg.OneDim.PartialRefinement` (structure + fields)
+- `CombArg.OneDim.SkippedSpacedIntervals` (structure + fields)
+- `CombArg.OneDim.nearCritical`
+- `CombArg.OneDim.openInterval`
 
 Internal definitions (`step_succ_at`, `ExtendResult`,
 `terminal_twoFold`, chain-spacing lemmas, etc.) may change in

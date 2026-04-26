@@ -22,7 +22,7 @@ corollary).
 
 ### Combinatorial main theorem — `exists_refinement`
 
-[`CombArg/Refinement/Assembly.lean`](../CombArg/Refinement/Assembly.lean):
+[`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean):
 
 ```lean
 lemma exists_refinement
@@ -44,7 +44,7 @@ smallest-index refinement, parity-rescue two-fold invariant).
 
 ### Sup-reduction bookkeeping corollary — `exists_sup_reduction_of_cover`
 
-[`CombArg/Core.lean`](../CombArg/Core.lean):
+[`CombArg/Cover.lean`](../CombArg/Cover.lean):
 
 ```lean
 theorem exists_sup_reduction_of_cover
@@ -109,7 +109,7 @@ The 1D specialization: chain `exists_refinement` through
 A three-stage construction.
 
 * **Stage A** (`exists_initialCover` in
-  [`CombArg/Refinement/CoverConstruction.lean`](../CombArg/Refinement/CoverConstruction.lean)):
+  [`CombArg/OneDim/CoverConstruction.lean`](../CombArg/OneDim/CoverConstruction.lean)):
   from the witness hypothesis plus `nearCritical` compactness,
   build an `InitialCover` — a family of intervals
   `I_i = (intervalCenter i − radius i, intervalCenter i + radius i)`
@@ -120,13 +120,13 @@ A three-stage construction.
   keeping grid points near NC; witness centers picked via Lebesgue.
 
 * **Stage B** (`exists_terminal_refinement` in
-  [`CombArg/Refinement/Induction.lean`](../CombArg/Refinement/Induction.lean)):
+  [`CombArg/OneDim/Induction.lean`](../CombArg/OneDim/Induction.lean)):
   iterate the DLT induction `step_zero` → `step_succ_at` × `ic.n`
   times, producing a `PartialRefinement ic L` with
   `Function.Injective pr.σ` and `∀ i, ic.I i ⊆ ⋃ pr.J k`.
 
 * **Stage C** (`exists_refinement` assembly in
-  [`CombArg/Refinement/Assembly.lean`](../CombArg/Refinement/Assembly.lean)):
+  [`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean)):
   package as `FiniteCoverWithWitnesses` with
   `piece k := closure (pr.J k)`, `saving k := 1/(4N)` uniform.
   `twoFold` via `terminal_twoFold` (parity argument on even-gap
@@ -137,7 +137,7 @@ A three-stage construction.
 ### Sup-reduction bookkeeping corollary (`exists_sup_reduction_of_cover`)
 
 Three-line scalar arithmetic, fully in
-[`CombArg/Core.lean`](../CombArg/Core.lean):
+[`CombArg/Cover.lean`](../CombArg/Cover.lean):
 
 * The competitor is `f'(t) := f(t) − ∑ {saving l | l ∈ piecesContaining t}`.
 * On each piece, the sum-of-savings is `≥ ε` (`ε_le_sum_saving`),
@@ -160,7 +160,7 @@ the cover but is not consumed in the bookkeeping arithmetic.
   family `K → X`, keeping the theorem agnostic to how the
   replacement is realized geometrically.
 
-### [`CombArg/Core.lean`](../CombArg/Core.lean)
+### [`CombArg/Cover.lean`](../CombArg/Cover.lean)
 
 * `FiniteCoverWithWitnesses K f m₀ δ ε` — finite multiplicity-bounded
   cover of the `δ`-near-critical set, with per-piece replacement
@@ -170,7 +170,7 @@ the cover but is not consumed in the bookkeeping arithmetic.
 * `csSup_range_le_of_pointwise_saving` — the pure-arithmetic core.
 * `exists_sup_reduction_of_cover` — the bookkeeping theorem.
 
-### [`CombArg/Refinement/SpacedIntervals.lean`](../CombArg/Refinement/SpacedIntervals.lean)
+### [`CombArg/OneDim/SpacedIntervals.lean`](../CombArg/OneDim/SpacedIntervals.lean)
 
 * `openInterval c r` — the canonical
   `Subtype.val ⁻¹' Set.Ioo (c.val - r) (c.val + r)` shape on
@@ -181,7 +181,7 @@ the cover but is not consumed in the bookkeeping arithmetic.
   `closure_disjoint_of_even_gap`, `not_three_overlap`,
   `not_three_overlap_any_order`).
 
-### [`CombArg/Refinement/InitialCover.lean`](../CombArg/Refinement/InitialCover.lean)
+### [`CombArg/OneDim/InitialCover.lean`](../CombArg/OneDim/InitialCover.lean)
 
 * `nearCritical` and its closedness / compactness / nonemptiness.
 * `InitialCover` — DLT's `{I_i}` family with `intervalCenter`,
@@ -192,7 +192,7 @@ the cover but is not consumed in the bookkeeping arithmetic.
   to `SkippedSpacedIntervals` (delegation point for the
   disjointness lemmas).
 
-### [`CombArg/Refinement/Induction.lean`](../CombArg/Refinement/Induction.lean)
+### [`CombArg/OneDim/Induction.lean`](../CombArg/OneDim/Induction.lean)
 
 * `ExtendResult` — bundled output of one inductive step: extended
   `PartialRefinement` plus the four invariants (`J_castSucc`,
@@ -203,7 +203,7 @@ the cover but is not consumed in the bookkeeping arithmetic.
   `remaining.card`. The paper's smallest-index choice
   (`Finset.min'`) lives in this file's iteration control flow.
 
-### [`CombArg/Refinement/Assembly.lean`](../CombArg/Refinement/Assembly.lean)
+### [`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean)
 
 * `terminal_twoFold` — TwoFold via parity rescue + σ-injectivity.
 * `saving_bound_closure` — saving-bound extension from `J k` to

@@ -3,6 +3,101 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased: 0.3.0]
+
+### Restructure for clarity + developer-tooling pass
+
+A second-pass cleanup that reorganizes modules along the K-generic
+vs. 1D-specialized boundary, eliminates dead wrapper files,
+introduces Mathlib-style annotations and a Lean 4 `extends`-based
+inheritance, and adds two `lake exe` targets plus a CI workflow
+for end-to-end automation. **Breaking** changes are confined to
+file paths and a small number of namespace renames.
+
+#### Changed (breaking — file paths)
+
+- `CombArg/Core.lean` → `CombArg/Cover.lean` (renamed for
+  semantic accuracy: this file holds the `FiniteCoverWithWitnesses`
+  structure and the K-generic bookkeeping corollary).
+- `CombArg/Refinement.lean` → `CombArg/OneDim.lean` (facade).
+- `CombArg/Refinement/*` → `CombArg/OneDim/*` (every submodule):
+  `SpacedIntervals`, `InitialCover`, `CoverConstruction`,
+  `PartialRefinement`, `Induction`, `Assembly`. The new directory
+  name `OneDim/` flags the 1D-specialized character of the cover
+  construction; the K-generic content lives at top level.
+- `CombArg.Refinement.exists_refinement` → `CombArg.OneDim.exists_refinement`.
+
+#### Removed
+
+- `CombArg/Refinement/Disjointness.lean` (81 lines). All four
+  lemmas were one-line wrappers delegating to the
+  `SkippedSpacedIntervals` projection; Assembly already called
+  the projection form directly, so the wrapper file was dead.
+- `CombArg/Util.lean` (48 lines). Two utility lemmas relocated
+  inline as `private` lemmas: `ge_of_closure_of_ge` into
+  `CombArg/OneDim/Assembly.lean` (its only consumer);
+  `exists_even_gap_of_three` into `CombArg/OneDim/SpacedIntervals.lean`
+  (its only consumer).
+
+#### Changed (internal)
+
+- `InitialCover` now `extends SkippedSpacedIntervals`. The shared
+  geometric fields (n, intervalCenter, radius, radius_pos,
+  two_fold_spacing) come from the parent; the manual
+  `toSkippedSpacedIntervals` projection definition and the
+  `toSkippedSpacedIntervals_I` reflexivity lemma are auto-generated
+  and so removed from source.
+- `InitialCover.I` becomes a one-line `@[reducible] def`
+  delegating to `ic.toSkippedSpacedIntervals.I`.
+
+#### Added (annotations)
+
+- `@[ext]` on `LocalWitness`, `FiniteCoverWithWitnesses`,
+  `SkippedSpacedIntervals`, `InitialCover`. Auto-generates
+  extensionality lemmas.
+- `@[simp]` on `mem_nearCritical` (joining the existing
+  `@[simp] mem_piecesContaining`).
+
+#### Added (tooling)
+
+- **`lake exe combarg-audit`** (Audit.lean). One-command health
+  check: imports the library, walks the proof terms of the three
+  public theorems via `Environment.find?` + `Expr.foldConsts`,
+  and verifies the foundational axioms reduce to exactly
+  `{propext, Classical.choice, Quot.sound}`. Prints the public-API
+  listing alongside. Exit 0 on healthy, 1 on any audit failure.
+  Suitable for both interactive use and CI invocation.
+- **`lake exe combarg-skeleton`** (Skeleton.lean). Client-template
+  generator: emits a starter min-max contradiction Lean script
+  with `YourGMT.*` placeholder identifiers that a downstream
+  geometric formalization fills in. CLI options
+  `--N <name>` (parameter-variable name) and `--module <name>`
+  (wrap in namespace).
+- **`scripts/build-graph.sh`** + `docs/import-graph.{dot,svg}`.
+  Module dependency graph generated via Mathlib's `importGraph`
+  package; SVG suitable for embedding in README.
+- **GitHub Actions CI workflow** (`.github/workflows/ci.yml`).
+  On every push and PR: `lake build`, `lake build test`,
+  `lake build examples`, sorry/admit grep, foundational-axiom
+  audit (3 public theorems), and `lake exe combarg-audit`.
+
+#### Added (testing)
+
+- `test/Smoke.lean` gains a §3 invocation of
+  `exists_sup_reduction_of_cover` on `K = Fin 2`, with a
+  hand-built `FiniteCoverWithWitnesses`. Confirms the K-generic
+  bookkeeping path does not silently depend on `unitInterval`
+  specifics.
+
+#### Unchanged
+
+- All proof bodies for the combinatorial argument.
+- `#print axioms` for all public theorems: still
+  `[propext, Classical.choice, Quot.sound]`.
+- LoC: 1848 (v0.2) → ~1700 (v0.3) before tooling files; with
+  Audit.lean + Skeleton.lean tooling added, the net effective
+  library code is even smaller.
+
 ## [0.2.0] — 2026-04-25
 
 ### API simplification: PairableCover removed, witness shape unwrapped
