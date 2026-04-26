@@ -89,7 +89,8 @@ example :
       saving_pos := fun _ => by norm_num
       saving_bound := fun _ _ _ => by show (1 : ℝ) - 1 / 2 ≥ 1 / 2; norm_num
       twoFold := fun _ => by
-        -- All Unit-indexed pieces are univ ↦ contains every t ↦ filter is univ; |univ Unit| = 1 ≤ 2.
+        -- Unit-indexed pieces all equal univ; filter is univ;
+        -- |univ : Finset Unit| = 1 ≤ 2.
         simp
       saving_ge_eps := fun _ => le_refl _ }
   obtain ⟨f', h_le, _, h_sup⟩ :=

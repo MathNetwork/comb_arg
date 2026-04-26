@@ -58,6 +58,14 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
   health check (axiom audit + public-API listing); CI runs the
   same on every push.
 
+## Module dependency graph
+
+![Module dependency graph](docs/import-graph.svg)
+
+Generated from `lake exe graph` (Mathlib's `importGraph` package).
+Regenerate locally with `scripts/build-graph.sh` (requires
+`graphviz`).
+
 ## Quick start
 
 ```bash
