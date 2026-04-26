@@ -933,78 +933,104 @@ the specialization to $(\delta, \varepsilon) = (1/N, 1/(4N))$.
 \section{Use as a software dependency}
 \label{sec:integration}
 
-Suppose a Lean formalization of the geometric-measure-theoretic
-infrastructure for an Almgren--Pitts min-max construction has
-been carried out --- in particular, the Hausdorff measure of
-boundary surfaces, the local-replacement construction
-(De~Lellis--Tasnady's Lemma~3.1~\cite{DLT13}), and an admissible
-class of sweepouts. This section describes how \CombArg{}
-integrates with such a formalization as the combinatorial step.
+Suppose the min-max setting from the literature has been
+formalized in Lean: an admissible class $\mathcal{A}$ of
+sweepouts, the inf-sup characterization
+$m_0 = \inf_{\Omega \in \mathcal{A}} \sup f_\Omega$, the local
+replacement construction (De~Lellis--Tasnady's
+Lemma~3.1~\cite{DLT13}), and the Hausdorff measure of boundary
+surfaces. This section describes how the abstract declarations
+of \CombArg{} then \emph{lift into the combinatorial step of
+the original proof} from the literature.
 
-The library treats the GMT side as \emph{abstract input}: it
-asks for a \texttt{LocalWitness} (Definition~\ref{def:witness})
-at every near-critical parameter and gives back a scalar sup
-reduction (Corollary~\ref{thm:main}). The interface is
-project-agnostic: the same \texttt{LocalWitness} shape works
-for any GMT formalization, whether a one-off proof in a single
-repository or a community-scale Mathlib extension. What the
-GMT-side formalization must produce is exactly the data that
-fits the five fields of \texttt{LocalWitness}.
+The library is the formal abstract version of the combinatorial
+slice that \cite{Pit81, CDL03, DLT13, DLR17, MN14} each
+re-derive in their own notation. The Lean declarations do not
+change between abstract and instantiated form --- they are
+exactly the same definitions either way. What changes is that
+the min-max setting supplies the \texttt{LocalWitness} inputs
+against which the abstract declarations evaluate, and
+\lean{exists\_sup\_reduction}{SupReduction.lean} then \emph{is}
+the sup-reduction step of the original proof: the step that
+produces a strictly-better sweepout $\Omega'$ contradicting the
+inf-sup characterization of $m_0$.
 
-\subsection{What the consumer supplies}
+\subsection{What the library already gives}
+\label{sec:integration-library-side}
+
+The combinatorial side is the abstract content already present
+in this repository, with no GMT references:
+
+\begin{itemize}
+\item \texttt{LocalWitness}\,$(K, f, t, \varepsilon)$
+  (Definition~\ref{def:witness}) --- the abstract per-parameter
+  local reducer data.
+\item \lean{exists\_refinement}{Refinement/Assembly.lean} ---
+  the formal counterpart of DLT~\S3.2 Step~1 (interval
+  refinement to a finite cover with two-fold overlap).
+\item \lean{exists\_sup\_reduction\_of\_cover}{Core.lean} ---
+  the formal counterpart of DLT~\S3.2 Step~2 (scalar
+  bookkeeping over the cover).
+\item \lean{exists\_sup\_reduction}{SupReduction.lean} --- the
+  chained one-parameter combinatorial step.
+\end{itemize}
+
+\subsection{What the min-max setting must supply}
 \label{sec:integration-supplies}
 
-For one invocation of
-\lean{exists\_sup\_reduction}{SupReduction.lean}, the consumer
-supplies:
+Three pieces of GMT-side data lift the abstract library to the
+original proof:
 
 \begin{itemize}
-\item A continuous boundary energy
-  $f : \unit \to \mathbb{R}$ --- the sweepout's energy as a
-  function of the path parameter.
-\item A scalar $m_0 \in \mathbb{R}$ with
-  $m_0 = \sup_{t \in \unit} f(t)$. In a min-max setting, this
-  is the level at which the sweepout sits.
-\item A near-criticality parameter $N \in \mathbb{N}$ with
-  $N > 0$. The quantitative output is $1/(4N)$.
-\item For every $t \in \unit$ with $f(t) \ge m_0 - 1/N$, a
-  $\texttt{LocalWitness}\,(\unit, f, t, 1/(4N))$.
+\item The continuous boundary energy
+  $f := \Omega.\texttt{boundaryEnergy} : \unit \to \mathbb{R}$
+  of a sweepout $\Omega$ realizing $m_0 = \sup f$.
+\item A near-criticality parameter $N \in \mathbb{N}$ chosen so
+  that $1/(4N)$ beats whatever contradiction window the
+  admissible class requires.
+\item The local replacement lemma: at every $t$ with
+  $f(t) \ge m_0 - 1/N$, a
+  $\texttt{LocalWitness}\,(\unit, f, t, 1/(4N))$ whose four
+  fields come from the GMT-side replacement family.
 \end{itemize}
 
-\subsection{The \texttt{LocalWitness} -- DLT~3.1 dictionary}
+\subsection{The instantiation:
+\texorpdfstring{\texttt{LocalWitness} $\leftarrow$ DLT~3.1}{LocalWitness from DLT 3.1}}
 \label{sec:integration-dictionary}
 
-The five fields of a \texttt{LocalWitness}
-(Definition~\ref{def:witness}) translate directly to the data
-DLT's Lemma~3.1 produces in the GMT setting:
+Each field of \texttt{LocalWitness} lifts to a specific piece
+of the GMT-side replacement data:
 
 \begin{itemize}
-\item \texttt{neighborhood} : open interval $(a_i, b_i)
-  \subseteq [0,1]$ around $t$ on which the local replacement
-  saves energy.
+\item \texttt{neighborhood} : DLT's open interval
+  $(a_i, b_i) \subseteq [0,1]$ around $t$ on which the local
+  replacement saves energy.
 \item \texttt{isOpen\_neighborhood} and \texttt{t\_mem} :
   openness of the interval; the parameter $t$ lies in it.
-\item \texttt{replacementEnergy} : the boundary energy of the
-  \emph{replaced} sweepout,
+\item \texttt{replacementEnergy} :
   $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$,
-  where $\widetilde{\Omega}_s$ is the consumer's sweepout with
-  the local replacement inserted at parameter $s$.
+  the boundary energy of the \emph{replaced} sweepout, where
+  $\widetilde{\Omega}_s$ is the original sweepout with the
+  local replacement inserted at parameter $s$.
 \item \texttt{replacementEnergy\_continuous} : continuity of
-  the above map in $s$. DLT treats this implicitly via the
-  continuity of the replacement family in the inserted
-  parameter; the consumer must produce the Lean-level proof.
+  $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$.
+  DLT treats this implicitly through the continuity of the
+  replaced family in the inserted parameter; the GMT side
+  discharges it explicitly.
 \item \texttt{saving\_bound} : the quantitative DLT~3.1
   inequality
-  $f(s) - \texttt{replacementEnergy}(s) \ge 1/(4N)$ for every
-  $s \in (a_i, b_i)$. This is the substantive
-  non-combinatorial content the consumer must establish.
+  $f(s) - \mathcal{H}^n(\partial \widetilde{\Omega}_s) \ge 1/(4N)$
+  for every $s \in (a_i, b_i)$. This is the substantive
+  non-combinatorial content.
 \end{itemize}
 
-\subsection{What the consumer receives}
+\subsection{What the lift produces: the literature's sup-reduction step}
 \label{sec:integration-receives}
 
-A scalar competitor $f' : \unit \to \mathbb{R}$ together with
-a modification set $S \subseteq \unit$ satisfying
+With the instantiation in place,
+\lean{exists\_sup\_reduction}{SupReduction.lean} returns a
+scalar competitor $f' : \unit \to \mathbb{R}$ with a
+modification set $S \subseteq \unit$ satisfying
 
 \begin{enumerate}
 \item[(coverage)]
@@ -1015,33 +1041,38 @@ a modification set $S \subseteq \unit$ satisfying
   $\sup_{t \in \unit} f'(t) \le m_0 - 1/(4N)$.
 \end{enumerate}
 
-Conditions (a) and (b) anchor $f'$ to $f$: without them, the
-constant $f' \equiv c$ for any $c \le m_0 - 1/(4N)$ would
-satisfy (c) vacuously.
+This is --- definitionally --- the sup-reduction step the
+original proof uses. The competitor $f'$ and modification set
+$S$ are the formal images of \emph{the sweepout's energy after
+the local replacements have been combined}. Conditions (a) and
+(b) anchor $f'$ to $f$ so that $f'$ is a genuine combinatorial
+reduction of $f$, not a trivial constant.
 
-\subsection{Plugging into a min-max contradiction}
+\subsection{Closing the proof: the contradiction step}
 \label{sec:integration-contradiction}
 
-If the admissible class $\mathcal{A}$ has the characterization
-$m_0 = \inf_{\Omega \in \mathcal{A}} \sup f_\Omega$ and the
-sweepout $\Omega$ realizes the inf with $f = f_\Omega$, the
-contradiction is three steps:
+The literature now closes by lifting $f'$ back to a sweepout
+$\Omega' \in \mathcal{A}$ and contradicting the inf-sup. In
+Lean:
 
 \begin{enumerate}
-\item Apply \lean{exists\_sup\_reduction}{SupReduction.lean}
-  to obtain $f'$ with $\sup f' \le m_0 - 1/(4N)$.
-\item Lift $f'$ back to a sweepout $\Omega' \in \mathcal{A}$
-  --- consumer's GMT-side responsibility. The (b) localization
-  guarantee is designed to make this lift routine: $\Omega'$
-  agrees with $\Omega$ outside $S$ and uses the local
-  replacement inside.
+\item \lean{exists\_sup\_reduction}{SupReduction.lean} (this
+  library) supplies $f'$ with $\sup f' \le m_0 - 1/(4N)$.
+\item The min-max setting's lift takes $f'$ together with its
+  modification set $S$ back to a sweepout
+  $\Omega' \in \mathcal{A}$. The (b) localization guarantee
+  makes the lift mechanical: $\Omega'$ agrees with $\Omega$
+  outside $S$ and inserts the local replacement on each piece
+  of $S$.
 \item $\sup f_{\Omega'} \le m_0 - 1/(4N) < m_0
   = \inf_{\mathcal{A}} \sup$ contradicts
   $\Omega' \in \mathcal{A}$.
 \end{enumerate}
 
-The library discharges step~1 in full; steps~2 and~3 are
-domain-specific.
+Step~1 is exactly what the library discharges. Steps~2 and~3
+belong to the min-max setting; together with step~1 they
+reconstruct, line for line, the literature's contradiction
+chain.
 
 \subsection{Skeleton client code}
 \label{sec:integration-skeleton}

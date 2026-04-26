@@ -170,45 +170,75 @@ The runnable form lives in
   bookkeeping corollary is already generic in `K`; only an
   additional cover construction is needed.
 
-## Using this library once the GMT side is formalized
+## Lifting this library to the original min-max proof
 
-Suppose a Lean formalization of the geometric-measure-theoretic
-infrastructure for an Almgren–Pitts min-max construction has been
-carried out — in particular, the Hausdorff measure of boundary
-surfaces, the local-replacement construction (De Lellis–Tasnady's
-Lemma 3.1 / Pitts replacement), and an admissible class of
-sweepouts. This section describes how `CombArg` plugs into such a
-formalization as the combinatorial step.
+Suppose the min-max setting from the literature has been
+formalized in Lean — an admissible class `𝒜` of sweepouts, the
+inf-sup characterization `m₀ = inf_{Ω ∈ 𝒜} sup f_Ω`, the local
+replacement construction (De Lellis–Tasnady's Lemma 3.1 / Pitts
+replacement), and the Hausdorff measure of boundary surfaces.
+This section describes how the abstract declarations of
+`CombArg` then **lift into the combinatorial step of the
+original proof** from the literature.
 
-The library treats the GMT side as **abstract input**: it asks
-for a `LocalWitness` at every near-critical parameter and gives
-back a scalar sup reduction. The interface is project-agnostic —
-the same `LocalWitness` shape works for any GMT formalization,
-whether it's a one-off proof in a single repository or a
-community-scale Mathlib extension.
+The library is the formal abstract version of the combinatorial
+slice that Pitts (1981), Colding–De Lellis (2003),
+De Lellis–Tasnady (2013), De Lellis–Ramic (2018), and
+Marques–Neves (2014) each re-derive in their own notation. The
+Lean declarations don't change between abstract and instantiated
+form — they are exactly the same definitions either way. What
+changes is that the min-max setting supplies the `LocalWitness`
+inputs against which the abstract declarations evaluate, and
+`exists_sup_reduction` then *is* the sup-reduction step of the
+original proof — the step that produces a strictly-better
+sweepout `Ω'` contradicting the inf-sup characterization of `m₀`.
 
-### What the consumer supplies (per call)
+### What the library already gives you (combinatorial, abstract)
 
-1. A continuous boundary energy `f : unitInterval → ℝ` — the
-   sweepout's energy as a function of the path parameter.
-2. `m₀ : ℝ` with `m₀ = sSup (Set.range f)` — the sup of `f` (or
-   the min-max level when the sweepout sits at it).
-3. `N : ℕ` with `0 < N` — the near-criticality parameter; the
-   library's quantitative output is `1/(4·N)`.
-4. For every `t : unitInterval` with `f t ≥ m₀ − 1/N`, a
-   `LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))`.
-
-### `LocalWitness` ↔ DLT Lemma 3.1 correspondence
-
-| Field | What the GMT side produces |
+| Library declaration | What the original proof calls it |
 |---|---|
-| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i)` around `t` on which the local replacement saves energy. |
-| `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
-| `replacementEnergy : unitInterval → ℝ` | Boundary energy of the **replaced** sweepout: `s ↦ ℋⁿ(∂Ω̃_s)`, where `Ω̃_s` is the consumer's sweepout with the replacement inserted at parameter `s`. |
-| `replacementEnergy_continuous` | Continuity of `replacementEnergy` as a function of `s`. DLT treats this implicitly; usually follows from "the replaced sweepout depends continuously on the inserted parameter" + "Hausdorff measure depends continuously on the boundary". The consumer must discharge it. |
-| `saving_bound` | The quantitative DLT 3.1 inequality `f s − replacementEnergy s ≥ 1/(4·N)` for every `s ∈ neighborhood`. The substantive non-combinatorial content. |
+| `LocalWitness K f t ε` | the abstract per-parameter local reducer data |
+| `exists_refinement` | DLT §3.2 Step 1 (interval refinement to a finite cover with two-fold overlap) |
+| `exists_sup_reduction_of_cover` | DLT §3.2 Step 2 (scalar bookkeeping over the cover) |
+| `exists_sup_reduction` | the chained one-parameter combinatorial step |
 
-### What you get back
+These declarations reference no GMT object. They are the formal
+counterpart of what the literature works through in prose at
+each instantiation.
+
+### What the min-max setting must supply
+
+Three pieces of GMT-side data lift the abstract library to the
+original proof:
+
+1. The continuous boundary energy
+   `f := Ω.boundaryEnergy : unitInterval → ℝ` of a sweepout
+   `Ω` realizing `m₀ = sup f`.
+2. A near-criticality parameter `N : ℕ` chosen so `1/(4N)`
+   beats whatever contradiction window the admissible class
+   requires.
+3. The local replacement lemma: at every `t` with
+   `f(t) ≥ m₀ − 1/N`, produce a
+   `LocalWitness unitInterval f t (1/(4N))` whose four fields
+   come from the GMT-side replacement family.
+
+### The instantiation: `LocalWitness` ← DLT Lemma 3.1
+
+Each field of `LocalWitness` lifts to a specific piece of the
+GMT-side replacement data:
+
+| Library field | The corresponding piece of the original proof |
+|---|---|
+| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i) ⊆ [0,1]` around `t` on which the local replacement saves energy. |
+| `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
+| `replacementEnergy : unitInterval → ℝ` | `s ↦ ℋⁿ(∂Ω̃_s)`, the boundary energy of the **replaced** sweepout, where `Ω̃_s` is the original sweepout with the local replacement inserted at parameter `s`. |
+| `replacementEnergy_continuous` | Continuity of `s ↦ ℋⁿ(∂Ω̃_s)`. DLT treats this implicitly through the continuity of the replaced family in the inserted parameter; the GMT side discharges it explicitly. |
+| `saving_bound` | The quantitative DLT 3.1 inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` for every `s ∈ (a_i, b_i)`. The substantive non-combinatorial content. |
+
+### What the lift produces: the literature's sup-reduction step
+
+With the instantiation in place, `CombArg.exists_sup_reduction`
+returns
 
 ```lean
 ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
@@ -218,26 +248,32 @@ community-scale Mathlib extension.
   sSup (Set.range f') ≤ m₀ − 1/(4N)   -- (c) sup reduction
 ```
 
-A scalar competitor `f'` strictly undercutting `m₀` by `1/(4·N)`,
-together with a modification set `S` (the union of the cover
-pieces) so that `f' = f` outside `S` and `f' ≤ f` everywhere.
+This is — definitionally — the sup-reduction step the original
+proof uses. The competitor `f'` and modification set `S` are
+the formal images of "the sweepout's energy after the local
+replacements have been combined". Conditions (a) and (b) anchor
+`f'` to `f` so that `f'` is a genuine combinatorial reduction of
+`f`, not a trivial constant.
 
-### Plugging into a min-max contradiction
+### Closing the proof: the contradiction step
 
-If the admissible class `𝒜` has `m₀ = inf_{𝒜} sup` and the
-sweepout `Ω` realizes the inf, the standard contradiction is
-three steps:
+The literature now closes by lifting `f'` back to a sweepout
+`Ω' ∈ 𝒜` and contradicting the inf-sup. In Lean:
 
-1. Apply `CombArg.exists_sup_reduction` to obtain `f'` with
+1. `exists_sup_reduction` (this library) supplies `f'` with
    `sSup (range f') ≤ m₀ − 1/(4N)`.
-2. Lift `f'` back to a sweepout `Ω' ∈ 𝒜` — the GMT side does
-   this. The `f' = f` off `S` guarantee usually makes the lift
-   routine: `Ω'` agrees with `Ω` outside `S` and uses the local
-   replacement inside.
-3. `sup of Ω' < m₀ = inf_{𝒜} sup` contradicts the admissibility
-   of `Ω'`.
+2. The min-max setting's lift takes `f'` (with its modification
+   set `S`) back to a sweepout `Ω' ∈ 𝒜`. The `f' = f` off `S`
+   guarantee makes the lift mechanical: `Ω'` agrees with `Ω`
+   outside `S` and inserts the local replacement on each piece
+   of `S`.
+3. `sup f_{Ω'} ≤ m₀ − 1/(4N) < m₀ = inf_{𝒜} sup` contradicts
+   `Ω' ∈ 𝒜`.
 
-The library handles step 1; steps 2 and 3 are domain-specific.
+Step 1 is exactly what the library discharges. Steps 2 and 3
+belong to the min-max setting; together with step 1 they
+reconstruct, line for line, the literature's contradiction
+chain.
 
 ### Skeleton client code
 
