@@ -62,16 +62,25 @@ example (N : ℕ) (hN : 0 < N) :
     hN
     (fun t _ => constOneWitness N t)
 
-/-! ## (3) Axiom audit
+/-! ## (3) Axiom audit (regression guard)
 
-The three messages below should each read exactly
+`#guard_msgs in #print axioms` asserts the exact set of foundational
+axioms each public theorem depends on. If a regression introduces a
+new axiom (an accidental `sorry`'s `sorryAx`, a custom `axiom`
+declaration, a heavier Mathlib import bringing in additional
+foundational axioms), the build **fails** with the new axiom list as
+a diagnostic. -/
 
-    depends on axioms: [propext, Classical.choice, Quot.sound]
-
-CI logs surface this; regression on extra axioms shows up here. -/
-
+/-- info: 'CombArg.exists_sup_reduction' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms CombArg.exists_sup_reduction
+
+/-- info: 'CombArg.exists_sup_reduction_of_cover' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms CombArg.exists_sup_reduction_of_cover
+
+/-- info: 'CombArg.Refinement.exists_refinement' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
 #print axioms CombArg.Refinement.exists_refinement
 
 end CombArg.Test
