@@ -13,6 +13,8 @@ build/
 *.fls
 *.toc
 *.synctex.gz
+*.bbl
+*.blg
 
 # Local reference PDFs (copyrighted; kept locally, not committed)
 resources/*.pdf
