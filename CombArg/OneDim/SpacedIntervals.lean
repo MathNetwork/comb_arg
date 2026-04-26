@@ -48,7 +48,7 @@ def openInterval (c : unitInterval) (r : ℝ) : Set unitInterval :=
 
 /-- A finite family of open intervals on `unitInterval`, indexed by
 `Fin n`, with positive radii and the skip-2 spacing condition. -/
-structure SkippedSpacedIntervals where
+@[ext] structure SkippedSpacedIntervals where
   /-- Number of intervals. -/
   n : ℕ
   /-- Center of the `i`-th interval. -/

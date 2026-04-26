@@ -42,7 +42,7 @@ def nearCritical (f : K → ℝ) (m₀ : ℝ) (N : ℕ) : Set K :=
 omit [TopologicalSpace K] in
 /-- Membership in `nearCritical` unfolds to the defining inequality
 `f t ≥ m₀ - 1/N`. Holds without a topological structure on `K`. -/
-lemma mem_nearCritical {t : K} :
+@[simp] lemma mem_nearCritical {t : K} :
     t ∈ nearCritical f m₀ N ↔ f t ≥ m₀ - 1 / (N : ℝ) := Iff.rfl
 
 /-- The near-critical set is closed: it is the preimage of the closed
@@ -100,21 +100,12 @@ the separated form is paper-equivalent for the downstream induction).
 The **saving is `1/(4N)` exactly**; this fixes the threshold the
 refinement induction maintains through to
 `FiniteCoverWithWitnesses.saving_ge_eps`. -/
-structure InitialCover
-    (f : unitInterval → ℝ) (m₀ : ℝ) (N : ℕ) where
-  /-- Number of intervals `I_i` in the cover. -/
-  n : ℕ
+@[ext] structure InitialCover
+    (f : unitInterval → ℝ) (m₀ : ℝ) (N : ℕ)
+    extends SkippedSpacedIntervals where
   /-- At least one interval — needed for the induction's base case
   `J_1 := I_1`. -/
   n_pos : 0 < n
-  /-- The center of the `i`-th interval `I_i`. Need **not** itself
-  lie in `nearCritical f m₀ N`; free to be any point of `unitInterval`.
-  Spacing condition (a) is about these centers. -/
-  intervalCenter : Fin n → unitInterval
-  /-- The radius `η_i > 0` of each interval (DLT's `η_i`). -/
-  radius : Fin n → ℝ
-  /-- Strict positivity of each radius. -/
-  radius_pos : ∀ i, 0 < radius i
   /-- The base point in `nearCritical f m₀ N` at which the `i`-th
   `LocalWitness` lives. Paper's `t_i` in its condition (b) role. -/
   witnessCenter : Fin n → unitInterval
@@ -124,18 +115,11 @@ structure InitialCover
   `1/(4N)`. -/
   wit : (i : Fin n) →
     LocalWitness unitInterval f (witnessCenter i) (1 / (4 * (N : ℝ)))
-  /-- **DLT condition (a)** — strict non-overlap between non-adjacent
-  intervals, stated on `intervalCenter`:
-  `intervalCenter i + η_i < intervalCenter (i+2) - η_{i+2}` for every
-  valid `i`. -/
-  two_fold_spacing : ∀ (i : Fin n) (h : i.val + 2 < n),
-      (intervalCenter i).val + radius i <
-        (intervalCenter ⟨i.val + 2, h⟩).val - radius ⟨i.val + 2, h⟩
   /-- **DLT condition (b)** — each interval `I_i` lies inside the
-  `i`-th witness neighborhood. In the paper a single `t_i` serves as
-  both interval center and witness center and the condition reads
-  `η_i < η_{t_i}`; here we decouple and state the downstream-usable
-  subset directly. -/
+  `i`-th witness neighborhood. In the paper a single `t_i` serves
+  as both interval center and witness center and the condition
+  reads `η_i < η_{t_i}`; here we decouple and state the
+  downstream-usable subset directly. -/
   I_subset_neighborhood : ∀ i : Fin n,
       openInterval (intervalCenter i) (radius i) ⊆ (wit i).neighborhood
   /-- The `I_i = (intervalCenter i - η_i, intervalCenter i + η_i) ∩ [0,1]`
@@ -149,29 +133,11 @@ section InitialCoverLemmas
 variable {f : unitInterval → ℝ} {m₀ : ℝ} {N : ℕ}
 
 /-- The `i`-th interval `I_i` of an initial cover, as a subset of
-`unitInterval`. Convenience abbreviation. -/
-def InitialCover.I
+`unitInterval`. Inherits from the underlying `SkippedSpacedIntervals`
+via the auto-generated `toSkippedSpacedIntervals` projection. -/
+@[reducible] def InitialCover.I
     (ic : InitialCover f m₀ N) (i : Fin ic.n) : Set unitInterval :=
-  openInterval (ic.intervalCenter i) (ic.radius i)
-
-/-- The geometric part of an `InitialCover`: the skip-2 spaced
-open intervals on `unitInterval`, forgetting the witness centers,
-local witnesses, and coverage of `nearCritical`. The disjointness
-lemmas in `CombArg.OneDim.Disjointness` delegate to this
-projection. -/
-def InitialCover.toSkippedSpacedIntervals
-    (ic : InitialCover f m₀ N) : SkippedSpacedIntervals where
-  n := ic.n
-  intervalCenter := ic.intervalCenter
-  radius := ic.radius
-  radius_pos := ic.radius_pos
-  two_fold_spacing := ic.two_fold_spacing
-
-/-- The `I`-field on `InitialCover` agrees with the `I`-field on
-its `SkippedSpacedIntervals` projection (definitional). -/
-lemma InitialCover.toSkippedSpacedIntervals_I
-    (ic : InitialCover f m₀ N) (i : Fin ic.n) :
-    ic.toSkippedSpacedIntervals.I i = ic.I i := rfl
+  ic.toSkippedSpacedIntervals.I i
 
 end InitialCoverLemmas
 

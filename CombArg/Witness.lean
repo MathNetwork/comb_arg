@@ -34,7 +34,7 @@ namespace CombArg
 At a parameter `t : K`, a `LocalWitness K f t ε` supplies an open
 neighborhood of `t`, a continuous replacement-energy function on `K`,
 and a quantitative saving of at least `ε` on the neighborhood. -/
-structure LocalWitness
+@[ext] structure LocalWitness
     (K : Type*) [TopologicalSpace K]
     (f : K → ℝ) (t : K) (ε : ℝ) where
   /-- An open neighborhood of `t` on which the saving holds. -/

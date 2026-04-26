@@ -8,7 +8,7 @@ import CombArg
 /-!
 # Smoke tests
 
-Three guards on the public API:
+Four guards on the public API:
 
 1. **`LocalWitness` constructibility** — a non-trivial witness on
    the constant function `f ≡ 1` is built explicitly.
@@ -16,7 +16,12 @@ Three guards on the public API:
    theorem is invoked in full on `f ≡ 1` with an arbitrary
    `N : ℕ`, confirming that every component of the witness
    hypothesis can be discharged.
-3. **Axiom audit** — `#print axioms` on each public theorem
+3. **Abstract-`K` `exists_sup_reduction_of_cover` invocation** —
+   the K-generic bookkeeping corollary is invoked on
+   `K = Fin 2` (a non-`unitInterval` parameter space), confirming
+   that the bookkeeping path does not silently depend on
+   1D specifics.
+4. **Axiom audit** — `#print axioms` on each public theorem
    confirms dependence on exactly the three standard Lean 4 /
    Mathlib foundational axioms (`propext`, `Classical.choice`,
    `Quot.sound`). A regression that introduces a new axiom
@@ -62,7 +67,39 @@ example (N : ℕ) (hN : 0 < N) :
     hN
     (fun t _ => constOneWitness N t)
 
-/-! ## (3) Axiom audit (regression guard)
+/-! ## (3) Abstract-`K` invocation of the bookkeeping corollary
+
+A minimal `FiniteCoverWithWitnesses` on `K = Fin 2`: the constant
+energy `f ≡ 1`, single piece equal to `Set.univ`, replacement
+`≡ 1/2`, saving `1/2`. Confirms `exists_sup_reduction_of_cover`
+elaborates against a parameter space that is not `unitInterval`. -/
+
+example :
+    ∃ f' : Fin 2 → ℝ,
+      (∀ t, f' t ≤ (fun _ : Fin 2 => (1 : ℝ)) t) ∧
+      sSup (Set.range f') ≤ 1 - (1 / 2 : ℝ) := by
+  have C : FiniteCoverWithWitnesses (Fin 2) (fun _ => (1 : ℝ)) 1 1 (1 / 2) :=
+    { ι := Unit
+      ιFintype := inferInstance
+      nonempty := ⟨()⟩
+      piece := fun _ => Set.univ
+      covers_delta_near_critical := fun _ _ => Set.mem_iUnion.mpr ⟨(), trivial⟩
+      replacementEnergy := fun _ _ => (1 / 2 : ℝ)
+      saving := fun _ => (1 / 2 : ℝ)
+      saving_pos := fun _ => by norm_num
+      saving_bound := fun _ _ _ => by show (1 : ℝ) - 1 / 2 ≥ 1 / 2; norm_num
+      twoFold := fun _ => by
+        -- All Unit-indexed pieces are univ ↦ contains every t ↦ filter is univ; |univ Unit| = 1 ≤ 2.
+        simp
+      saving_ge_eps := fun _ => le_refl _ }
+  obtain ⟨f', h_le, _, h_sup⟩ :=
+    CombArg.exists_sup_reduction_of_cover (f := fun _ => (1 : ℝ))
+      (K := Fin 2) continuous_const
+      (by rw [Set.range_const]; exact (csSup_singleton _).symm)
+      (by norm_num : (1 / 2 : ℝ) ≤ 1) C
+  exact ⟨f', h_le, h_sup⟩
+
+/-! ## (4) Axiom audit (regression guard)
 
 `#guard_msgs in #print axioms` asserts the exact set of foundational
 axioms each public theorem depends on. If a regression introduces a

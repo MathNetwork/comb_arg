@@ -62,9 +62,7 @@ lemma terminal_twoFold
   have h3 : t ∈ closure (pr.J k3) := (Finset.mem_filter.mp hk3).2
   have h_clos_sub : ∀ k : Fin L,
       closure (pr.J k) ⊆ closure (ic.toSkippedSpacedIntervals.I (pr.σ k)) :=
-    fun k => by
-      simp only [ic.toSkippedSpacedIntervals_I]
-      exact closure_mono (pr.J_subset k)
+    fun k => closure_mono (pr.J_subset k)
   have hd12v : (pr.σ k1).val ≠ (pr.σ k2).val :=
     fun h => hk12 (hσ (Fin.ext h))
   have hd13v : (pr.σ k1).val ≠ (pr.σ k3).val :=

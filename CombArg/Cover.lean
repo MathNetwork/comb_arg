@@ -77,7 +77,7 @@ The multiplicity bound is hardcoded to `2`, matching the DLT
 parity-rescue construction. It is recorded as a structural invariant
 but is **not arithmetically load-bearing** for the output `m₀ − ε`:
 the pointwise bound uses only `saving_ge_eps` and `saving_pos`. -/
-structure FiniteCoverWithWitnesses
+@[ext] structure FiniteCoverWithWitnesses
     (K : Type*) [TopologicalSpace K]
     (f : K → ℝ) (m₀ δ ε : ℝ) where
   /-- Finite index type for the pieces. -/
