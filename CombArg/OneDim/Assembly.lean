@@ -3,11 +3,10 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Core
-import CombArg.Refinement.CoverConstruction
-import CombArg.Refinement.Disjointness
-import CombArg.Refinement.Induction
-import CombArg.Util
+import CombArg.Cover
+import CombArg.OneDim.CoverConstruction
+import CombArg.OneDim.Induction
+import Mathlib.Topology.Order.Compact
 
 /-!
 # Combinatorial main theorem: Assembly into `FiniteCoverWithWitnesses`
@@ -35,7 +34,7 @@ the output structure.
   `saving_bound_closure`.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
 
 open CombArg
 open scoped Classical
@@ -76,6 +75,18 @@ lemma terminal_twoFold
     (pr.σ k1) (pr.σ k2) (pr.σ k3) hd12v hd13v hd23v t
     (h_clos_sub k1 h1) (h_clos_sub k2 h2) (h_clos_sub k3 h3)
 
+/-- A continuous real-valued function bounded below on a set is
+bounded below on its closure. The preimage `{s : c ≤ g s}` is
+closed under `g` continuous, and a closed superset of `U`
+contains its closure. Used immediately below to extend the
+`LocalWitness` saving bound from an open neighborhood to its
+closure. -/
+private lemma ge_of_closure_of_ge {X : Type*} [TopologicalSpace X]
+    {g : X → ℝ} {c : ℝ} {U : Set X}
+    (hg : Continuous g) (hU : ∀ s ∈ U, c ≤ g s)
+    {t : X} (ht : t ∈ closure U) : c ≤ g t :=
+  (isClosed_le continuous_const hg).closure_subset_iff.mpr hU ht
+
 /-- **Saving-bound extends to closure via continuity**. For `t` in
 `closure (pr.J k)`, the inequality `f t − replacementEnergy t ≥
 1/(4N)` holds, lifted from the open neighborhood where the
@@ -87,9 +98,6 @@ lemma saving_bound_closure
     (pr : PartialRefinement ic L) (k : Fin L)
     (t : unitInterval) (ht : t ∈ closure (pr.J k)) :
     f t - (ic.wit (pr.σ k)).replacementEnergy t ≥ 1 / (4 * (N : ℝ)) := by
-  -- On `pr.J k ⊆ (ic.wit (pr.σ k)).neighborhood` the witness gives
-  -- `(f − E) ≥ 1/(4N)`; this closed-half-line condition extends to
-  -- `closure (pr.J k)` by continuity of `f − E`.
   refine ge_of_closure_of_ge
     (hf.sub (ic.wit (pr.σ k)).replacementEnergy_continuous)
     (fun s hs => (ic.wit (pr.σ k)).saving_bound s
@@ -181,4 +189,4 @@ lemma exists_refinement
     intro t
     exact terminal_twoFold pr hσ_inj t
 
-end CombArg.Refinement
+end CombArg.OneDim

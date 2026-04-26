@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Refinement.InitialCover
+import CombArg.OneDim.InitialCover
 
 /-!
 # Step 1 — PartialRefinement state + base case
@@ -15,7 +15,7 @@ import CombArg.Refinement.InitialCover
   `PartialRefinement ic 1` by setting `J 0 := ic.I ⟨0, ic.n_pos⟩`.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
 
 open CombArg
 
@@ -72,4 +72,4 @@ def step_zero
     intro t ht
     exact Set.mem_iUnion.mpr ⟨0, ht⟩
 
-end CombArg.Refinement
+end CombArg.OneDim

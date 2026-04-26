@@ -3,8 +3,8 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Core
-import CombArg.Refinement
+import CombArg.Cover
+import CombArg.OneDim
 import CombArg.Witness
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Topology.Compactness.Compact
@@ -13,7 +13,7 @@ import Mathlib.Topology.Compactness.Compact
 # One-parameter sup-reduction corollary
 
 The 1D composition of the combinatorial main theorem
-`CombArg.Refinement.exists_refinement` with the sup-reduction
+`CombArg.OneDim.exists_refinement` with the sup-reduction
 bookkeeping corollary
 `CombArg.exists_sup_reduction_of_cover` (in `CombArg/Core.lean`).
 
@@ -27,7 +27,7 @@ Given a continuous energy `f : unitInterval → ℝ` with `m₀ = sSup
 
 The theorem is the composition of two steps:
 
-1. **Combinatorial main theorem** — `Refinement.exists_refinement`
+1. **Combinatorial main theorem** — `OneDim.exists_refinement`
    consumes the `LocalWitness` hypothesis and produces a
    `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` via
    the DLT §3.2 Step 1 interval-refinement induction.
@@ -50,7 +50,7 @@ contradiction on top.
 namespace CombArg
 
 /-- **One-parameter sup-reduction corollary** — composition of
-the combinatorial main theorem `Refinement.exists_refinement`
+the combinatorial main theorem `OneDim.exists_refinement`
 with the bookkeeping corollary `exists_sup_reduction_of_cover`
 on `K = unitInterval` with `δ = 1/N`, `ε = 1/(4N)`.
 
@@ -72,7 +72,7 @@ forbids constant competitors.
 
 ## Proof architecture
 
-`Refinement.exists_refinement` produces a
+`OneDim.exists_refinement` produces a
 `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))` via
 the DLT-style interval refinement induction;
 `exists_sup_reduction_of_cover` then converts the cover into the
@@ -89,7 +89,7 @@ theorem exists_sup_reduction
       (∀ t, f' t ≤ f t) ∧
       (∀ t, t ∉ S → f' t = f t) ∧
       sSup (Set.range f') ≤ m₀ - 1 / (4 * (N : ℝ)) := by
-  obtain ⟨C⟩ := Refinement.exists_refinement hf hm hN witness
+  obtain ⟨C⟩ := OneDim.exists_refinement hf hm hN witness
   have hN_real : (0 : ℝ) < (N : ℝ) := Nat.cast_pos.mpr hN
   have hle : 1 / (4 * (N : ℝ)) ≤ 1 / (N : ℝ) := by
     apply one_div_le_one_div_of_le hN_real

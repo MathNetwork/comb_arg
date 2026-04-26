@@ -16,7 +16,7 @@ Given a `FiniteCoverWithWitnesses` of the `δ`-near-critical set
 competitor `f' : K → ℝ` with `sSup (range f') ≤ m₀ − ε`.
 
 This is the **bookkeeping corollary** of the combinatorial main
-theorem `CombArg.Refinement.exists_refinement`, stripped of any
+theorem `CombArg.OneDim.exists_refinement`, stripped of any
 parameter-space specifics (`unitInterval`, 1D covering,
 `LocalWitness`) and uniform in `(δ, ε)`. Consumers with an
 application-specific cover construction feed it in; this file
@@ -41,7 +41,7 @@ the super-level set.
 
 This lemma is independent of the combinatorial-argument
 structure; it packages the single arithmetic fact that the rest
-of `CombArg.Core` composes with the cover-and-witness data. -/
+of `CombArg.Cover` composes with the cover-and-witness data. -/
 lemma csSup_range_le_of_pointwise_saving {K : Type*} [Nonempty K] {f g : K → ℝ}
     {m₀ δ ε : ℝ}
     (hm : m₀ = sSup (Set.range f))
@@ -273,7 +273,7 @@ end FiniteCoverWithWitnesses
 existence from a `FiniteCoverWithWitnesses`, generic `K`.
 
 This is a corollary of the combinatorial main theorem
-`CombArg.Refinement.exists_refinement` (which produces such a
+`CombArg.OneDim.exists_refinement` (which produces such a
 cover on the 1D case); the present declaration discharges the
 arithmetic bookkeeping that turns any such cover into a
 sup-reducing competitor, in a form that is independent of the

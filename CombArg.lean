@@ -1,15 +1,14 @@
 -- Combinatorial main theorem: 1D cover refinement.
-import CombArg.Refinement
+import CombArg.OneDim
 
 -- Sup-reduction bookkeeping corollary (generic `K`).
-import CombArg.Core
+import CombArg.Cover
 
 -- One-parameter specialization composing the two.
 import CombArg.SupReduction
 
 -- Shared infrastructure (input structures, utilities).
 import CombArg.Witness
-import CombArg.Util
 
 /-!
 # `CombArg` — top-level facade
@@ -17,7 +16,7 @@ import CombArg.Util
 Re-exports the library modules. The declarations promoted as the
 library's stable public API are:
 
-* `CombArg.Refinement.exists_refinement` — **combinatorial main
+* `CombArg.OneDim.exists_refinement` — **combinatorial main
   theorem**: from a family of `LocalWitness` data on the
   near-critical set of `f : unitInterval → ℝ`, constructs a
   `FiniteCoverWithWitnesses` with two-fold overlap and uniform

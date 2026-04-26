@@ -3,7 +3,6 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Util
 import Mathlib.Topology.UnitInterval
 
 /-!
@@ -21,15 +20,24 @@ set, or pairable-cover structure) one derives
 * `closure_disjoint_of_even_gap` — their closures are disjoint,
 * `not_three_overlap` — no point lies in three of the interval
   closures at distinct sorted indices (parity rescue, combining
-  even-gap disjointness with
-  `CombArg.exists_even_gap_of_three`).
+  even-gap disjointness with the integer pigeonhole `exists_even_gap_of_three`).
 
-The `InitialCover` structure in `CombArg/Refinement/InitialCover.lean`
+The `InitialCover` structure in `CombArg/OneDim/InitialCover.lean`
 carries one of these as the geometric part of its data, and its
 disjointness lemmas are derived by delegating to this file.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
+
+/-- Pure integer pigeonhole: among any three strictly increasing
+naturals `a < b < c`, some pair has difference that is even and at
+least `2`. Used in the parity-rescue argument on
+`SkippedSpacedIntervals` indices. -/
+private lemma exists_even_gap_of_three {a b c : ℕ} (hab : a < b) (hbc : b < c) :
+    (2 ≤ c - a ∧ (c - a) % 2 = 0) ∨
+    (2 ≤ b - a ∧ (b - a) % 2 = 0) ∨
+    (2 ≤ c - b ∧ (c - b) % 2 = 0) := by
+  omega
 
 /-- The open interval of radius `r` around `c : unitInterval`, as
 a subset of `unitInterval` via the subtype preimage. Used as the
@@ -137,14 +145,14 @@ lemma closure_disjoint_of_even_gap (sp : SkippedSpacedIntervals)
 
 /-- **Parity rescue**: no point lies in three interval closures at
 distinct sorted indices. Combines `closure_disjoint_of_even_gap`
-with `CombArg.exists_even_gap_of_three`. -/
+with `exists_even_gap_of_three`. -/
 lemma not_three_overlap (sp : SkippedSpacedIntervals)
     (a b c : Fin sp.n) (hab : a.val < b.val) (hbc : b.val < c.val)
     (t : unitInterval)
     (ha : t ∈ closure (sp.I a)) (hb : t ∈ closure (sp.I b))
     (hc : t ∈ closure (sp.I c)) :
     False := by
-  rcases CombArg.exists_even_gap_of_three hab hbc with
+  rcases exists_even_gap_of_three hab hbc with
     ⟨hge, hmod⟩ | ⟨hge, hmod⟩ | ⟨hge, hmod⟩
   · exact (Set.disjoint_iff.mp
       (sp.closure_disjoint_of_even_gap a c ((c.val - a.val) / 2 - 1)
@@ -186,4 +194,4 @@ lemma not_three_overlap_any_order (sp : SkippedSpacedIntervals)
 
 end SkippedSpacedIntervals
 
-end CombArg.Refinement
+end CombArg.OneDim

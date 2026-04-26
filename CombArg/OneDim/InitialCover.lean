@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Refinement.SpacedIntervals
+import CombArg.OneDim.SpacedIntervals
 import CombArg.Witness
 import Mathlib.Topology.MetricSpace.Basic
 import Mathlib.Topology.Order.Compact
@@ -25,7 +25,7 @@ The near-critical set and the paper's initial cover family.
   open neighborhoods on the unit interval.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
 
 open CombArg
 open scoped Classical
@@ -157,7 +157,7 @@ def InitialCover.I
 /-- The geometric part of an `InitialCover`: the skip-2 spaced
 open intervals on `unitInterval`, forgetting the witness centers,
 local witnesses, and coverage of `nearCritical`. The disjointness
-lemmas in `CombArg.Refinement.Disjointness` delegate to this
+lemmas in `CombArg.OneDim.Disjointness` delegate to this
 projection. -/
 def InitialCover.toSkippedSpacedIntervals
     (ic : InitialCover f m₀ N) : SkippedSpacedIntervals where
@@ -190,4 +190,4 @@ lemma exists_closedBall_subset_of_open
   simp only [Metric.mem_ball]
   linarith
 
-end CombArg.Refinement
+end CombArg.OneDim

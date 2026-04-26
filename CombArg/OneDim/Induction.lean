@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Refinement.PartialRefinement
+import CombArg.OneDim.PartialRefinement
 
 /-!
 # Step 1 — Inductive step + termination
@@ -28,7 +28,7 @@ proof needs explicit access to the chosen index, so the index is
 threaded through as a parameter.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
 
 open CombArg
 open scoped Classical
@@ -285,4 +285,4 @@ lemma exists_terminal_refinement
     rw [Finset.card_univ, Fintype.card_fin] at h1
     exact h1
 
-end CombArg.Refinement
+end CombArg.OneDim

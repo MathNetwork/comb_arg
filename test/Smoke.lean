@@ -79,8 +79,8 @@ a diagnostic. -/
 #guard_msgs in
 #print axioms CombArg.exists_sup_reduction_of_cover
 
-/-- info: 'CombArg.Refinement.exists_refinement' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'CombArg.OneDim.exists_refinement' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
-#print axioms CombArg.Refinement.exists_refinement
+#print axioms CombArg.OneDim.exists_refinement
 
 end CombArg.Test

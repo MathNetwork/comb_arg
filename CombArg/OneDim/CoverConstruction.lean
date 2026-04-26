@@ -3,7 +3,7 @@ Copyright (c) 2026 Xinze Li. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
-import CombArg.Refinement.InitialCover
+import CombArg.OneDim.InitialCover
 import Mathlib.Algebra.Order.Archimedean.Basic
 import Mathlib.Data.Finset.Sort
 import Mathlib.Topology.MetricSpace.Pseudo.Lemmas
@@ -17,7 +17,7 @@ of ~200 lines; the proof is dense combinatorial bookkeeping that
 benefits from staying in one place.
 -/
 
-namespace CombArg.Refinement
+namespace CombArg.OneDim
 
 open CombArg
 open scoped Classical
@@ -249,4 +249,4 @@ lemma exists_initialCover
     rw [abs_sub_lt_iff] at h_dist
     exact ⟨by linarith [h_dist.2], by linarith [h_dist.1]⟩
 
-end CombArg.Refinement
+end CombArg.OneDim
