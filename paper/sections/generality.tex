@@ -2,17 +2,17 @@
 \label{sec:integration-generality}
 
 The combinatorial step formalized here is not specific to the
-closed-minimal-hypersurface setting of~\cite{DLT13}. The
-$1$-parameter Almgren--Pitts pattern --- a continuous family of
-sweepouts indexed by $t \in [0,1]$, a scalar energy $f(t)$
-attached to each sweepout, the inf-sup level
+closed-minimal-hypersurface setting of~\cite{DLT13}. Recall the
+shape of the $1$-parameter Almgren--Pitts pattern: a continuous
+family of sweepouts indexed by $t \in [0,1]$, a scalar energy
+$f(t)$ attached to each sweepout, the inf-sup level
 $m_0 = \inf_{\mathcal{A}} \sup f$ over an admissible class
 $\mathcal{A}$, a local replacement lemma producing a
 quantitative saving on a neighborhood of each near-critical
 $t$, and a combinatorial step combining these local
-replacements into a competitor strictly below $m_0$ --- recurs
-in several geometric variants beyond the original. We mention
-four:
+replacements into a competitor strictly below $m_0$. This
+pattern recurs in several geometric variants beyond the
+original. We mention four.
 
 \begin{itemize}
 \item \emph{Free boundary minimal hypersurfaces}~\cite{LZ21}:
@@ -29,24 +29,25 @@ four:
   adapted to produce a quantitative saving in this functional.
 \item \emph{Complete manifolds of finite
   volume}~\cite{ChL19}: the sweepout is by hypersurfaces of
-  bounded volume in a complete non-compact manifold; the
-  substantive geometric input is the disjointing lemma stating
-  that any such sweepout can be made by mutually disjoint
-  hypersurfaces of nearly the same volume.
+  bounded volume in a complete non-compact manifold; the main
+  geometric input is the disjointing lemma stating that any
+  such sweepout can be made by mutually disjoint hypersurfaces
+  of nearly the same volume.
 \item \emph{Anisotropic min-max}~\cite{DDL24}: the area
   $\mathcal{H}^n(\partial \Omega)$ is replaced by an elliptic
   integrand $F(\partial \Omega)$; the local replacement lemma
-  carries the anisotropic structure but produces an analogous
+  carries the anisotropic structure and produces an analogous
   quantitative saving.
 \end{itemize}
 
-In each case the local replacement lemma differs substantively
-from~\cite{DLT13}'s, but the subsequent combinatorial step ---
-the interval refinement, the two-fold overlap invariant, and
-the scalar bookkeeping that turns the resulting cover into a
-sup-reducing competitor --- is the same. The
+In each case the local replacement lemma differs in substance
+from the one in~\cite{DLT13}, but the subsequent combinatorial
+step is the same: the interval refinement, the two-fold
+overlap invariant, and the scalar bookkeeping that turns the
+resulting cover into a sup-reducing competitor are all carried
+out by the formalization presented here. The
 \texttt{LocalWitness} structure of \S\ref{sec:integration-input}
-is agnostic to the geometric origin of its four data fields,
+does not depend on the geometric origin of its four data fields,
 specifying only an open neighborhood, a continuous scalar
 energy, and the quantitative saving inequality. Any of the
 local replacement lemmas above can therefore feed the present

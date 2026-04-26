@@ -10,18 +10,18 @@ sweepouts, the inf-sup characterization
 $m_0 = \inf_{\Omega \in \mathcal{A}} \sup f_\Omega$, the local
 replacement construction~\cite[Lemma~3.1]{DLT13}, and the
 Hausdorff measure of boundary surfaces. The four objects
-introduced in \S\ref{sec:spec} ---
+introduced in \S\ref{sec:spec},
 \texttt{LocalWitness} (Definition~\ref{def:witness}),
 \lean{exists\_refinement}{Refinement/Assembly.lean},
 \lean{exists\_sup\_reduction\_of\_cover}{Core.lean}, and the
-chained \lean{exists\_sup\_reduction}{SupReduction.lean} ---
-carry no geometric content; they stand for, respectively, the
+chained \lean{exists\_sup\_reduction}{SupReduction.lean},
+carry no geometric content. They are, respectively, the
 abstract local-reducer data, \cite{DLT13}~\S3.2 Step~1
 (the interval refinement to a finite cover with two-fold
 overlap), \cite{DLT13}~\S3.2 Step~2 (the scalar bookkeeping
 over the cover), and the chained $1$-parameter conclusion. The
-same four declarations apply in the abstract and the
-instantiated forms; what changes between them is only the
+same four declarations apply in both the abstract and the
+instantiated form; what changes between them is only the
 data passed in.
 
 \subsection{The geometric input:
