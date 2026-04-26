@@ -16,6 +16,12 @@ build/
 *.bbl
 *.blg
 
+# leanblueprint generated artifacts (web/ rebuilt locally; .paux is binary cache)
+blueprint/web/
+blueprint/print/
+blueprint/*.paux
+blueprint/src/*.paux
+
 # Local reference PDFs (copyrighted; kept locally, not committed)
 resources/*.pdf
 # Local arXiv source snapshots

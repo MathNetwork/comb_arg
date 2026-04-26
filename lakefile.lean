@@ -28,3 +28,9 @@ lean_exe «combarg-audit» where
 -- with `YourGMT.*` stubs.  Usage: `lake exe combarg-skeleton -N 5`
 lean_exe «combarg-skeleton» where
   root := `Skeleton
+
+require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
+
+meta if get_config? env = some "dev" then
+require «doc-gen4» from git
+  "https://github.com/leanprover/doc-gen4" @ "main"

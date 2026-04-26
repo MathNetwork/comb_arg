@@ -58,13 +58,30 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
   health check (axiom audit + public-API listing); CI runs the
   same on every push.
 
-## Module dependency graph
+## Dependency graphs
 
-![Module dependency graph](docs/import-graph.svg)
+Two views of the library's structure are kept in `docs/`.
 
-Generated from `lake exe graph` (Mathlib's `importGraph` package).
-Regenerate locally with `scripts/build-graph.sh` (requires
-`graphviz`).
+**Theorem dependency graph**, from
+[`leanblueprint`](https://github.com/PatrickMassot/leanblueprint).
+Boxes are definitions / structures; ellipses are theorems;
+green = formalized:
+
+![Theorem dependency graph](docs/blueprint-graph.svg)
+
+Regenerate with `scripts/build-blueprint.sh`. Full interactive
+HTML version (with statement popups) builds via
+`(cd blueprint && leanblueprint web)` and serves via
+`(cd blueprint && leanblueprint serve)`.
+
+**Module import graph**, from
+[`importGraph`](https://github.com/leanprover-community/import-graph)
+(via `lake exe graph`). Lower-level: shows which `.lean` files
+import which.
+
+![Module import graph](docs/import-graph.svg)
+
+Regenerate with `scripts/build-graph.sh`.
 
 ## Quick start
 

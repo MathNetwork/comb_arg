@@ -1,0 +1,86 @@
+\section{Library overview}
+
+This blueprint mirrors the public API of the \texttt{CombArg}
+Lean library and the dependency structure between its
+declarations.  It is intentionally terse: the full mathematical
+exposition lives in the accompanying paper
+(\texttt{paper/paper.tex}); here we only list the public
+declarations and their dependencies in a form
+\texttt{plastexdepgraph} renders as the dependency graph.
+
+\subsection{Input structures}
+
+\begin{definition}
+\label{def:local-witness}
+\lean{CombArg.LocalWitness}
+\leanok
+\texttt{LocalWitness}: per-parameter local-reducer data — an
+open neighborhood, a continuous replacement-energy function, and
+a quantitative saving inequality.  See
+\texttt{CombArg/Witness.lean}.
+\end{definition}
+
+\begin{definition}
+\label{def:cover}
+\lean{CombArg.FiniteCoverWithWitnesses}
+\leanok
+\texttt{FiniteCoverWithWitnesses}: a finite cover of the
+$\delta$-near-critical set with per-piece replacement energies,
+saving floor $\varepsilon$, and two-fold multiplicity.  See
+\texttt{CombArg/Cover.lean}.
+\end{definition}
+
+\subsection{Geometric input on $[0,1]$}
+
+\begin{definition}
+\label{def:spaced}
+\lean{CombArg.OneDim.SkippedSpacedIntervals}
+\leanok
+\texttt{SkippedSpacedIntervals}: a finite family of open
+intervals on $[0,1]$ subject to the skip-2 spacing condition
+$c_i + r_i < c_{i+2} - r_{i+2}$.
+\end{definition}
+
+\begin{definition}
+\label{def:initial-cover}
+\lean{CombArg.OneDim.InitialCover}
+\leanok
+\uses{def:spaced, def:local-witness}
+\texttt{InitialCover}: a \texttt{SkippedSpacedIntervals} (via
+\texttt{extends}) bundled with witness centers in the
+near-critical set and a \texttt{LocalWitness} at each.
+\end{definition}
+
+\subsection{Combinatorial main theorem and corollaries}
+
+\begin{theorem}[Combinatorial main theorem]
+\label{thm:exists-refinement}
+\lean{CombArg.OneDim.exists_refinement}
+\leanok
+\uses{def:initial-cover, def:cover}
+From a \texttt{LocalWitness} family on the
+$1/N$-near-critical set of $f : [0,1] \to \mathbb R$,
+construct a \texttt{FiniteCoverWithWitnesses} with two-fold
+overlap and uniform per-piece saving $1/(4N)$.
+\end{theorem}
+
+\begin{theorem}[Sup-reduction bookkeeping corollary]
+\label{thm:sup-reduction-of-cover}
+\lean{CombArg.exists_sup_reduction_of_cover}
+\leanok
+\uses{def:cover}
+For any \texttt{FiniteCoverWithWitnesses} on a compact nonempty
+$K$, produce $f' : K \to \mathbb R$ with $f' \le f$,
+$f' = f$ outside the cover, and
+$\sup f' \le m_0 - \varepsilon$.  Generic in $K$.
+\end{theorem}
+
+\begin{theorem}[One-parameter chained corollary]
+\label{thm:exists-sup-reduction}
+\lean{CombArg.exists_sup_reduction}
+\leanok
+\uses{thm:exists-refinement, thm:sup-reduction-of-cover}
+The 1D specialization on $K = [0,1]$ with
+$(\delta, \varepsilon) = (1/N, 1/(4N))$, chaining the two
+results above.
+\end{theorem}
