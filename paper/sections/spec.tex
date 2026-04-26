@@ -1,0 +1,359 @@
+\section{Specification}
+\label{sec:spec}
+
+We present the library specification following standard software
+documentation conventions: interface first
+(\S\ref{sec:interface}), public API
+(\S\ref{sec:core-spec}--\S\ref{sec:app-spec}), internal lemmas
+(\S\ref{sec:internal}).
+
+\subsection{Interface: types and structures}
+\label{sec:interface}
+
+Throughout, \texttt{K} denotes a topological space (the parameter
+space) and \texttt{f : K $\to$ $\mathbb{R}$} a continuous scalar
+energy.
+
+In the proof of Theorem~\ref{thm:AP-combinatorial}, the
+Lemma~3.1 of~\cite{DLT13} supplies, for each near-critical
+parameter $t$, a local replacement on an
+$\mathcal{H}^n$-disjoint pair of open sets in $M^{n+1}$ whose
+boundary energy is reduced by at least $1/(4N)$ on a
+neighborhood of $t$. The replacement family
+$\{\partial \Omega_{t,\tau}\}_{\tau \in [0,1]}$ at a
+near-critical $t$ has its Hausdorff measure decreased by at
+least $1/(4N)$ inside $U_t'$. We keep only the scalar
+\emph{replacement energy} $E : K \to \mathbb{R}$ and the
+uniform saving inequality; the geometric family is discarded.
+
+\begin{definition}[\texttt{LocalWitness} structure]
+\label{def:witness}
+\leanmargin{LocalWitness}{Witness.lean}
+A \texttt{LocalWitness K f t $\varepsilon$} carries an open
+neighborhood $U \ni t$ in $K$, a continuous replacement energy
+$E : K \to \mathbb{R}$, and the inequality
+$\forall s \in U,\; f(s) - E(s) \ge \varepsilon$.
+\end{definition}
+
+The proof of the Claim works on the set $K \subset [0,1]$ of
+parameters at which the sweepout is within $1/N$ of the min-max
+value. We use the same convention.
+
+\begin{definition}[Near-critical set]
+\label{def:NC}
+\leanmargin{nearCritical}{Refinement/InitialCover.lean}
+For continuous $f : K \to \mathbb{R}$, scalar $m_0$, and
+$\delta \ge 0$, the $\delta$-near-critical set is
+$\{t \in K : f(t) \ge m_0 - \delta\}$. When $\delta = 1/N$ we
+write $\NC$.
+\end{definition}
+
+At the end of the refinement the data is a family
+$\{\overline{J_l}\}$ covering $K$, with each $J_l$ carrying a
+replacement whose energy saving is at least $1/(4N)$ and with
+two-fold overlap. We abstract this output: the near-critical
+threshold $1/N$ becomes a parameter $\delta$ and the saving floor
+$1/(4N)$ a parameter $\varepsilon \le \delta$.
+
+\begin{definition}[\texttt{FiniteCoverWithWitnesses} structure]
+\label{def:ref}
+\leanmargin{FiniteCoverWithWitnesses}{Core.lean}
+A \texttt{FiniteCoverWithWitnesses K f m\textsubscript{0} $\delta$ $\varepsilon$}
+carries a finite nonempty index type $\iota$, pieces
+$\{p_l \subseteq K\}_{l \in \iota}$, replacement energies
+$\{E_l : K \to \mathbb{R}\}$, and savings
+$\{s_l \in \mathbb{R}_{>0}\}$, subject to four conditions:
+(I) $f - E_l \ge s_l$ on $p_l$;
+(II) each $t \in K$ lies in at most two pieces;
+(III) $s_l \ge \varepsilon$ for all $l$;
+(IV) $\{t \in K : f(t) \ge m_0 - \delta\} \subseteq \bigcup_l p_l$.
+\end{definition}
+
+The skip-2 spacing condition (a) of the original proof is a
+purely one-dimensional geometric condition on a family of open
+intervals. We isolate it in its own structure so the
+disjointness lemmas that depend only on spacing can be proved
+independently of the witness data.
+
+\begin{definition}[\texttt{SkippedSpacedIntervals} structure]
+\label{def:spaced}
+\leanmargin{SkippedSpacedIntervals}{Refinement/SpacedIntervals.lean}
+A \texttt{SkippedSpacedIntervals} records a natural number $n$,
+centers $c_1, \ldots, c_n \in \unit$, positive radii
+$r_1, \ldots, r_n > 0$, and the skip-2 spacing axiom
+$c_i + r_i < c_{i+2} - r_{i+2}$ whenever $i+2 \le n$. The
+$i$-th open interval $I_i = (c_i - r_i, c_i + r_i) \cap \unit$
+is an abbreviation on this structure.
+\end{definition}
+
+On top of the geometric structure, the initial cover also
+carries a witness center $w_i \in \NC$ with an attached local
+witness for each interval, together with the containment of
+each $I_i$ inside the corresponding witness neighborhood. In our
+formalization the interval center $c_i$ and the witness center
+$w_i$ are recorded separately: grid points need not themselves
+lie in $\NC$.
+
+\begin{definition}[\texttt{InitialCover} structure]
+\label{def:ic}
+\leanmargin{InitialCover}{Refinement/InitialCover.lean}
+Specialized to $K = \unit$. An
+\texttt{InitialCover X f m\textsubscript{0} N} carries the data
+of a \texttt{SkippedSpacedIntervals} (Definition~\ref{def:spaced},
+satisfying spacing condition (a)), plus, for each
+$i = 1, \ldots, n$, a witness center $w_i \in \NC$ and a local
+witness at $w_i$ with saving $1/(4N)$, subject to
+(b) containment: $I_i \subseteq U_{w_i}$;
+(c) coverage: $\NC \subseteq \bigcup_i I_i$.
+\end{definition}
+
+The refinement is described as an iteration: each $I_j$ with
+$j \ge 2$ is either kept whole or split into two halves. The
+state of this iteration after $\ell$ moves is the following.
+
+\begin{definition}[\texttt{PartialRefinement} structure]
+\label{def:pr}
+\leanmargin{PartialRefinement}{Refinement/PartialRefinement.lean}
+Given \texttt{ic : InitialCover} and $\ell \in \mathbb{N}$, a
+\texttt{PartialRefinement ic $\ell$} carries pieces
+$J_1, \ldots, J_\ell \subseteq \unit$ and an index assignment
+$\sigma : \{1, \ldots, \ell\} \to \{1, \ldots, n\}$ with
+(i) $J_k \subseteq I_{\sigma(k)}$ for each $k$;
+(ii) $I_{\sigma(k)} \subseteq \bigcup_{k'} J_{k'}$ for each $k$.
+\end{definition}
+
+\subsection{Public API: combinatorial core}
+\label{sec:core-spec}
+
+The library's main theorem is the existence of a refined
+multiplicity-bounded cover of the near-critical set carrying the
+witness savings: the non-trivial combinatorial content extracted
+from the original proof. Its hypotheses coincide with the intro
+statement (Theorem~\ref{thm:intro-scalar}); the output is a
+\texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}).
+
+\begin{theorem}[Combinatorial core]
+\label{thm:core}
+\leanmargin{exists\_refinement}{Refinement/Assembly.lean}
+Let $f : \unit \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$.
+Suppose every $t \in \NC$ admits a \texttt{LocalWitness} at $t$
+with saving $1/(4N)$ (Definition~\ref{def:witness}). Then there
+exists a
+\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$
+(Definition~\ref{def:ref}): a finite family of closed pieces
+$\{p_l \subseteq \unit\}$, continuous replacement energies
+$\{E_l : \unit \to \mathbb{R}\}$, and savings
+$\{s_l \ge 1/(4N)\}$ satisfying conditions~(I)--(IV).
+\end{theorem}
+
+The proof is given in~\S\ref{sec:proof} as three chained stages:
+Stage~A builds an initial cover from a Lebesgue-number argument
+on $\NC$; Stage~B runs a bounded smallest-index induction to a
+terminal partial refinement; Stage~C assembles the output by
+extending the open-neighborhood saving bound to the closure via
+continuity and deriving two-fold overlap via the parity-gap
+disjointness argument.
+
+\subsection{Public API: sup-reduction corollaries}
+\label{sec:app-spec}
+
+The arithmetic that turns a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+into a competitor with reduced supremum is a short scalar lemma
+independent of covers, pieces, or multiplicity: any competitor
+that saves a fixed amount on the relevant super-level set yields
+the same amount of supremum reduction.
+
+\begin{lemma}[Scalar sup reduction]
+\label{lem:scalar-sup-reduction}
+\leanmargin{sup\_le\_of\_saving}{Core.lean}
+Let $K$ be a nonempty set and $f : K \to \mathbb{R}$ a bounded
+function with $m_0 = \sup f$. Let $g : K \to \mathbb{R}$ satisfy
+\begin{enumerate}
+\item[(i)] $g(t) \le f(t)$ for every $t \in K$;
+\item[(ii)] $f(t) - g(t) \ge \varepsilon$ whenever
+      $f(t) \ge m_0 - \delta$,
+\end{enumerate}
+where $0 < \varepsilon \le \delta$. Then
+$\sup g \le m_0 - \varepsilon$.
+\end{lemma}
+
+\begin{proof}
+Fix $t \in K$. If $f(t) \ge m_0 - \delta$, then (ii) gives
+$g(t) \le f(t) - \varepsilon \le m_0 - \varepsilon$. If
+$f(t) < m_0 - \delta$, then (i) gives $g(t) \le f(t) <
+m_0 - \delta \le m_0 - \varepsilon$. Taking the supremum over
+$t$ completes the proof.
+\end{proof}
+
+Lemma~\ref{lem:scalar-sup-reduction} is a general statement
+about lowering the supremum of a bounded real-valued function by
+exhibiting a competitor with a pointwise saving on the
+super-level set $\{f \ge m_0 - \delta\}$; no sweepout, cover, or
+multiplicity hypothesis enters. It applies verbatim whenever a
+pointwise saving can be established on the ``where it matters''
+super-level set. The Lean library ships two corollaries of
+Theorem~\ref{thm:core} via this lemma: the generic-$K$ form (any
+\texttt{FiniteCoverWithWitnesses}), and the one-parameter
+specialization to $\unit$ that chains through
+Theorem~\ref{thm:core}.
+
+\begin{corollary}[Sup reduction, generic form]
+\label{cor:core-sup}
+\leanmargin{exists\_sup\_reduction\_of\_cover}{Core.lean}
+Let $K$ be a compact, nonempty topological space,
+$f : K \to \mathbb{R}$ continuous with $m_0 = \sup f$, and
+$0 < \varepsilon \le \delta$. Given a
+\texttt{FiniteCoverWithWitnesses}$(K, f, m_0, \delta, \varepsilon)$
+(Definition~\ref{def:ref}) with pieces $\{p_l\}$, there exists
+$f' : K \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in K$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - \varepsilon$.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+Set $f'(t) := f(t) - \sum_{l \,:\, t \in p_l} s_l$. Since each
+$s_l > 0$, (a) holds. If $t \notin \bigcup_l p_l$ the sum is
+empty, giving (b). For (c), apply
+Lemma~\ref{lem:scalar-sup-reduction}: (i) follows from (a);
+(ii) holds because when $f(t) \ge m_0 - \delta$, (IV) gives
+some $p_l \ni t$, (III) gives $s_l \ge \varepsilon$, and the
+remaining at-most-one saving (by two-fold overlap (II)) is
+non-negative, so $f(t) - f'(t) \ge \varepsilon$. The lemma
+yields $\sup f' \le m_0 - \varepsilon$.
+\end{proof}
+
+\begin{corollary}[One-parameter sup reduction]
+\label{thm:main}
+\leanmargin{exists\_sup\_reduction}{SupReduction.lean}
+Under the hypotheses of Theorem~\ref{thm:core}, there exist
+$f' : \unit \to \mathbb{R}$ and a set $S \subseteq \unit$
+containing $\NC$ such that:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in \unit$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin S$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
+\end{corollary}
+
+Corollary~\ref{thm:main} is Corollary~\ref{cor:core-sup} applied
+to the \texttt{FiniteCoverWithWitnesses} produced by
+Theorem~\ref{thm:core}, with
+$(\delta, \varepsilon) = (1/N, 1/(4N))$; the modification set
+$S$ is the union of the cover pieces, which contains $\NC$ by
+condition~(IV) of Definition~\ref{def:ref}.
+
+\subsection{Internal lemmas}
+\label{sec:internal}
+
+The declarations below are the sub-lemmas of
+Theorem~\ref{thm:core}; proofs are sketched in
+\S\ref{sec:proof}.
+
+\begin{proposition}[Compactness of $\NC$]
+\label{prop:NC-compact}
+\leanmargintwo{isCompact\_nearCritical}{Refinement/InitialCover.lean}%
+              {nearCritical\_nonempty}{Refinement/InitialCover.lean}
+If $K$ is compact and $f$ continuous, $\NC$ is compact. If
+additionally $m_0 = \sup f$ and $N > 0$, $\NC$ is nonempty.
+\end{proposition}
+
+\begin{itemize}
+\item \lean{exists\_initialCover}{Refinement/CoverConstruction.lean}
+: existence of an \texttt{InitialCover} via a grid plus
+Lebesgue-number construction on the compact sublevel set $\NC$.
+\item \lean{exists\_terminal\_refinement}{Refinement/Induction.lean}
+: existence of a terminal \texttt{PartialRefinement} with
+injective $\sigma$ via bounded smallest-index induction with
+two-case dispatch.
+\item \lean{not\_three\_overlap}{Refinement/Disjointness.lean}
+: at most two among any three distinct \texttt{InitialCover}
+intervals overlap at a common point (parity rescue).
+\item \lean{saving\_bound\_closure}{Refinement/Assembly.lean}
+: the open-neighborhood saving bound in \texttt{LocalWitness}
+extends to the closure via continuity of $E$.
+\end{itemize}
+
+The assembly itself---packaging the Stage A--B--C output as a
+\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
+with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$---is
+Theorem~\ref{thm:core} itself, whose Lean declaration
+\lean{exists\_refinement}{Refinement/Assembly.lean} chains the
+sub-lemmas above.
+
+Figure~\ref{fig:arch} shows the layered architecture.
+
+\begin{figure}[tb]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  every node/.style={align=center},
+  pillar/.style={draw=black, thin, rectangle, rounded corners=3pt,
+                 inner sep=5pt, text width=38mm},
+  thm/.style={draw=black, thin, rectangle, rounded corners=3pt,
+              inner sep=5pt, text width=46mm},
+  arr/.style={-Latex, thin, black!70},
+  arrlab/.style={font=\scriptsize\itshape, midway, fill=white,
+                 inner sep=2pt, text=black!60}
+]
+
+% Top row: three combinatorial pillars
+\node[pillar] (P1) at (-5.0, 4) {%
+  cover construction \\
+  {\scriptsize\itshape Lebesgue number on $\NC$}
+};
+\node[pillar] (P2) at ( 0.0, 4) {%
+  refinement induction \\
+  {\scriptsize\itshape smallest-index dispatch}
+};
+\node[pillar] (P3) at ( 5.0, 4) {%
+  bookkeeping arithmetic \\
+  {\scriptsize\itshape pointwise case split}
+};
+
+% Middle row: the two main theorems
+\node[thm] (core) at (-3.0, 1) {%
+  \texttt{exists\_refinement} \\
+  {\scriptsize combinatorial core, $K = [0,1]$}
+};
+\node[thm] (genc) at ( 3.0, 1) {%
+  \texttt{exists\_sup\_reduction\_of\_cover} \\
+  {\scriptsize bookkeeping corollary, generic $K$}
+};
+
+% Bottom row: the chained 1D corollary (the user-facing entry point)
+\node[thm] (app) at (0, -2) {%
+  \texttt{exists\_sup\_reduction} \\
+  {\scriptsize 1D chained corollary on $K = [0,1]$}
+};
+
+% Pillars feed the two main theorems
+\draw[arr] (P1.south) -- (core.north west);
+\draw[arr] (P2.south) -- (core.north);
+\draw[arr] (P3.south) -- (genc.north);
+
+% The two main theorems compose into the 1D chained corollary
+\draw[arr] (core.south) -- node[arrlab, left=2pt] {via core}
+  (app.north west);
+\draw[arr] (genc.south) -- node[arrlab, right=2pt] {via bookkeeping}
+  (app.north east);
+
+\end{tikzpicture}
+\caption{\label{fig:arch}\CombArg{} v0.2 conceptual
+architecture. Three combinatorial pillars (cover construction
+via Lebesgue number, refinement induction via smallest-index
+dispatch, bookkeeping arithmetic via pointwise case split) feed
+two main theorems: the combinatorial core
+\texttt{exists\_refinement}, which produces a finite cover
+with two-fold overlap on $K = [0,1]$, and the bookkeeping
+corollary \texttt{exists\_sup\_reduction\_of\_cover}, which
+turns any such cover into a sup-reducing competitor on a
+generic compact $K$. The chained 1D corollary
+\texttt{exists\_sup\_reduction} composes the two on
+$K = [0,1]$ and is the user-facing entry point.}
+\end{figure}
+

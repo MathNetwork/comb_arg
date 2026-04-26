@@ -1,0 +1,49 @@
+\section{End-to-end Lean script}
+\label{app:lean-script}
+
+The Lean script in Listing~\ref{lst:end-to-end} below realizes
+the chain of \S\ref{sec:integration-chain}. The identifiers
+\texttt{YourGMT.SweepoutType}, \texttt{YourGMT.admissibleClass},
+\texttt{YourGMT.choose\_N}, \texttt{YourGMT.localWitness\_of\_DLT},
+and \texttt{YourGMT.lift\_sweepout} stand for the surrounding
+formalization's geometric machinery; the four
+\texttt{CombArg.*} declarations are those provided by the
+formalization presented in this paper.
+
+The script reads from top to bottom as the three steps of
+\S\ref{sec:integration-chain}: the per-parameter local witness
+is constructed by \texttt{YourGMT.local\-Witness\_of\_DLT}; the
+sup-reducing competitor $(f', S)$ is obtained from
+\texttt{CombArg.exists\_sup\_reduction}; and the geometric
+lift to $\Omega' \in \mathcal{A}$ followed by the inf-sup
+contradiction occupies the closing block.
+
+\begin{lstlisting}[caption={End-to-end script for a min-max
+contradiction.}, label=lst:end-to-end]
+import CombArg
+import YourGMT
+
+theorem minmax_contradiction
+    (O : YourGMT.SweepoutType) (hO : O in YourGMT.admissibleClass)
+    (h_minmax : O.boundaryEnergy.sup = YourGMT.infMinmax) :
+    False := by
+  set f := O.boundaryEnergy
+  set m0 := sSup (Set.range f)
+  obtain <N, hN_pos, hN_window> := YourGMT.choose_N O
+  -- Per-parameter local witness from the local replacement lemma.
+  have witness : forall t : unitInterval, f t >= m0 - 1 / (N : R) ->
+                   LocalWitness unitInterval f t (1 / (4 * (N : R))) :=
+    fun t ht => YourGMT.localWitness_of_DLT O t ht hN_pos
+  -- Combinatorial step (this paper) -> scalar sup reduction.
+  obtain <f', S, _, h_le, h_eq, h_sup> :=
+    CombArg.exists_sup_reduction
+      O.boundaryEnergyContinuous rfl hN_pos witness
+  -- Geometric lift back to a sweepout in admissibleClass.
+  obtain <O', hO', hO'_energy> :=
+    YourGMT.lift_sweepout f' h_le h_eq O hO
+  -- Contradiction with the inf-sup characterization of m0.
+  have h_lt : O'.boundaryEnergy.sup < m0 := by
+    rw [hO'_energy]; linarith [h_sup, hN_window]
+  exact absurd h_lt (YourGMT.le_of_admissible hO' h_minmax)
+\end{lstlisting}
+

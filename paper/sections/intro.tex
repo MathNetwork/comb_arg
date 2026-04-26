@@ -1,0 +1,181 @@
+\section{Introduction}
+\label{sec:intro}
+
+A minimal hypersurface is a critical point of the area functional
+in codimension one. On a closed Riemannian manifold
+$(M^{n+1}, g)$ with $H_n(M;\mathbb{Z}) = 0$ (for instance
+$M = S^{n+1}$), direct minimization of the $n$-dimensional
+Hausdorff measure over integral currents yields only the empty
+hypersurface; a non-trivial minimal hypersurface must be
+constructed as a saddle-type critical point of the area
+functional. \me{The construction, due to Almgren and Pitts, is a
+\emph{min-max} scheme on varifolds; regularity of the output is
+due to Pitts \cite{Pit81} and Schoen--Simon \cite{SS81}.}
+
+\begin{theorem}[Almgren--Pitts min-max theorem~\cite{Pit81,SS81}]
+\label{thm:minmax}
+Every closed Riemannian manifold $(M^{n+1}, g)$ admits a
+nontrivial embedded minimal hypersurface $\Sigma \subset M$ whose
+singular set $\mathrm{Sing}\,\Sigma$ has Hausdorff dimension at
+most $n - 7$.
+\end{theorem}
+
+A key step in Pitts's proof, recurring in
+\cite{CDL03,DLT13,DLR17,DL12,MN14}, is the Almgren--Pitts
+combinatorial argument, stated in the Colding--De~Lellis
+formulation as follows.
+
+\begin{theorem}[Almgren--Pitts combinatorial Argument,
+{\cite[Prop.~3.4]{CDL03}}]
+\label{thm:AP-combinatorial}
+Let $\Lambda$ be a homotopically closed family of sweepouts of
+$M^{n+1}$, and $m_0 = \inf_\Lambda \mathcal{F}$. There exists a
+min-max sequence $\{\Gamma^N\}$ converging as varifolds to a
+stationary integer rectifiable varifold of mass $m_0$, with
+$\Gamma^N$
+$1/N$-almost-minimizing in every pair
+$(U^1, U^2) \in \mathcal{CO}$ of $\mathcal{H}^n$-disjoint open
+sets, for all $N$ sufficiently large.
+\end{theorem}
+
+\me{The proof of Theorem~\ref{thm:AP-combinatorial} reduces,
+following~\cite[\S3.2]{DLT13}, to the following claim on the
+sweepout:\footnote{Throughout this paper, ``sweepout'' denotes a
+one-parameter family $\{\Gamma_t\}_{t \in [0,1]}$ in the sense of
+\cite[Def.~3.1]{DLT13}; the multi-parameter min-max setting of
+\cite{MN14} requires separate combinatorial machinery and lies
+outside our scope.}}
+
+\begin{quote}
+\textbf{Claim.} For each $N$ sufficiently large, there exists
+$t_N \in [0,1]$ such that $\Gamma^N := \Gamma^N_{t_N}$ is
+$1/N$-almost-minimizing in every $(U^1, U^2) \in \mathcal{CO}$
+and $\mathcal{H}^n(\Gamma^N) \ge m_0 - 1/N$.
+\end{quote}
+
+The Claim is proved by contradiction: from its negation, every
+$t$ with $\mathcal{H}^n(\partial \Omega^N_t) \ge m_0 - 1/N$
+admits a \emph{local replacement} with saving $1/(4N)$
+\cite[Lemma~3.1]{DLT13}; a combinatorial cover-refinement and
+bookkeeping argument on $[0,1]$ then assembles from these local
+replacements a modified sweepout with supremum strictly below
+$m_0$,
+contradicting $m_0 = \inf_\Lambda \mathcal{F}$. The combinatorial
+argument depends on no geometric measure theory, no admissible
+class, and no ambient regularity; it is a bookkeeping
+construction on continuous real-valued functions, yet has no
+canonical reference.
+
+The combinatorial core of the proof of the Claim, which is the
+precise theorem we formalize, reads as follows.
+
+\begin{theorem}[Combinatorial core]
+\label{thm:intro-scalar}
+Let $f : [0,1] \to \mathbb{R}$ be continuous with
+$m_0 = \sup f$, and let $N \in \mathbb{N}$ with $N > 0$. Suppose
+that at every $t \in [0,1]$ with $f(t) \ge m_0 - 1/N$ there is a
+\emph{local witness}: an open neighborhood $U_t \ni t$ and a
+continuous replacement energy $E_t : [0,1] \to \mathbb{R}$
+satisfying $f(s) - E_t(s) \ge 1/(4N)$ for every $s \in U_t$.
+Then there exist a finite family of closed pieces
+$\{p_l \subseteq [0,1]\}_{l \in \iota}$, continuous replacement
+energies $\{E_l : [0,1] \to \mathbb{R}\}_{l \in \iota}$, and
+savings $\{s_l \ge 1/(4N)\}_{l \in \iota}$ satisfying:
+\begin{enumerate}
+\item[\textup{(I)}] $f - E_l \ge s_l$ on $p_l$;
+\item[\textup{(II)}] every $t \in [0,1]$ belongs to at most
+  two of the pieces $p_l$;
+\item[\textup{(III)}] $\{t \in [0,1] : f(t) \ge m_0 - 1/N\}
+  \subseteq \bigcup_l p_l$.
+\end{enumerate}
+\end{theorem}
+
+\begin{remark}
+\label{rem:intro-core-nontrivial}
+The non-trivial content of Theorem~\ref{thm:intro-scalar} is the
+\emph{construction} of the cover $\{p_l\}$ from unstructured
+witness data: a Lebesgue-number argument on the compact
+near-critical set produces an initial cover satisfying the
+skip-2 spacing condition (a) of~\cite{DLT13}; a bounded
+smallest-index induction refines it to an injective
+piece-to-interval assignment; and a parity argument on the
+spacing condition delivers the two-fold overlap~(II). The
+bookkeeping corollary below (the existence of a competitor $f'$
+with reduced supremum) is a three-line arithmetic consequence.
+\end{remark}
+
+Translation from the De~Lellis--Tasnady setting to
+Theorem~\ref{thm:intro-scalar}: the boundary $\partial \Omega_t$
+becomes a continuous $f : [0,1] \to \mathbb{R}$; the
+Hausdorff-measure hypothesis becomes $m_0 = \sup f$; the nested
+pair $(A_t, B_t, U_t')$ collapses to a single neighborhood $U_t$;
+the replacement family $\{\partial \Omega_{t,\tau}\}$ collapses
+to a single continuous $E_t$; and the almost-minimizing
+hypothesis, which in the original proof is the input to
+Lemma~3.1 of~\cite{DLT13}, is absorbed into the existence of the
+local witness (the caller must supply witnesses wherever they
+would be produced in the ambient GMT setting). The output of
+Theorem~\ref{thm:intro-scalar} is the combinatorially assembled
+cover data $\{(p_l, E_l, s_l)\}$; the modified sweepout in the
+original proof is the geometric lift of the scalar competitor
+produced by the corollary below.
+
+\begin{corollary}[Sup reduction]
+\label{thm:intro-core}
+Under the hypotheses of Theorem~\ref{thm:intro-scalar}, with the
+pieces $\{p_l\}$ produced there, there exists
+$f' : [0,1] \to \mathbb{R}$ satisfying:
+\begin{enumerate}
+\item[\textup{(a)}] $f'(t) \le f(t)$ for every $t \in [0,1]$;
+\item[\textup{(b)}] $f'(t) = f(t)$ whenever $t \notin \bigcup_l p_l$;
+\item[\textup{(c)}] $\sup f' \le m_0 - 1/(4N)$.
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[Why (a)+(b) are stated]
+\label{rem:anchor-f-prime}
+The bound (c) alone is trivialized by any constant
+$f' \equiv c \le m_0 - 1/(4N)$. Condition (a) ties $f'$
+pointwise below $f$; condition (b) forces $f'$ to coincide with
+$f$ wherever no piece modifies it. Together they anchor $f'$ to
+$f$, so generic non-constant $f$ rules out constant competitors,
+and (c) becomes a non-trivial quantitative assertion about the
+specific competitor the proof produces
+(concretely, $f'(t) = f(t) - \sum_{l :\, t \in p_l} s_l$).
+\end{remark}
+
+The bookkeeping underlying Corollary~\ref{thm:intro-core} is
+strictly more general than the one-parameter statement it
+certifies: the same arithmetic applies to any compact, nonempty
+topological space $K$ with continuous $f : K \to \mathbb{R}$ and
+any scalars $(\delta, \varepsilon)$ with
+$0 < \varepsilon \le \delta$, taking as input any finite cover of
+the $\delta$-super-level set of $f$ with per-piece savings $\ge
+\varepsilon$ and at-most-two overlap. The Lean library ships
+both forms (Corollaries~\ref{cor:core-sup}~and~\ref{thm:main} in
+\S\ref{sec:app-spec}); Theorem~\ref{thm:intro-scalar} is the
+combinatorial construction that turns local-witness data into
+such a cover in the 1D case.
+
+Both results reappear in §\ref{sec:spec}:
+Theorem~\ref{thm:intro-scalar} as the library's main theorem
+(Theorem~\ref{thm:core},~\S\ref{sec:core-spec}), and
+Corollary~\ref{thm:intro-core} as the one-parameter sup-reduction
+corollary (Corollary~\ref{thm:main},~\S\ref{sec:app-spec}).
+
+\textbf{Scope.} This note formalizes the proof of the Claim
+(the combinatorial argument on $[0,1]$) as a Lean 4 library,
+\CombArg. We do \emph{not}
+formalize \cite[Lemma~3.1]{DLT13} (the replacement family), the
+$(U^1, U^2) \in \mathcal{CO}$ disjoint-pair structure, or the
+final contradiction against $m_0 = \inf_\Lambda \mathcal{F}$;
+these depend on the GMT and admissible-class framework of the
+ambient construction and remain the consumer's responsibility.
+The library ships one main theorem (the combinatorial core,
+§\ref{sec:core-spec}) on $[0,1]$, together with two
+sup-reduction corollaries (§\ref{sec:app-spec}): a generic
+compact-$K$ form and its one-parameter specialization. The
+formalization is machine-verified against \Mathlib, declares no
+custom axioms, and contains no \texttt{sorry}. Source:
+\url{https://github.com/MathNetwork/comb_arg}.
+

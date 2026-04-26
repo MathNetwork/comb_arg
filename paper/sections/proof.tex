@@ -1,0 +1,274 @@
+\section{Proof structure}
+\label{sec:proof}
+
+We split the proof of Theorem~\ref{thm:core} into three stages.
+Stage~A builds an initial cover from the witness hypothesis.
+Stage~B runs an induction producing a terminal partial
+refinement with injective $\sigma$. Stage~C assembles the finite
+cover with witnesses by extending saving bounds to closures and
+deriving TwoFold. The sup-reduction corollaries
+(Corollary~\ref{cor:core-sup} and Corollary~\ref{thm:main})
+follow by Lemma~\ref{lem:scalar-sup-reduction} applied to the
+resulting cover; we sketch that 3-line argument after Stage~C.
+
+\subsection{Stage A: existence of the initial cover}
+
+\begin{proposition}[Existence of an initial cover]
+\label{prop:exists-ic}
+\leanmargin{exists\_initialCover}{Refinement/CoverConstruction.lean}
+Under the hypotheses of Theorem~\ref{thm:core}, an initial cover
+(Definition~\ref{def:ic}) exists.
+\end{proposition}
+
+\begin{proof}
+Compactness of $\NC$ (Proposition~\ref{prop:NC-compact}) plus the
+open cover $\{U_t\}_{t \in \NC}$ afforded by the witness
+hypothesis admit a Lebesgue number $\lambda > 0$: every
+$\lambda$-ball in $\NC$ fits inside some $U_t$. Choose
+$M \in \mathbb{N}$ with $M > 4/\lambda$, form the grid
+$c_k = k/M$ for $k = 0, \ldots, M$, and select those $c_k$ within
+$\lambda/4$ of $\NC$. For each selected $c_k$ pick a witness
+center $w_k \in \NC$ within $\lambda/4$ of $c_k$; the ball of
+radius $\lambda$ around $w_k$ fits inside some $U_{w_k}$, hence
+so does the interval
+$I_k := (c_k - 2/(3M), c_k + 2/(3M)) \cap \unit$. Spacing
+condition~(a) holds because consecutive selected grid indices
+differ by at least~2 in the selected finset, so their centers
+differ by at least $2/M > 4/(3M) = 2 \cdot (2/(3M))$. Coverage
+condition~(c) holds because every $t \in \NC$ is within
+$1/(2M) < 2/(3M)$ of its rounded grid neighbor, which is
+selected. Condition~(b) holds by the Lebesgue argument.
+\end{proof}
+
+\subsection{Stage B: the refinement induction}
+
+Starting from an initial cover, one builds pieces inductively.
+
+\begin{definition}[Base case]
+\label{def:step0}
+\leanmargin{step\_zero}{Refinement/PartialRefinement.lean}
+$\mathrm{step\_zero}(\mathrm{ic})$ is the length-$1$ partial
+refinement with
+$J_1 := I_1$ and $\sigma(1) := 1$.
+\end{definition}
+
+\begin{definition}[Inductive step]
+\label{def:step-succ}
+\leanmargin{step\_succ\_at}{Refinement/Induction.lean}
+Given a partial refinement $\mathrm{pr}$ of length $\ell+1$ and
+an index $i^* \in \{1,\ldots,n\}$ with
+$I_{i^*} \not\subseteq \bigcup_k J_k$, define a length-$(\ell+2)$
+extension by case split on whether
+$I_{i^*} \subseteq J_\ell \cup I_{\sigma(\ell)}$:
+
+\begin{itemize}
+\item[(Case 1)] If yes, set $J_{\ell+1} := I_{i^*}$.
+\item[(Case 2)] Otherwise, set
+  $J_{\ell+1} := I_{i^*} \setminus I_{\sigma(\ell)}$.
+\end{itemize}
+
+In both cases set $\sigma(\ell+1) := i^*$. Both invariants of
+Definition~\ref{def:pr} are preserved; in Case~2 the preservation
+of (ii) uses the induction hypothesis on
+$I_{\sigma(\ell)} \subseteq \bigcup_k J_k$.\footnote{A variant
+\texttt{step\_succ} chooses $i^*$ internally via
+$\mathrm{Finset.min'}$; \texttt{step\_succ\_at} takes $i^*$ as an
+explicit argument and returns the extension bundled with the
+``$i^*$ is covered'' property, for termination.}
+\end{definition}
+
+\begin{proposition}[Termination]
+\label{prop:exists-terminal}
+\leanmargin{exists\_terminal\_refinement}{Refinement/Induction.lean}
+Starting from $\mathrm{step\_zero}(\mathrm{ic})$ and iterating
+$\mathrm{step\_succ\_at}$, one reaches in at most $n$ steps a
+partial refinement of some length $L$ with $\sigma$ injective
+and $I_i \subseteq \bigcup_k J_k$ for every $i$.
+\end{proposition}
+
+\begin{proof}
+Let $\mathrm{rem}(\mathrm{pr})$ be the finite set of indices
+$i$ with $I_i \not\subseteq \bigcup_k J_k$. One step of
+$\mathrm{step\_succ\_at}$ at $i^* \in \mathrm{rem}(\mathrm{pr})$
+(chosen as the smallest such) produces $\mathrm{pr}'$ with
+$i^* \notin \mathrm{rem}(\mathrm{pr}')$ and
+$\mathrm{rem}(\mathrm{pr}') \subseteq \mathrm{rem}(\mathrm{pr})
+\setminus \{i^*\}$, hence strict decrease. Injectivity of
+$\sigma$ follows from the case split in
+Definition~\ref{def:step-succ}: the new $\sigma(\ell+1) = i^*$
+is fresh because $i^* \in \mathrm{rem}$ while existing
+$\sigma(k)$ correspond to already-covered indices.
+\end{proof}
+
+\subsection{Stage C: assembly}
+
+Stage C packages the refined covering as a
+\texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}),
+which the core theorem turns into the sup-reducing $f'$. We trace
+through \cite[\S3.2, Step~2]{DLT13} in sequence, indicating at
+each step where the content lands in the formalization.
+
+De~Lellis and Tasnady begin by applying Lemma~3.1 to produce, at
+each near-critical parameter $t$, a replacement family
+$\{\partial \Omega_{i,t}\}$ with three properties:
+$\Omega_{i,t} = \Omega_t$ outside $(a_i, b_i)$ and agrees with
+$\Omega_t$ outside $U_i'$ inside $(a_i, b_i)$; the global upper
+bound $\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{4N}$; and, most
+importantly, the saving
+$\mathcal{H}^n(\partial \Omega_{i,t}) \le
+\mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{2N}$ when
+$t \in (a_i + \delta, b_i - \delta)$. In our formalization this
+data is what a \texttt{LocalWitness} (Definition~\ref{def:witness})
+carries: the scalar $E_{\sigma(k)} : K \to \mathbb{R}$ plays the
+role of $\mathcal{H}^n(\partial \Omega_{i,t})$, the neighborhood
+$U_t$ plays $(a_i, b_i)$, and the two separate bounds
+(``saving $-\tfrac{1}{2N}$ on the inner core'' and ``no-loss
+$+\tfrac{1}{4N}$ outside'') collapse to a single uniform saving
+$\varepsilon = \tfrac{1}{4N}$ on $U_t$.\footnote{This is strictly
+stronger than the original two-bound statement: the local witness
+asserts a uniform saving of $\tfrac{1}{4N}$ on all of $U_t$,
+whereas De~Lellis--Tasnady only require a larger saving
+$\tfrac{1}{2N}$ on the inner core $(a_i+\delta, b_i-\delta)$ and
+bounded loss $\tfrac{1}{4N}$ elsewhere. The stronger abstract
+assumption removes the $\delta$ parameter of the inner core from
+the scalar theorem; the caller must verify the uniform version
+holds in the ambient setting.}
+Stage~B has already handed us pieces $p_l$ on which this witness
+saving is valid (Proposition~\ref{prop:saving-bound}), so by
+Stage~C we have per-piece scalar savings $s_l \ge \varepsilon$
+directly.
+
+The next observation in the proof is that if $t \in (a_i, b_i)
+\cap (a_j, b_j)$, then $j = i+1$, and moreover
+$\mathrm{dist}(U_i', U_{i+1}') > 0$. This is the two-fold overlap
+of the refined covering, and in our formalization it is the
+\texttt{twoFold} field of \texttt{FiniteCoverWithWitnesses},
+derived from the parity-gap spacing by
+Proposition~\ref{prop:twofold}. The parity-gap lemmas themselves
+live on the abstract \texttt{SkippedSpacedIntervals}
+(Definition~\ref{def:spaced}) and are therefore independent of
+the witness data: \texttt{InitialCover} provides access to them
+by projecting out the underlying geometry.
+
+The modified sweepout $\{\partial \Omega'_t\}$ is then defined
+piecewise: $\Omega'_t = \Omega_t$ outside all $J_i$; $\Omega'_t =
+\Omega_{i,t}$ if $t$ lies in a single $J_i$; and on
+$J_i \cap J_{i+1}$ the sweepout blends the two replacements,
+$\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')] \cup
+[\Omega_{i,t} \cap U_i'] \cup [\Omega_{i+1,t} \cap U_{i+1}']$.
+Stripped of the geometry this is additive scalar subtraction of
+savings over the pieces containing $t$: our reduced energy is
+\[
+f'(t) \;=\; f(t) \;-\; \sum_{l \,:\, t \in \overline{J_l}} s_l,
+\]
+and the two-fold invariant bounds the sum length by $2$, matching
+the two-piece blend on overlaps.
+
+The area accounting then splits on whether $t$ is near-critical.
+For $t \notin K$, the point lies in at most two $J_i$'s and each
+replacement can add at most $\tfrac{1}{4N}$, so
+\[
+\mathcal{H}^n(\partial \Omega'_t) \;\le\;
+\mathcal{H}^n(\partial \Omega_t) + \tfrac{1}{2N}.
+\]
+For $t \in K$, the point lies in at least one inner core
+$(a_i + \delta, b_i - \delta)$, where the replacement saves
+$\ge \tfrac{1}{2N}$ in $U_i'$, and in at most one other $J_l$
+where it costs $\le \tfrac{1}{4N}$ in $U_l'$, for net
+\[
+\mathcal{H}^n(\partial \Omega'_t) \;\le\;
+\mathcal{H}^n(\partial \Omega_t) - \tfrac{1}{4N}.
+\]
+In our formalization the same case analysis is the scalar
+argument for $f'(t) \le m_0 - \varepsilon$ inside the abstract
+core (the lemma \texttt{reducedEnergy\_le} from
+\S\ref{sec:core-spec}): split on whether $t$ lies in any piece
+of the cover, use the saving floor $s_l \ge \varepsilon$ in the
+positive branch and the covering condition
+$\{f \ge m_0 - \delta\} \subseteq \bigcup_l p_l$ in the negative
+branch. With $(\delta, \varepsilon) = (1/N, 1/(4N))$ this
+specializes to the arithmetic of the original proof; the
+abstract core reads off the same algebra for arbitrary
+$(\delta, \varepsilon)$ with $\varepsilon \le \delta$.
+
+The rest of this subsection establishes the two propositions
+that Stage~B leaves open: the saving bound extends from open
+$J_k$ to $\overline{J_k}$ (continuity), and the two-fold
+invariant holds (a parity argument on the spacing condition~(a)).
+
+\begin{proposition}[TwoFold via parity]
+\label{prop:twofold}
+\leanmargin{terminal\_twoFold}{Refinement/Assembly.lean}
+For a partial refinement $\mathrm{pr}$ of length $L$ with
+$\sigma$ injective, every $t \in \unit$ lies in at most two of
+$\overline{J_1}, \ldots, \overline{J_L}$.
+\end{proposition}
+
+\begin{proof}
+From spacing condition~(a), iterated $m$ times, one obtains
+that indices $i, j$ with $|i - j| = 2(m+1)$ (an even gap $\ge
+2$) have strict separation between $\overline{I_i}$ and
+$\overline{I_j}$, hence
+$\overline{I_i} \cap \overline{I_j} = \emptyset$
+(\lean{chain\_spacing}{Refinement/Disjointness.lean},
+\lean{closure\_disjoint\_of\_even\_gap}{Refinement/Disjointness.lean}).
+
+Suppose three distinct indices $k_1, k_2, k_3 \in \{1,\ldots,L\}$
+admit $t \in \overline{J_{k_1}} \cap \overline{J_{k_2}} \cap
+\overline{J_{k_3}}$. Since $\overline{J_k} \subseteq
+\overline{I_{\sigma(k)}}$ and $\sigma$ is injective,
+$\sigma(k_1), \sigma(k_2), \sigma(k_3)$ are three distinct
+indices in $\{1,\ldots,n\}$ with a common point in the
+closures of $I_{\sigma(k_i)}$. Among any three distinct
+integers $a < b < c$ some pair has even gap $\ge 2$: either
+$c - a$ is even (and necessarily $\ge 2$), or $c - a$ is odd
+and $\ge 3$, in which case $b - a$ and $c - b$ have opposite
+parities and one of them is the even gap. The pair with even
+gap has disjoint closures, contradicting the common point
+(\lean{not\_three\_overlap}{Refinement/Disjointness.lean}).
+\end{proof}
+
+\begin{proposition}[Closure extension of saving bound]
+\label{prop:saving-bound}
+\leanmargin{saving\_bound\_closure}{Refinement/Assembly.lean}
+Let $\mathrm{pr}$ be a partial refinement. For every $k$ and
+every $t \in \overline{J_k}$,
+$f(t) - E_{\sigma(k)}(t) \ge 1/(4N)$, where
+$E_{\sigma(k)}$ is the replacement energy of the $\sigma(k)$-th
+local witness.
+\end{proposition}
+
+\begin{proof}
+On $J_k \subseteq U_{w_{\sigma(k)}}$ the witness gives
+$f - E_{\sigma(k)} \ge 1/(4N)$. The function
+$g := f - E_{\sigma(k)}$ is continuous
+(Definitions~\ref{def:witness} requires $E_t$ continuous;
+$f$ is continuous by hypothesis). A closure point is a limit of
+a sequence in $J_k$, and $g$ preserves $\ge$-inequalities under
+limits.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:core}]
+Chain Propositions~\ref{prop:exists-ic}~and~\ref{prop:exists-terminal}:
+the former produces an \texttt{InitialCover} from the witness
+hypothesis, and the latter yields a terminal
+\texttt{PartialRefinement} $\mathrm{pr}$ of length $L$ with
+$\sigma$ injective and $I_i \subseteq \bigcup_k J_k$ for every
+$i$. Assemble the
+\texttt{FiniteCoverWithWitnesses}$(\unit, f, m_0, 1/N, 1/(4N))$
+by taking pieces $p_k := \overline{J_k}$, uniform saving
+$s_k := 1/(4N)$, and $E_k$ the replacement energy of the
+$\sigma(k)$-th local witness. Invariant~(I) is
+Proposition~\ref{prop:saving-bound}; invariant~(II) is
+Proposition~\ref{prop:twofold}; invariant~(III) holds by
+construction ($s_k = 1/(4N)$); coverage of $\NC$ chains as
+$\NC \subseteq \bigcup_i I_i \subseteq \bigcup_k J_k \subseteq
+\bigcup_k \overline{J_k}$.
+\end{proof}
+
+Corollary~\ref{cor:core-sup} then follows by the three-line
+bookkeeping proved in \S\ref{sec:app-spec} applied to this
+\texttt{FiniteCoverWithWitnesses}; Corollary~\ref{thm:main} is
+the specialization to $(\delta, \varepsilon) = (1/N, 1/(4N))$.
+
