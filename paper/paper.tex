@@ -945,134 +945,96 @@ the original proof} from the literature.
 
 The library is the formal abstract version of the combinatorial
 slice that \cite{Pit81, CDL03, DLT13, DLR17, MN14} each
-re-derive in their own notation. The Lean declarations do not
-change between abstract and instantiated form --- they are
-exactly the same definitions either way. What changes is that
-the min-max setting supplies the \texttt{LocalWitness} inputs
-against which the abstract declarations evaluate, and
-\lean{exists\_sup\_reduction}{SupReduction.lean} then \emph{is}
-the sup-reduction step of the original proof: the step that
-produces a strictly-better sweepout $\Omega'$ contradicting the
-inf-sup characterization of $m_0$.
+re-derive in their own notation. Its four public declarations
+make no GMT references and stand for the four pieces the
+literature recombines at every instantiation.
+\texttt{LocalWitness}\,$(K, f, t, \varepsilon)$
+(Definition~\ref{def:witness}) carries the abstract
+per-parameter local-reducer data;
+\lean{exists\_refinement}{Refinement/Assembly.lean} is the
+formal counterpart of DLT~\S3.2 Step~1, the interval refinement
+that turns a family of local witnesses on the near-critical set
+into a finite cover with two-fold overlap;
+\lean{exists\_sup\_reduction\_of\_cover}{Core.lean} is the
+formal counterpart of DLT~\S3.2 Step~2, the scalar bookkeeping
+that turns such a cover into a sup-reducing competitor; and
+\lean{exists\_sup\_reduction}{SupReduction.lean} composes these
+two into a single one-parameter call.
 
-\subsection{What the library already gives}
-\label{sec:integration-library-side}
-
-The combinatorial side is the abstract content already present
-in this repository, with no GMT references:
-
-\begin{itemize}
-\item \texttt{LocalWitness}\,$(K, f, t, \varepsilon)$
-  (Definition~\ref{def:witness}) --- the abstract per-parameter
-  local reducer data.
-\item \lean{exists\_refinement}{Refinement/Assembly.lean} ---
-  the formal counterpart of DLT~\S3.2 Step~1 (interval
-  refinement to a finite cover with two-fold overlap).
-\item \lean{exists\_sup\_reduction\_of\_cover}{Core.lean} ---
-  the formal counterpart of DLT~\S3.2 Step~2 (scalar
-  bookkeeping over the cover).
-\item \lean{exists\_sup\_reduction}{SupReduction.lean} --- the
-  chained one-parameter combinatorial step.
-\end{itemize}
-
-\subsection{What the min-max setting must supply}
-\label{sec:integration-supplies}
-
-Three pieces of GMT-side data lift the abstract library to the
-original proof:
-
-\begin{itemize}
-\item The continuous boundary energy
-  $f := \Omega.\texttt{boundaryEnergy} : \unit \to \mathbb{R}$
-  of a sweepout $\Omega$ realizing $m_0 = \sup f$.
-\item A near-criticality parameter $N \in \mathbb{N}$ chosen so
-  that $1/(4N)$ beats whatever contradiction window the
-  admissible class requires.
-\item The local replacement lemma: at every $t$ with
-  $f(t) \ge m_0 - 1/N$, a
-  $\texttt{LocalWitness}\,(\unit, f, t, 1/(4N))$ whose four
-  fields come from the GMT-side replacement family.
-\end{itemize}
+What the literature supplies in its prose, and what the min-max
+setting must formalize on its side, is the data that turns these
+abstract declarations into concrete proof artifacts. Concretely:
+the continuous boundary energy
+$f := \Omega.\texttt{boundaryEnergy} : \unit \to \mathbb{R}$ of
+a sweepout $\Omega$ realizing $m_0 = \sup f$; a
+near-criticality parameter $N \in \mathbb{N}$ chosen so that
+$1/(4N)$ beats whatever contradiction window the admissible
+class needs; and a local replacement lemma producing, at every
+parameter $t$ with $f(t) \ge m_0 - 1/N$, a
+$\texttt{LocalWitness}\,(\unit, f, t, 1/(4N))$ whose data
+fields come from the GMT-side replacement family. The library's
+Lean declarations do not change between the abstract and
+instantiated forms --- they are exactly the same definitions
+either way; what changes is that this min-max-side data flows
+in as the inputs.
 
 \subsection{The instantiation:
 \texorpdfstring{\texttt{LocalWitness} $\leftarrow$ DLT~3.1}{LocalWitness from DLT 3.1}}
 \label{sec:integration-dictionary}
 
-Each field of \texttt{LocalWitness} lifts to a specific piece
-of the GMT-side replacement data:
+The \texttt{LocalWitness} structure was designed to be the data
+shape DLT~Lemma~3.1 produces, with each field naming a specific
+piece of the GMT-side replacement data. DLT's open interval
+$(a_i, b_i) \subseteq [0,1]$ on which the local replacement
+saves energy becomes the \texttt{neighborhood} field; the
+boundary energy of the replaced sweepout,
+$s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$ with
+$\widetilde{\Omega}_s$ the original sweepout with the local
+replacement inserted at parameter $s$, becomes
+\texttt{replacementEnergy}; its continuity in $s$ (which DLT
+treats implicitly through the continuity of the replaced family
+in the inserted parameter) becomes the
+\texttt{replacementEnergy\_continuous} obligation that the GMT
+side must discharge explicitly; and DLT's quantitative
+inequality
+$f(s) - \mathcal{H}^n(\partial \widetilde{\Omega}_s) \ge 1/(4N)$
+on $(a_i, b_i)$ becomes \texttt{saving\_bound}.
 
-\begin{itemize}
-\item \texttt{neighborhood} : DLT's open interval
-  $(a_i, b_i) \subseteq [0,1]$ around $t$ on which the local
-  replacement saves energy.
-\item \texttt{isOpen\_neighborhood} and \texttt{t\_mem} :
-  openness of the interval; the parameter $t$ lies in it.
-\item \texttt{replacementEnergy} :
-  $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$,
-  the boundary energy of the \emph{replaced} sweepout, where
-  $\widetilde{\Omega}_s$ is the original sweepout with the
-  local replacement inserted at parameter $s$.
-\item \texttt{replacementEnergy\_continuous} : continuity of
-  $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$.
-  DLT treats this implicitly through the continuity of the
-  replaced family in the inserted parameter; the GMT side
-  discharges it explicitly.
-\item \texttt{saving\_bound} : the quantitative DLT~3.1
-  inequality
-  $f(s) - \mathcal{H}^n(\partial \widetilde{\Omega}_s) \ge 1/(4N)$
-  for every $s \in (a_i, b_i)$. This is the substantive
-  non-combinatorial content.
-\end{itemize}
+\subsection{The proof chain: from sup reduction to contradiction}
+\label{sec:integration-chain}
 
-\subsection{What the lift produces: the literature's sup-reduction step}
-\label{sec:integration-receives}
-
-With the instantiation in place,
+With this data in place,
 \lean{exists\_sup\_reduction}{SupReduction.lean} returns a
-scalar competitor $f' : \unit \to \mathbb{R}$ with a
+scalar competitor $f' : \unit \to \mathbb{R}$ together with a
 modification set $S \subseteq \unit$ satisfying
+$\{t \in \unit : f(t) \ge m_0 - 1/N\} \subseteq S$ (coverage),
+the pointwise dominance $f'(t) \le f(t)$ everywhere~(a), the
+localization $f'(t) = f(t)$ for $t \notin S$~(b), and the sup
+reduction $\sup_{t} f'(t) \le m_0 - 1/(4N)$~(c). This is ---
+definitionally --- the sup-reduction step the original proof
+uses. The competitor $f'$ and modification set $S$ are the
+formal images of \emph{the sweepout's energy after the local
+replacements have been combined}; conditions (a) and (b) anchor
+$f'$ to $f$ so that $f'$ is a genuine combinatorial reduction
+of $f$ rather than a trivial constant.
 
-\begin{enumerate}
-\item[(coverage)]
-  $\{t \in \unit : f(t) \ge m_0 - 1/N\} \subseteq S$,
-\item[(a)] pointwise dominance: $f'(t) \le f(t)$ for all $t$,
-\item[(b)] localization: $f'(t) = f(t)$ for $t \notin S$,
-\item[(c)] sup reduction:
-  $\sup_{t \in \unit} f'(t) \le m_0 - 1/(4N)$.
-\end{enumerate}
-
-This is --- definitionally --- the sup-reduction step the
-original proof uses. The competitor $f'$ and modification set
-$S$ are the formal images of \emph{the sweepout's energy after
-the local replacements have been combined}. Conditions (a) and
-(b) anchor $f'$ to $f$ so that $f'$ is a genuine combinatorial
-reduction of $f$, not a trivial constant.
-
-\subsection{Closing the proof: the contradiction step}
-\label{sec:integration-contradiction}
-
-The literature now closes by lifting $f'$ back to a sweepout
-$\Omega' \in \mathcal{A}$ and contradicting the inf-sup. In
-Lean:
-
-\begin{enumerate}
-\item \lean{exists\_sup\_reduction}{SupReduction.lean} (this
-  library) supplies $f'$ with $\sup f' \le m_0 - 1/(4N)$.
-\item The min-max setting's lift takes $f'$ together with its
-  modification set $S$ back to a sweepout
-  $\Omega' \in \mathcal{A}$. The (b) localization guarantee
-  makes the lift mechanical: $\Omega'$ agrees with $\Omega$
-  outside $S$ and inserts the local replacement on each piece
-  of $S$.
-\item $\sup f_{\Omega'} \le m_0 - 1/(4N) < m_0
-  = \inf_{\mathcal{A}} \sup$ contradicts
-  $\Omega' \in \mathcal{A}$.
-\end{enumerate}
-
-Step~1 is exactly what the library discharges. Steps~2 and~3
-belong to the min-max setting; together with step~1 they
-reconstruct, line for line, the literature's contradiction
-chain.
+The literature now closes the proof by lifting $f'$ back to a
+sweepout $\Omega' \in \mathcal{A}$ and contradicting the
+inf-sup. In Lean this chain has three pieces, of which the
+library discharges the first:
+\lean{exists\_sup\_reduction}{SupReduction.lean} produces $f'$
+with $\sup f' \le m_0 - 1/(4N)$. The min-max setting then
+discharges the second by taking $f'$ together with its
+modification set $S$ back to a sweepout
+$\Omega' \in \mathcal{A}$ --- the (b)~localization guarantee
+makes this lift mechanical, since $\Omega'$ agrees with
+$\Omega$ outside $S$ and inserts the local replacement on each
+piece of $S$. The contradiction follows immediately from
+$\sup f_{\Omega'} \le m_0 - 1/(4N) < m_0
+= \inf_{\mathcal{A}} \sup$ together with
+$\Omega' \in \mathcal{A}$. Together with the library's first
+piece, these reconstruct line for line the literature's
+contradiction chain.
 
 \subsection{Skeleton client code}
 \label{sec:integration-skeleton}
@@ -1111,48 +1073,36 @@ theorem minmax_contradiction
   exact absurd h_lt (YourGMT.le_of_admissible hO' h_minmax)
 \end{verbatim}
 
-Three identifiers carry the consumer's GMT-side
-responsibility:
-
-\begin{itemize}
-\item \texttt{YourGMT.choose\_N} --- pick $N$ large enough
-  that $1/(4N)$ beats the contradiction window the admissible
-  class requires.
-\item \texttt{YourGMT.localWitness\_of\_DLT} --- the
-  formalization of DLT Lemma~3.1 (the substantive geometric
-  work, returning a per-$t$ \texttt{LocalWitness}).
-\item \texttt{YourGMT.lift\_sweepout} --- turn the scalar
-  $f'$ together with its modification set $S$ back into a
-  sweepout in $\mathcal{A}$.
-\end{itemize}
+The three \texttt{YourGMT.*} identifiers mark the GMT-side
+responsibility: \texttt{YourGMT.choose\_N} picks $N$ so that
+$1/(4N)$ beats the admissible class's contradiction window;
+\texttt{YourGMT.localWitness\_of\_DLT} is the GMT formalization
+of DLT~Lemma~3.1, returning a per-$t$ \texttt{LocalWitness};
+and \texttt{YourGMT.lift\_sweepout} converts the scalar $f'$
+(together with its modification set $S$) back into a sweepout
+in $\mathcal{A}$.
 
 \subsection{Known friction}
 \label{sec:integration-friction}
 
-\begin{itemize}
-\item \textbf{1D parameter space only.} \CombArg{} is
-  currently specialized to $K = \unit$. Multi-parameter
-  sweepouts ($K = [0,1]^m$, in particular Almgren cycles) need
-  a multi-parameter cover construction; planned for v0.3.
-\item \textbf{Output is scalar, not geometric.} The consumer
-  receives $f'$ with a sup bound and the modification set
-  $S$; the lift back to a sweepout in $\mathcal{A}$ is the
-  consumer's work. The (b) off-$S$ agreement is designed to
-  make this lift mechanical.
-\item \textbf{Continuity of \texttt{replacementEnergy}.}
-  Discharged on the consumer's side. DLT~3.1 supplies it
-  implicitly through the continuity of the replacement family
-  in the inserted parameter; the Lean-level proof obligation
-  falls on the consumer.
-\item \textbf{Lean / Mathlib version pin.} \CombArg{} is on
-  \texttt{leanprover/lean4:v4.30.0-rc2} with Mathlib pinned
-  via \texttt{lake-manifest.json}. Bumps on either side may
-  require coordination.
-\item \textbf{Axiom budget.} \CombArg{} uses only
-  \texttt{propext}, \texttt{Classical.choice}, and
-  \texttt{Quot.sound}. Standard Mathlib measure-theory work
-  stays within the same three.
-\end{itemize}
+The library is currently specialized to the 1D parameter space
+$K = \unit$; multi-parameter sweepouts ($K = [0,1]^m$, in
+particular Almgren cycles) will need a multi-parameter cover
+construction, planned for v0.3. The output is scalar rather
+than geometric: the consumer receives $f'$ with its sup bound
+and the modification set $S$, and must lift back to a sweepout
+in $\mathcal{A}$ on the GMT side, with the (b)~off-$S$
+agreement designed to make this lift mechanical. Continuity of
+\texttt{replacementEnergy} in the inserted parameter falls on
+the consumer to discharge explicitly, since DLT~3.1 supplies
+it only implicitly through the continuity of the replaced
+family. The library is pinned to
+\texttt{leanprover/lean4:v4.30.0-rc2} together with the
+Mathlib revision in \texttt{lake-manifest.json}, so bumps on
+either side may require coordination. The library itself uses
+only the three standard foundational axioms (\texttt{propext},
+\texttt{Classical.choice}, \texttt{Quot.sound}), and standard
+Mathlib measure-theory work stays within the same three.
 
 \begin{thebibliography}{Mathlib}
 

@@ -177,68 +177,68 @@ formalized in Lean — an admissible class `𝒜` of sweepouts, the
 inf-sup characterization `m₀ = inf_{Ω ∈ 𝒜} sup f_Ω`, the local
 replacement construction (De Lellis–Tasnady's Lemma 3.1 / Pitts
 replacement), and the Hausdorff measure of boundary surfaces.
-This section describes how the abstract declarations of
-`CombArg` then **lift into the combinatorial step of the
-original proof** from the literature.
+This section describes how the abstract declarations of `CombArg`
+then **lift into the combinatorial step of the original proof**.
 
 The library is the formal abstract version of the combinatorial
 slice that Pitts (1981), Colding–De Lellis (2003),
 De Lellis–Tasnady (2013), De Lellis–Ramic (2018), and
-Marques–Neves (2014) each re-derive in their own notation. The
-Lean declarations don't change between abstract and instantiated
-form — they are exactly the same definitions either way. What
-changes is that the min-max setting supplies the `LocalWitness`
-inputs against which the abstract declarations evaluate, and
-`exists_sup_reduction` then *is* the sup-reduction step of the
-original proof — the step that produces a strictly-better
-sweepout `Ω'` contradicting the inf-sup characterization of `m₀`.
+Marques–Neves (2014) each re-derive in their own notation. Its
+four public declarations make no GMT references and stand for
+the four pieces the literature recombines at every instantiation.
+`LocalWitness K f t ε` carries the abstract per-parameter
+local-reducer data. `exists_refinement` is the formal counterpart
+of DLT §3.2 Step 1, the interval refinement that turns a family
+of local witnesses on the near-critical set into a finite cover
+with two-fold overlap. `exists_sup_reduction_of_cover` is the
+formal counterpart of DLT §3.2 Step 2, the scalar bookkeeping
+that turns such a cover into a sup-reducing competitor. The
+chained one-parameter step `exists_sup_reduction` composes these
+two into a single call.
 
-### What the library already gives you (combinatorial, abstract)
-
-| Library declaration | What the original proof calls it |
-|---|---|
-| `LocalWitness K f t ε` | the abstract per-parameter local reducer data |
-| `exists_refinement` | DLT §3.2 Step 1 (interval refinement to a finite cover with two-fold overlap) |
-| `exists_sup_reduction_of_cover` | DLT §3.2 Step 2 (scalar bookkeeping over the cover) |
-| `exists_sup_reduction` | the chained one-parameter combinatorial step |
-
-These declarations reference no GMT object. They are the formal
-counterpart of what the literature works through in prose at
-each instantiation.
-
-### What the min-max setting must supply
-
-Three pieces of GMT-side data lift the abstract library to the
-original proof:
-
-1. The continuous boundary energy
-   `f := Ω.boundaryEnergy : unitInterval → ℝ` of a sweepout
-   `Ω` realizing `m₀ = sup f`.
-2. A near-criticality parameter `N : ℕ` chosen so `1/(4N)`
-   beats whatever contradiction window the admissible class
-   requires.
-3. The local replacement lemma: at every `t` with
-   `f(t) ≥ m₀ − 1/N`, produce a
-   `LocalWitness unitInterval f t (1/(4N))` whose four fields
-   come from the GMT-side replacement family.
+What the literature supplies in its prose, and what the min-max
+setting must formalize on its side, is the data that turns these
+abstract declarations into concrete proof artifacts. Concretely:
+the continuous boundary energy
+`f := Ω.boundaryEnergy : unitInterval → ℝ` of a sweepout `Ω`
+realizing `m₀ = sup f`; a near-criticality parameter `N : ℕ`
+chosen so that `1/(4N)` beats whatever contradiction window the
+admissible class needs; and a local replacement lemma producing,
+at every parameter `t` with `f(t) ≥ m₀ − 1/N`, a
+`LocalWitness unitInterval f t (1/(4N))` whose four data fields
+come from the GMT-side replacement family. The Lean declarations
+of the library do not change between the abstract and
+instantiated forms — they are exactly the same definitions
+either way; what changes is that this min-max-side data flows in
+as the inputs.
 
 ### The instantiation: `LocalWitness` ← DLT Lemma 3.1
 
-Each field of `LocalWitness` lifts to a specific piece of the
-GMT-side replacement data:
+The `LocalWitness` structure was designed to be the data shape
+DLT Lemma 3.1 produces, with each field naming a specific piece
+of the GMT-side replacement data. DLT's open interval
+`(a_i, b_i) ⊆ [0,1]` on which the local replacement saves energy
+becomes the `neighborhood` field; the boundary energy of the
+replaced sweepout, `s ↦ ℋⁿ(∂Ω̃_s)`, becomes `replacementEnergy`;
+its continuity in `s` (which DLT treats implicitly through the
+continuity of the replaced family in the inserted parameter)
+becomes the `replacementEnergy_continuous` obligation that the
+GMT side must discharge explicitly; and DLT's quantitative
+inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` on `(a_i, b_i)` becomes
+`saving_bound`. The full mapping:
 
 | Library field | The corresponding piece of the original proof |
 |---|---|
-| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i) ⊆ [0,1]` around `t` on which the local replacement saves energy. |
+| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i) ⊆ [0,1]` around `t`. |
 | `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
-| `replacementEnergy : unitInterval → ℝ` | `s ↦ ℋⁿ(∂Ω̃_s)`, the boundary energy of the **replaced** sweepout, where `Ω̃_s` is the original sweepout with the local replacement inserted at parameter `s`. |
-| `replacementEnergy_continuous` | Continuity of `s ↦ ℋⁿ(∂Ω̃_s)`. DLT treats this implicitly through the continuity of the replaced family in the inserted parameter; the GMT side discharges it explicitly. |
-| `saving_bound` | The quantitative DLT 3.1 inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` for every `s ∈ (a_i, b_i)`. The substantive non-combinatorial content. |
+| `replacementEnergy : unitInterval → ℝ` | `s ↦ ℋⁿ(∂Ω̃_s)`, the boundary energy of the replaced sweepout. |
+| `replacementEnergy_continuous` | Continuity of `s ↦ ℋⁿ(∂Ω̃_s)` in `s`. |
+| `saving_bound` | The quantitative DLT 3.1 inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` for `s ∈ (a_i, b_i)`. |
 
-### What the lift produces: the literature's sup-reduction step
+### The proof chain: from sup reduction to contradiction
 
-With the instantiation in place, `CombArg.exists_sup_reduction`
-returns
+With this data in place, `CombArg.exists_sup_reduction` returns
+the existential
 
 ```lean
 ∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
@@ -248,40 +248,36 @@ returns
   sSup (Set.range f') ≤ m₀ − 1/(4N)   -- (c) sup reduction
 ```
 
-This is — definitionally — the sup-reduction step the original
-proof uses. The competitor `f'` and modification set `S` are
-the formal images of "the sweepout's energy after the local
-replacements have been combined". Conditions (a) and (b) anchor
-`f'` to `f` so that `f'` is a genuine combinatorial reduction of
-`f`, not a trivial constant.
+which is, definitionally, the sup-reduction step the original
+proof uses. The competitor `f'` and modification set `S` are the
+formal images of "the sweepout's energy after the local
+replacements have been combined"; conditions (a) and (b) anchor
+`f'` to `f` so that `f'` is a genuine combinatorial reduction
+rather than a trivial constant.
 
-### Closing the proof: the contradiction step
-
-The literature now closes by lifting `f'` back to a sweepout
-`Ω' ∈ 𝒜` and contradicting the inf-sup. In Lean:
-
-1. `exists_sup_reduction` (this library) supplies `f'` with
-   `sSup (range f') ≤ m₀ − 1/(4N)`.
-2. The min-max setting's lift takes `f'` (with its modification
-   set `S`) back to a sweepout `Ω' ∈ 𝒜`. The `f' = f` off `S`
-   guarantee makes the lift mechanical: `Ω'` agrees with `Ω`
-   outside `S` and inserts the local replacement on each piece
-   of `S`.
-3. `sup f_{Ω'} ≤ m₀ − 1/(4N) < m₀ = inf_{𝒜} sup` contradicts
-   `Ω' ∈ 𝒜`.
-
-Step 1 is exactly what the library discharges. Steps 2 and 3
-belong to the min-max setting; together with step 1 they
-reconstruct, line for line, the literature's contradiction
-chain.
+The literature now closes the proof by lifting `f'` back to a
+sweepout `Ω' ∈ 𝒜` and contradicting the inf-sup. In Lean this
+chain has three pieces, of which the library discharges the
+first: `exists_sup_reduction` produces `f'` with
+`sSup (range f') ≤ m₀ − 1/(4N)`. The min-max setting then
+discharges the second by taking `f'` together with its
+modification set `S` back to a sweepout `Ω' ∈ 𝒜` — the (b)
+localization guarantee makes this lift mechanical, since `Ω'`
+agrees with `Ω` outside `S` and inserts the local replacement on
+each piece of `S`. The contradiction follows immediately from
+`sup f_{Ω'} ≤ m₀ − 1/(4N) < m₀ = inf_{𝒜} sup` together with
+`Ω' ∈ 𝒜`. Together with the library's first piece, these
+reconstruct line for line the literature's contradiction chain.
 
 ### Skeleton client code
 
+The pattern below shows what the chain looks like when assembled
+end to end, with `YourGMT.*` stubs standing in for the GMT-side
+declarations a min-max formalization would supply:
+
 ```lean
 import CombArg
-import YourGMT  -- your formalization providing
-                -- YourGMT.localWitness_of_DLT and
-                -- YourGMT.lift_sweepout
+import YourGMT
 
 theorem minmax_contradiction
     (Ω : YourGMT.SweepoutType) (hΩ : Ω ∈ YourGMT.admissibleClass)
@@ -306,35 +302,33 @@ theorem minmax_contradiction
   exact absurd h_lt (YourGMT.le_of_admissible hΩ' h_minmax)
 ```
 
-Three identifiers carry the GMT-side responsibility:
-
-- `YourGMT.choose_N` — pick `N` large enough that `1/(4N)` beats
-  the contradiction window the admissible class requires.
-- `YourGMT.localWitness_of_DLT` — the GMT formalization of DLT
-  Lemma 3.1 (the substantive geometric work, returning a per-`t`
-  `LocalWitness`).
-- `YourGMT.lift_sweepout` — convert the scalar `f'` (with its
-  modification set `S`) back to a sweepout in `𝒜`.
+The three `YourGMT.*` identifiers mark the GMT-side
+responsibility: `YourGMT.choose_N` picks `N` so that `1/(4N)`
+beats the admissible class's contradiction window;
+`YourGMT.localWitness_of_DLT` is the GMT formalization of DLT
+Lemma 3.1, returning a per-`t` `LocalWitness`; and
+`YourGMT.lift_sweepout` converts the scalar `f'` (with its
+modification set `S`) back to a sweepout in `𝒜`.
 
 ### Known friction
 
-- **1D parameter space only.** Multi-parameter sweepouts
-  (`unitInterval^m`, Almgren cycles) need the multi-parameter
-  cover construction; planned for v0.3.
-- **Output is scalar, not geometric.** The consumer receives
-  `f'` with a sup bound and a modification set `S`; lifting back
-  to a sweepout is the GMT side's work. The `f' = f` off `S`
-  guarantee is designed to make this lift mechanical.
-- **`replacementEnergy_continuous` is a GMT-side obligation.**
-  DLT 3.1 outputs continuity implicitly via "continuous family of
-  replacements"; the Lean-level proof obligation falls on the
-  consumer.
-- **Lean / Mathlib version pin.** `v4.30.0-rc2` + the Mathlib
-  revision in `lake-manifest.json`. Bumps on either side may
-  require coordination.
-- **Axiom budget.** This library uses only the three standard
-  foundational axioms. Standard Mathlib measure-theory work
-  stays within the same three.
+The library is currently specialized to the 1D parameter space
+`unitInterval`; multi-parameter sweepouts (`unitInterval^m`, in
+particular Almgren cycles) will need a multi-parameter cover
+construction, planned for v0.3. The output is scalar rather than
+geometric — the consumer receives `f'` with its sup bound and the
+modification set `S`, and must lift back to a sweepout in `𝒜` on
+the GMT side; the `f' = f` off `S` guarantee is designed to make
+this lift mechanical. Continuity of `replacementEnergy` in the
+inserted parameter falls on the consumer to discharge explicitly,
+since DLT 3.1 supplies it only implicitly through the continuity
+of the replaced family. The library is pinned to
+`leanprover/lean4:v4.30.0-rc2` plus the Mathlib revision in
+`lake-manifest.json`, so bumps on either side may require
+coordination. The library itself uses only the three standard
+foundational axioms (`propext`, `Classical.choice`, `Quot.sound`),
+and standard Mathlib measure-theory work stays within the same
+three.
 
 For a runnable end-to-end invocation on a trivial `f ≡ 1`, see
 [`examples/MinimalUsage.lean`](examples/MinimalUsage.lean). The
