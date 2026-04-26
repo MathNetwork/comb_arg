@@ -603,7 +603,7 @@ Figure~\ref{fig:arch} shows the layered architecture.
   every node/.style={align=center},
   box/.style={draw=black, thin, rectangle, inner sep=3pt, minimum height=6mm},
   pillar/.style={box, minimum width=34mm, minimum height=7mm},
-  decl/.style={box, font=\scriptsize\ttfamily, minimum width=34mm, minimum height=4.2mm, inner ysep=1.5pt},
+  decl/.style={box, font=\scriptsize\ttfamily, minimum width=42mm, minimum height=4.2mm, inner ysep=1.5pt},
   note/.style={font=\scriptsize\itshape, text width=34mm, align=center, anchor=north},
   tierlbl/.style={font=\sffamily\scriptsize, anchor=east, text=black!70},
   arr/.style={-Latex, thin, black!70},
@@ -635,7 +635,7 @@ Figure~\ref{fig:arch} shows the layered architecture.
 \node[pillar] (P3) at ( 5.2, 4) {bookkeeping arithmetic};
 \node[tierlbl] at (-7, 4) {Tier 3\\pillars};
 \draw[arr] (P1.north) -- ++(-0.4, 0) |- (core.south west);
-\draw[arr] (P2.north) -- node[arrlab, pos=0.4] {composes} (core.south);
+\draw[arr] (P2.north) -- (core.south);
 \draw[arr] (P3.north) -- (genc.south);
 
 % Pillar annotations (italic, under each pillar)
@@ -659,14 +659,14 @@ Figure~\ref{fig:arch} shows the layered architecture.
 \node[tierlbl] at (-7, 2) {Tier 4\\declarations};
 
 % twoFold invariant — intermediate target between Tier 4 and Tier 5
-\node[decl] (TF) at (0, -0.7) {twoFold invariant};
+\node[decl] (TF) at (0, -0.1) {twoFold invariant};
 
 % Tier 5: disjointness sub-module (on SkippedSpacedIntervals)
-\node[decl] (SP) at (0, -1.9) {SkippedSpacedIntervals};
-\node[decl] (J1) at (-5.2, -2.8) {chain\_spacing};
-\node[decl] (J2) at ( 0,   -2.8) {I\_closure\_disj\_of\_even\_gap};
-\node[decl] (J3) at ( 5.2, -2.8) {not\_three\_overlap};
-\node[tierlbl] at (-7, -2.35) {Tier 5\\disjointness};
+\node[decl] (SP) at (0, -1.0) {SkippedSpacedIntervals};
+\node[decl] (J1) at (-5.2, -1.9) {chain\_spacing};
+\node[decl] (J2) at ( 0,   -1.9) {I\_closure\_disj\_of\_even\_gap};
+\node[decl] (J3) at ( 5.2, -1.9) {not\_three\_overlap};
+\node[tierlbl] at (-7, -1.45) {Tier 5\\disjointness};
 \draw[arr] (J1.north) -- (SP.south west);
 \draw[arr] (J2.north) -- (SP.south);
 \draw[arr] (J3.north) -- (SP.south east);
