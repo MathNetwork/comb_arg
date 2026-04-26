@@ -170,6 +170,136 @@ The runnable form lives in
   bookkeeping corollary is already generic in `K`; only an
   additional cover construction is needed.
 
+## Integrating with a GMT formalization
+
+This section is for downstream consumers building a
+geometric-measure-theoretic min-max formalization in Lean who want
+to plug this library in as the combinatorial step. The library
+treats the geometric-replacement step (De Lellis–Tasnady's
+Lemma 3.1 / Pitts replacement) as **abstract input**: it asks for
+a `LocalWitness` and gives back a scalar sup-reduction. What you
+have to formalize on your GMT side is exactly the
+`LocalWitness`-shaped data.
+
+### What you supply (per call)
+
+1. A continuous boundary energy `f : unitInterval → ℝ` — your
+   sweepout's energy as a function of the path parameter.
+2. `m₀ : ℝ` with `m₀ = sSup (Set.range f)` — the sup of `f` (or
+   your min-max level if your sweepout sits at it).
+3. `N : ℕ` with `0 < N` — the near-criticality parameter; the
+   library's quantitative output is `1/(4·N)`.
+4. For every `t : unitInterval` with `f t ≥ m₀ − 1/N`, a
+   `LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))`.
+
+### `LocalWitness` ↔ DLT Lemma 3.1 correspondence
+
+| Field | What you produce on the GMT side |
+|---|---|
+| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i)` around `t` on which the local replacement saves energy. |
+| `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
+| `replacementEnergy : unitInterval → ℝ` | Boundary energy of the **replaced** sweepout: `s ↦ ℋⁿ(∂Ω̃_s)`, where `Ω̃_s` is your sweepout with the replacement inserted at parameter `s`. |
+| `replacementEnergy_continuous` | Continuity of `replacementEnergy` as a function of `s`. DLT treats this implicitly; usually follows from "the replaced sweepout depends continuously on the inserted parameter" + "Hausdorff measure depends continuously on the boundary". You must discharge it. |
+| `saving_bound` | The quantitative DLT 3.1 inequality `f s − replacementEnergy s ≥ 1/(4·N)` for every `s ∈ neighborhood`. The substantive non-combinatorial content. |
+
+### What you get back
+
+```lean
+∃ (f' : unitInterval → ℝ) (S : Set unitInterval),
+  {t | f t ≥ m₀ − 1/N} ⊆ S ∧        -- (coverage)
+  (∀ t, f' t ≤ f t) ∧                 -- (a) pointwise dominance
+  (∀ t, t ∉ S → f' t = f t) ∧         -- (b) localization
+  sSup (Set.range f') ≤ m₀ − 1/(4N)   -- (c) sup reduction
+```
+
+A scalar competitor `f'` strictly undercutting `m₀` by `1/(4·N)`,
+together with a modification set `S` (the union of the cover
+pieces) so that `f' = f` outside `S` and `f' ≤ f` everywhere.
+
+### Plugging into a min-max contradiction
+
+If your admissible class `𝒜` has `m₀ = inf_{𝒜} sup`, and your
+sweepout `Ω` realizes the inf, the standard contradiction is
+three steps:
+
+1. Apply `CombArg.exists_sup_reduction` to obtain `f'` with
+   `sSup (range f') ≤ m₀ − 1/(4N)`.
+2. Lift `f'` back to a sweepout `Ω' ∈ 𝒜` — your GMT side. The
+   `f' = f` off `S` guarantee usually makes this routine: `Ω'`
+   agrees with `Ω` outside `S` and uses the local replacement
+   inside.
+3. `sup of Ω' < m₀ = inf_{𝒜} sup` contradicts the admissibility
+   of `Ω'`.
+
+The library handles step 1; steps 2 and 3 are domain-specific.
+
+### Skeleton client code
+
+```lean
+import CombArg
+import YourGMT  -- your formalization providing
+                -- YourGMT.localWitness_of_DLT and
+                -- YourGMT.lift_sweepout
+
+theorem minmax_contradiction
+    (Ω : YourGMT.SweepoutType) (hΩ : Ω ∈ YourGMT.admissibleClass)
+    (h_minmax : Ω.boundaryEnergy.sup = YourGMT.infMinmax) :
+    False := by
+  set f := Ω.boundaryEnergy
+  set m₀ := sSup (Set.range f)
+  obtain ⟨N, hN_pos, hN_window⟩ := YourGMT.choose_N Ω
+  -- The Lean image of DLT Lemma 3.1: per-parameter local witness.
+  have witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
+                   LocalWitness unitInterval f t (1 / (4 * (N : ℝ))) :=
+    fun t ht => YourGMT.localWitness_of_DLT Ω t ht hN_pos
+  -- comb-arg: combinatorial bookkeeping → scalar sup reduction.
+  obtain ⟨f', S, _, h_le, h_eq, h_sup⟩ :=
+    CombArg.exists_sup_reduction Ω.boundaryEnergyContinuous rfl hN_pos witness
+  -- Lift f' back to a sweepout in 𝒜.
+  obtain ⟨Ω', hΩ', hΩ'_energy⟩ :=
+    YourGMT.lift_sweepout f' h_le h_eq Ω hΩ
+  -- Contradiction with the inf-sup characterization of m₀.
+  have h_lt : Ω'.boundaryEnergy.sup < m₀ := by
+    rw [hΩ'_energy]; linarith [h_sup, hN_window]
+  exact absurd h_lt (YourGMT.le_of_admissible hΩ' h_minmax)
+```
+
+Three identifiers carry your GMT responsibility:
+
+- `YourGMT.choose_N` — pick `N` large enough that `1/(4N)` beats
+  the contradiction window your admissible class needs.
+- `YourGMT.localWitness_of_DLT` — your formalization of DLT
+  Lemma 3.1 (the substantive geometric work). Output is the
+  per-`t` `LocalWitness`.
+- `YourGMT.lift_sweepout` — convert the scalar `f'` (with its
+  modification set `S`) back to a sweepout in `𝒜`.
+
+### Known friction
+
+- **1D parameter space only.** Multi-parameter sweepouts
+  (`unitInterval^m`, Almgren cycles) need the multi-parameter
+  cover construction; planned for v0.3.
+- **Output is scalar, not geometric.** You get `f'` with a sup
+  bound and a modification set `S`; lifting back to a sweepout
+  is on your side. The `f' = f` off `S` guarantee is designed
+  to make this lift mechanical.
+- **`replacementEnergy_continuous` is your obligation.** DLT 3.1
+  outputs continuity implicitly via "continuous family of
+  replacements"; you have to write the Lean-level proof.
+- **Lean / Mathlib version pin.** `v4.30.0-rc2` + the Mathlib
+  revision in `lake-manifest.json`. Bumps on either side may
+  require coordination on the GMT side.
+- **Axiom budget.** This library uses only the three standard
+  foundational axioms. Your GMT side will likely add no further
+  foundational axioms (standard measure-theory work in Mathlib
+  stays within the same three).
+
+For a runnable end-to-end invocation on a trivial `f ≡ 1`, see
+[`examples/MinimalUsage.lean`](examples/MinimalUsage.lean). The
+client-code skeleton above is what an actual GMT-backed instance
+would look like by replacing the `YourGMT.*` stubs with their
+real definitions.
+
 ## Public API stability
 
 The following names are considered stable public API and will not

@@ -575,21 +575,21 @@ Figure~\ref{fig:arch} shows the layered architecture.
 ]
 
 % Tier 1: combinatorial core
-\node[box, minimum width=85mm] (core) at (0, 8) {%
+\node[box, minimum width=130mm] (core) at (0, 8) {%
   \texttt{exists\_refinement} \ (combinatorial core, $K = [0,1]$)
 };
 \node[tierlbl] at (-7, 8) {Tier 1\\combinatorial core};
 
-% Tier 2: sup-reduction corollaries (side by side)
-\node[box, minimum width=45mm] (app) at (-3.2, 6) {%
-  \texttt{exists\_sup\_reduction} \ ($K = [0,1]$)
+% Tier 2: sup-reduction corollaries (side by side, explicit text widths)
+\node[box, text width=48mm] (app) at (-4.5, 6) {%
+  \texttt{exists\_sup\_reduction} \\ ($K = [0,1]$)
 };
-\node[box, minimum width=60mm] (genc) at ( 3.2, 6) {%
-  \texttt{exists\_sup\_reduction\_of\_cover} \ (generic $K$)
+\node[box, text width=58mm] (genc) at ( 4.5, 6) {%
+  \texttt{exists\_sup\_reduction\_of\_cover} \\ (generic $K$)
 };
 \node[tierlbl] at (-7, 6) {Tier 2\\corollaries};
 \draw[arr] (core.south) -- node[arrlab, pos=0.5, left]
-  {via core} (app.north east);
+  {via core} (app.north);
 \draw[arr] (genc.west) -- node[arrlab, above]
   {via bookkeeping} (app.east);
 
@@ -612,9 +612,10 @@ Figure~\ref{fig:arch} shows the layered architecture.
 \node[decl] (D1b) at (-5.2, 2.0) {InitialCover};
 
 \node[decl] (D2a) at (0, 2.5) {step\_zero};
-\node[decl] (D2b) at (0, 2.0) {step\_succ};
-\node[decl] (D2c) at (0, 1.5) {exists\_terminal\_refinement};
-\node[decl] (D2d) at (0, 1.0) {PartialRefinement};
+\node[decl] (D2b) at (0, 2.0) {step\_succ\_at};
+\node[decl] (D2c) at (0, 1.5) {ExtendResult};
+\node[decl] (D2d) at (0, 1.0) {exists\_terminal\_refinement};
+\node[decl] (D2e) at (0, 0.5) {PartialRefinement};
 
 \node[decl] (D3a) at (5.2, 2.5) {FiniteCoverWithWitnesses};
 \node[decl] (D3b) at (5.2, 2.0) {reducedEnergy};
@@ -622,21 +623,21 @@ Figure~\ref{fig:arch} shows the layered architecture.
 \node[tierlbl] at (-7, 2) {Tier 4\\declarations};
 
 % twoFold invariant — intermediate target between Tier 4 and Tier 5
-\node[decl] (TF) at (0, -0.3) {twoFold invariant};
+\node[decl] (TF) at (0, -0.7) {twoFold invariant};
 
 % Tier 5: disjointness sub-module (on SkippedSpacedIntervals)
-\node[decl] (SP) at (0, -1.5) {SkippedSpacedIntervals};
-\node[decl] (J1) at (-5.2, -2.4) {chain\_spacing};
-\node[decl] (J2) at ( 0,   -2.4) {I\_closure\_disj\_of\_even\_gap};
-\node[decl] (J3) at ( 5.2, -2.4) {not\_three\_overlap};
-\node[tierlbl] at (-7, -1.95) {Tier 5\\disjointness};
+\node[decl] (SP) at (0, -1.9) {SkippedSpacedIntervals};
+\node[decl] (J1) at (-5.2, -2.8) {chain\_spacing};
+\node[decl] (J2) at ( 0,   -2.8) {I\_closure\_disj\_of\_even\_gap};
+\node[decl] (J3) at ( 5.2, -2.8) {not\_three\_overlap};
+\node[tierlbl] at (-7, -2.35) {Tier 5\\disjointness};
 \draw[arr] (J1.north) -- (SP.south west);
 \draw[arr] (J2.north) -- (SP.south);
 \draw[arr] (J3.north) -- (SP.south east);
 \draw[arr] (SP.north) -- node[arrlab] {proves} (TF.south);
 
 \end{tikzpicture}
-\caption{\label{fig:arch}\CombArg{} v0.1 architecture. The
+\caption{\label{fig:arch}\CombArg{} v0.2 architecture. The
 combinatorial core (Tier 1) is the main theorem
 \texttt{exists\_refinement}: the 1D cover-refinement producing a
 \texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
@@ -928,6 +929,191 @@ Corollary~\ref{cor:core-sup} then follows by the three-line
 bookkeeping proved in \S\ref{sec:app-spec} applied to this
 \texttt{FiniteCoverWithWitnesses}; Corollary~\ref{thm:main} is
 the specialization to $(\delta, \varepsilon) = (1/N, 1/(4N))$.
+
+\section{Use as a software dependency}
+\label{sec:integration}
+
+This section is for downstream consumers --- authors building
+their own geometric-measure-theoretic min-max formalization in
+Lean --- who want to plug \CombArg{} in as the combinatorial
+step. The library treats De~Lellis--Tasnady's
+Lemma~3.1~\cite{DLT13} (the geometric replacement step) as
+\emph{abstract input}: it asks for a
+\texttt{LocalWitness} (Definition~\ref{def:witness}) at every
+near-critical parameter and gives back a scalar sup reduction
+(Corollary~\ref{thm:main}). What the GMT-side formalization
+must produce is exactly the data that fits
+the four fields of \texttt{LocalWitness}.
+
+\subsection{What the consumer supplies}
+\label{sec:integration-supplies}
+
+For one invocation of
+\lean{exists\_sup\_reduction}{SupReduction.lean}, the consumer
+supplies:
+
+\begin{itemize}
+\item A continuous boundary energy
+  $f : \unit \to \mathbb{R}$ --- the consumer's sweepout's
+  energy as a function of the path parameter.
+\item A scalar $m_0 \in \mathbb{R}$ with
+  $m_0 = \sup_{t \in \unit} f(t)$. In a min-max setting, this
+  is the level at which the sweepout sits.
+\item A near-criticality parameter $N \in \mathbb{N}$ with
+  $N > 0$. The quantitative output is $1/(4N)$.
+\item For every $t \in \unit$ with $f(t) \ge m_0 - 1/N$, a
+  $\texttt{LocalWitness}\,(\unit, f, t, 1/(4N))$.
+\end{itemize}
+
+\subsection{The \texttt{LocalWitness} -- DLT~3.1 dictionary}
+\label{sec:integration-dictionary}
+
+The five fields of a \texttt{LocalWitness}
+(Definition~\ref{def:witness}) translate directly to the data
+DLT's Lemma~3.1 produces in the GMT setting:
+
+\begin{itemize}
+\item \texttt{neighborhood} : open interval $(a_i, b_i)
+  \subseteq [0,1]$ around $t$ on which the local replacement
+  saves energy.
+\item \texttt{isOpen\_neighborhood} and \texttt{t\_mem} :
+  openness of the interval; the parameter $t$ lies in it.
+\item \texttt{replacementEnergy} : the boundary energy of the
+  \emph{replaced} sweepout,
+  $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$,
+  where $\widetilde{\Omega}_s$ is the consumer's sweepout with
+  the local replacement inserted at parameter $s$.
+\item \texttt{replacementEnergy\_continuous} : continuity of
+  the above map in $s$. DLT treats this implicitly via the
+  continuity of the replacement family in the inserted
+  parameter; the consumer must produce the Lean-level proof.
+\item \texttt{saving\_bound} : the quantitative DLT~3.1
+  inequality
+  $f(s) - \texttt{replacementEnergy}(s) \ge 1/(4N)$ for every
+  $s \in (a_i, b_i)$. This is the substantive
+  non-combinatorial content the consumer must establish.
+\end{itemize}
+
+\subsection{What the consumer receives}
+\label{sec:integration-receives}
+
+A scalar competitor $f' : \unit \to \mathbb{R}$ together with
+a modification set $S \subseteq \unit$ satisfying
+
+\begin{enumerate}
+\item[(coverage)]
+  $\{t \in \unit : f(t) \ge m_0 - 1/N\} \subseteq S$,
+\item[(a)] pointwise dominance: $f'(t) \le f(t)$ for all $t$,
+\item[(b)] localization: $f'(t) = f(t)$ for $t \notin S$,
+\item[(c)] sup reduction:
+  $\sup_{t \in \unit} f'(t) \le m_0 - 1/(4N)$.
+\end{enumerate}
+
+Conditions (a) and (b) anchor $f'$ to $f$: without them, the
+constant $f' \equiv c$ for any $c \le m_0 - 1/(4N)$ would
+satisfy (c) vacuously.
+
+\subsection{Plugging into a min-max contradiction}
+\label{sec:integration-contradiction}
+
+If the consumer's admissible class $\mathcal{A}$ has the
+characterization
+$m_0 = \inf_{\Omega \in \mathcal{A}} \sup f_\Omega$ and the
+sweepout $\Omega$ realizes the inf with $f = f_\Omega$, the
+contradiction is three steps:
+
+\begin{enumerate}
+\item Apply \lean{exists\_sup\_reduction}{SupReduction.lean}
+  to obtain $f'$ with $\sup f' \le m_0 - 1/(4N)$.
+\item Lift $f'$ back to a sweepout $\Omega' \in \mathcal{A}$
+  --- consumer's GMT-side responsibility. The (b) localization
+  guarantee is designed to make this lift routine: $\Omega'$
+  agrees with $\Omega$ outside $S$ and uses the local
+  replacement inside.
+\item $\sup f_{\Omega'} \le m_0 - 1/(4N) < m_0
+  = \inf_{\mathcal{A}} \sup$ contradicts
+  $\Omega' \in \mathcal{A}$.
+\end{enumerate}
+
+The library discharges step~1 in full; steps~2 and~3 are
+domain-specific.
+
+\subsection{Skeleton client code}
+\label{sec:integration-skeleton}
+
+The pattern below adapts \texttt{examples/MinimalUsage.lean}
+in the repository to a hypothetical GMT consumer:
+
+\begin{verbatim}
+import CombArg
+import YourGMT  -- consumer's formalization
+
+theorem minmax_contradiction
+    (O : YourGMT.SweepoutType) (hO : O in YourGMT.admissibleClass)
+    (h_minmax : O.boundaryEnergy.sup = YourGMT.infMinmax) :
+    False := by
+  set f := O.boundaryEnergy
+  set m0 := sSup (Set.range f)
+  obtain <N, hN_pos, hN_window> := YourGMT.choose_N O
+  -- Lean image of DLT Lemma 3.1: per-parameter local witness.
+  have witness : forall t : unitInterval, f t >= m0 - 1 / (N : R) ->
+                   LocalWitness unitInterval f t (1 / (4 * (N : R))) :=
+    fun t ht => YourGMT.localWitness_of_DLT O t ht hN_pos
+  -- comb-arg: combinatorial bookkeeping -> scalar sup reduction.
+  obtain <f', S, _, h_le, h_eq, h_sup> :=
+    CombArg.exists_sup_reduction
+      O.boundaryEnergyContinuous rfl hN_pos witness
+  -- Lift f' back to a sweepout in admissibleClass.
+  obtain <O', hO', hO'_energy> :=
+    YourGMT.lift_sweepout f' h_le h_eq O hO
+  -- Contradiction.
+  have h_lt : O'.boundaryEnergy.sup < m0 := by
+    rw [hO'_energy]; linarith [h_sup, hN_window]
+  exact absurd h_lt (YourGMT.le_of_admissible hO' h_minmax)
+\end{verbatim}
+
+Three identifiers carry the consumer's GMT-side
+responsibility:
+
+\begin{itemize}
+\item \texttt{YourGMT.choose\_N} --- pick $N$ large enough
+  that $1/(4N)$ beats the contradiction window the admissible
+  class requires.
+\item \texttt{YourGMT.localWitness\_of\_DLT} --- the
+  formalization of DLT Lemma~3.1 (the substantive geometric
+  work, returning a per-$t$ \texttt{LocalWitness}).
+\item \texttt{YourGMT.lift\_sweepout} --- turn the scalar
+  $f'$ together with its modification set $S$ back into a
+  sweepout in $\mathcal{A}$.
+\end{itemize}
+
+\subsection{Known friction}
+\label{sec:integration-friction}
+
+\begin{itemize}
+\item \textbf{1D parameter space only.} \CombArg{} is
+  currently specialized to $K = \unit$. Multi-parameter
+  sweepouts ($K = [0,1]^m$, in particular Almgren cycles) need
+  a multi-parameter cover construction; planned for v0.3.
+\item \textbf{Output is scalar, not geometric.} The consumer
+  receives $f'$ with a sup bound and the modification set
+  $S$; the lift back to a sweepout in $\mathcal{A}$ is the
+  consumer's work. The (b) off-$S$ agreement is designed to
+  make this lift mechanical.
+\item \textbf{Continuity of \texttt{replacementEnergy}.}
+  Discharged on the consumer's side. DLT~3.1 supplies it
+  implicitly through the continuity of the replacement family
+  in the inserted parameter; the Lean-level proof obligation
+  falls on the consumer.
+\item \textbf{Lean / Mathlib version pin.} \CombArg{} is on
+  \texttt{leanprover/lean4:v4.30.0-rc2} with Mathlib pinned
+  via \texttt{lake-manifest.json}. Bumps on either side may
+  require coordination.
+\item \textbf{Axiom budget.} \CombArg{} uses only
+  \texttt{propext}, \texttt{Classical.choice}, and
+  \texttt{Quot.sound}. Standard Mathlib measure-theory work
+  stays within the same three.
+\end{itemize}
 
 \begin{thebibliography}{Mathlib}
 
