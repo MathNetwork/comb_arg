@@ -21,8 +21,44 @@
 \geometry{margin=1in}
 \setlength{\emergencystretch}{3em}
 
+% Lean 4 syntax for listings: top-level keywords, tactics, comments.
+\lstdefinelanguage{Lean}{
+  morekeywords={
+    import, open, namespace, end, section, variable, universe,
+    theorem, lemma, def, abbrev, instance, structure, class, example,
+    axiom, opaque, mutual, where,
+    fun, let, have, show, by, do, match, with, if, then, else,
+    return, in, from
+  },
+  morekeywords=[2]{
+    set, obtain, refine, exact, apply, intro, intros, rintro, rcases,
+    induction, cases, constructor, calc, simp, ring, linarith, omega,
+    rfl, decide, trivial, sorry, admit, push_cast, norm_num, positivity,
+    field_simp, ext, by_contra, rw, rewrite, change, subst, unfold,
+    assumption, dsimp, simp_all
+  },
+  morekeywords=[3]{
+    True, False, And, Or, Not, Eq, Iff, Prop, Type, Sort,
+    forall, exists
+  },
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\definecolor{leankw}{HTML}{0033B3}      % top-level keywords (blue)
+\definecolor{leantactic}{HTML}{8B008B}  % tactics (purple)
+\definecolor{leanbuiltin}{HTML}{1F7A6F} % built-in / Prop / forall (teal)
+\definecolor{leancomment}{HTML}{6A737D} % comments (gray)
+\definecolor{leanstring}{HTML}{C41A16}  % strings (red)
 \lstset{
+  language=Lean,
   basicstyle=\small\ttfamily,
+  keywordstyle=\color{leankw}\bfseries,
+  keywordstyle=[2]\color{leantactic},
+  keywordstyle=[3]\color{leanbuiltin},
+  commentstyle=\color{leancomment}\itshape,
+  stringstyle=\color{leanstring},
   breaklines=true,
   columns=fullflexible,
   keepspaces=true,
@@ -1045,7 +1081,7 @@ would invoke \CombArg{}; it adapts
 \texttt{YourGMT.*} stubs standing in for the GMT-side
 declarations a consumer formalization would supply:
 
-\begin{verbatim}
+\begin{lstlisting}
 import CombArg
 import YourGMT  -- consumer's formalization
 
@@ -1071,7 +1107,7 @@ theorem minmax_contradiction
   have h_lt : O'.boundaryEnergy.sup < m0 := by
     rw [hO'_energy]; linarith [h_sup, hN_window]
   exact absurd h_lt (YourGMT.le_of_admissible hO' h_minmax)
-\end{verbatim}
+\end{lstlisting}
 
 The three \texttt{YourGMT.*} identifiers mark the GMT-side
 responsibility: \texttt{YourGMT.choose\_N} picks $N$ so that
