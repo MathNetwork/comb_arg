@@ -988,11 +988,12 @@ literature recombines at every instantiation.
 (Definition~\ref{def:witness}) carries the abstract
 per-parameter local-reducer data;
 \lean{exists\_refinement}{Refinement/Assembly.lean} is the
-formal counterpart of DLT~\S3.2 Step~1, the interval refinement
-that turns a family of local witnesses on the near-critical set
-into a finite cover with two-fold overlap;
+formal counterpart of \cite{DLT13}~\S3.2 Step~1, the interval
+refinement that turns a family of local witnesses on the
+near-critical set into a finite cover with two-fold overlap;
 \lean{exists\_sup\_reduction\_of\_cover}{Core.lean} is the
-formal counterpart of DLT~\S3.2 Step~2, the scalar bookkeeping
+formal counterpart of \cite{DLT13}~\S3.2 Step~2, the scalar
+bookkeeping
 that turns such a cover into a sup-reducing competitor; and
 \lean{exists\_sup\_reduction}{SupReduction.lean} composes these
 two into a single one-parameter call.
@@ -1015,24 +1016,24 @@ either way; what changes is that this min-max-side data flows
 in as the inputs.
 
 \subsection{The instantiation:
-\texorpdfstring{\texttt{LocalWitness} $\leftarrow$ DLT~3.1}{LocalWitness from DLT 3.1}}
+\texorpdfstring{\texttt{LocalWitness} from the local replacement lemma}{LocalWitness from the local replacement lemma}}
 \label{sec:integration-dictionary}
 
 The \texttt{LocalWitness} structure was designed to be the data
-shape DLT~Lemma~3.1 produces, with each field naming a specific
-piece of the GMT-side replacement data. DLT's open interval
-$(a_i, b_i) \subseteq [0,1]$ on which the local replacement
-saves energy becomes the \texttt{neighborhood} field; the
-boundary energy of the replaced sweepout,
+shape that the De~Lellis--Tasnady local replacement lemma
+\cite[Lemma~3.1]{DLT13} produces, with each field naming a
+specific piece of the GMT-side replacement data. The open
+interval $(a_i, b_i) \subseteq [0,1]$ on which the local
+replacement saves energy becomes the \texttt{neighborhood}
+field; the boundary energy of the replaced sweepout,
 $s \mapsto \mathcal{H}^n(\partial \widetilde{\Omega}_s)$ with
 $\widetilde{\Omega}_s$ the original sweepout with the local
 replacement inserted at parameter $s$, becomes
-\texttt{replacementEnergy}; its continuity in $s$ (which DLT
-treats implicitly through the continuity of the replaced family
-in the inserted parameter) becomes the
+\texttt{replacementEnergy}; its continuity in $s$ (which
+\cite{DLT13} treats implicitly through the continuity of the
+replaced family in the inserted parameter) becomes the
 \texttt{replacementEnergy\_continuous} obligation that the GMT
-side must discharge explicitly; and DLT's quantitative
-inequality
+side must discharge explicitly; and the quantitative inequality
 $f(s) - \mathcal{H}^n(\partial \widetilde{\Omega}_s) \ge 1/(4N)$
 on $(a_i, b_i)$ becomes \texttt{saving\_bound}.
 
@@ -1113,7 +1114,8 @@ The three \texttt{YourGMT.*} identifiers mark the GMT-side
 responsibility: \texttt{YourGMT.choose\_N} picks $N$ so that
 $1/(4N)$ beats the admissible class's contradiction window;
 \texttt{YourGMT.localWitness\_of\_DLT} is the GMT formalization
-of DLT~Lemma~3.1, returning a per-$t$ \texttt{LocalWitness};
+of the local replacement lemma~\cite[Lemma~3.1]{DLT13},
+returning a per-$t$ \texttt{LocalWitness};
 and \texttt{YourGMT.lift\_sweepout} converts the scalar $f'$
 (together with its modification set $S$) back into a sweepout
 in $\mathcal{A}$.
@@ -1130,9 +1132,9 @@ and the modification set $S$, and must lift back to a sweepout
 in $\mathcal{A}$ on the GMT side, with the (b)~off-$S$
 agreement designed to make this lift mechanical. Continuity of
 \texttt{replacementEnergy} in the inserted parameter falls on
-the consumer to discharge explicitly, since DLT~3.1 supplies
-it only implicitly through the continuity of the replaced
-family. The library is pinned to
+the consumer to discharge explicitly, since the local
+replacement lemma supplies it only implicitly through the
+continuity of the replaced family. The library is pinned to
 \texttt{leanprover/lean4:v4.30.0-rc2} together with the
 Mathlib revision in \texttt{lake-manifest.json}, so bumps on
 either side may require coordination. The library itself uses

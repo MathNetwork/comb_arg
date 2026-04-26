@@ -24,9 +24,10 @@ per-piece replacement energies `E_l` and uniform savings
   - **(II)** every `t` lies in at most two pieces (two-fold overlap),
   - **(III)** `{t : f t ≥ m₀ − 1/N} ⊆ ⋃ pieces`.
 
-This is the non-trivial content extracted from the DLT-style
-1D cover refinement (Lebesgue-number cover, bounded
-smallest-index refinement induction, skip-2 parity rescue).
+This is the non-trivial content extracted from the
+De Lellis–Tasnady-style 1D cover refinement (Lebesgue-number
+cover, bounded smallest-index refinement induction, skip-2
+parity rescue).
 
 ### Sup-reduction bookkeeping corollary — `CombArg.exists_sup_reduction_of_cover`
 
@@ -188,10 +189,11 @@ four public declarations make no GMT references and stand for
 the four pieces the literature recombines at every instantiation.
 `LocalWitness K f t ε` carries the abstract per-parameter
 local-reducer data. `exists_refinement` is the formal counterpart
-of DLT §3.2 Step 1, the interval refinement that turns a family
-of local witnesses on the near-critical set into a finite cover
-with two-fold overlap. `exists_sup_reduction_of_cover` is the
-formal counterpart of DLT §3.2 Step 2, the scalar bookkeeping
+of De Lellis–Tasnady §3.2 Step 1, the interval refinement that
+turns a family of local witnesses on the near-critical set into
+a finite cover with two-fold overlap. `exists_sup_reduction_of_cover`
+is the formal counterpart of De Lellis–Tasnady §3.2 Step 2, the
+scalar bookkeeping
 that turns such a cover into a sup-reducing competitor. The
 chained one-parameter step `exists_sup_reduction` composes these
 two into a single call.
@@ -212,28 +214,30 @@ instantiated forms — they are exactly the same definitions
 either way; what changes is that this min-max-side data flows in
 as the inputs.
 
-### The instantiation: `LocalWitness` ← DLT Lemma 3.1
+### The instantiation: `LocalWitness` from the local replacement lemma
 
 The `LocalWitness` structure was designed to be the data shape
-DLT Lemma 3.1 produces, with each field naming a specific piece
-of the GMT-side replacement data. DLT's open interval
-`(a_i, b_i) ⊆ [0,1]` on which the local replacement saves energy
-becomes the `neighborhood` field; the boundary energy of the
-replaced sweepout, `s ↦ ℋⁿ(∂Ω̃_s)`, becomes `replacementEnergy`;
-its continuity in `s` (which DLT treats implicitly through the
-continuity of the replaced family in the inserted parameter)
-becomes the `replacementEnergy_continuous` obligation that the
-GMT side must discharge explicitly; and DLT's quantitative
-inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` on `(a_i, b_i)` becomes
+that the De Lellis–Tasnady local replacement lemma
+([DLT13] Lemma 3.1) produces, with each field naming a specific
+piece of the GMT-side replacement data. The open interval
+`(a_i, b_i) ⊆ [0,1]` on which the local replacement saves
+energy becomes the `neighborhood` field; the boundary energy of
+the replaced sweepout, `s ↦ ℋⁿ(∂Ω̃_s)`, becomes
+`replacementEnergy`; its continuity in `s` (which the local
+replacement lemma treats implicitly through the continuity of
+the replaced family in the inserted parameter) becomes the
+`replacementEnergy_continuous` obligation that the GMT side
+must discharge explicitly; and the quantitative inequality
+`f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` on `(a_i, b_i)` becomes
 `saving_bound`. The full mapping:
 
 | Library field | The corresponding piece of the original proof |
 |---|---|
-| `neighborhood : Set unitInterval` | DLT's open interval `(a_i, b_i) ⊆ [0,1]` around `t`. |
+| `neighborhood : Set unitInterval` | The open interval `(a_i, b_i) ⊆ [0,1]` around `t`. |
 | `isOpen_neighborhood` + `t_mem` | Openness of the interval; the parameter `t` lies in it. |
 | `replacementEnergy : unitInterval → ℝ` | `s ↦ ℋⁿ(∂Ω̃_s)`, the boundary energy of the replaced sweepout. |
 | `replacementEnergy_continuous` | Continuity of `s ↦ ℋⁿ(∂Ω̃_s)` in `s`. |
-| `saving_bound` | The quantitative DLT 3.1 inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` for `s ∈ (a_i, b_i)`. |
+| `saving_bound` | The quantitative inequality `f(s) − ℋⁿ(∂Ω̃_s) ≥ 1/(4N)` for `s ∈ (a_i, b_i)`. |
 
 ### The proof chain: from sup reduction to contradiction
 
@@ -305,8 +309,9 @@ theorem minmax_contradiction
 The three `YourGMT.*` identifiers mark the GMT-side
 responsibility: `YourGMT.choose_N` picks `N` so that `1/(4N)`
 beats the admissible class's contradiction window;
-`YourGMT.localWitness_of_DLT` is the GMT formalization of DLT
-Lemma 3.1, returning a per-`t` `LocalWitness`; and
+`YourGMT.localWitness_of_DLT` is the GMT formalization of the
+local replacement lemma ([DLT13] Lemma 3.1), returning a
+per-`t` `LocalWitness`; and
 `YourGMT.lift_sweepout` converts the scalar `f'` (with its
 modification set `S`) back to a sweepout in `𝒜`.
 
@@ -321,8 +326,8 @@ modification set `S`, and must lift back to a sweepout in `𝒜` on
 the GMT side; the `f' = f` off `S` guarantee is designed to make
 this lift mechanical. Continuity of `replacementEnergy` in the
 inserted parameter falls on the consumer to discharge explicitly,
-since DLT 3.1 supplies it only implicitly through the continuity
-of the replaced family. The library is pinned to
+since the local replacement lemma supplies it only implicitly
+through the continuity of the replaced family. The library is pinned to
 `leanprover/lean4:v4.30.0-rc2` plus the Mathlib revision in
 `lake-manifest.json`, so bumps on either side may require
 coordination. The library itself uses only the three standard
