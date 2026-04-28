@@ -102,11 +102,26 @@ $\sigma(k)$ correspond to already-covered indices.
 
 \subsection{Stage C: assembly}
 
-Stage C packages the refined covering as a
-\texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref}),
-which the core theorem turns into the sup-reducing $f'$. We trace
-through \cite[\S3.2, Step~2]{DLT13} in sequence, indicating at
-each step where the content lands in the formalization.
+Stage C packages the Stage~A initial cover and the Stage~B
+refinement as a single structured output
+\lean{DLTCover}{OneDim/DLTCover.lean}, which carries the
+\texttt{InitialCover} (with spacing condition (a)), the terminal
+\texttt{PartialRefinement} (with $\sigma$-injectivity), and the
+termination invariant $\forall i,\ I_i \subseteq \bigcup_k J_k$.
+A subsequent downgrade
+\lean{DLTCover.toFinite}{OneDim/DLTCover.lean} produces the
+abstract \texttt{FiniteCoverWithWitnesses} (Definition~\ref{def:ref})
+that the core theorem turns into the sup-reducing $f'$, by taking
+closures of refined pieces and a uniform saving floor. The
+structured form is the input target for a future geometric lift
+(\S\ref{sec:future-lift}); the abstract downgrade is what existing
+scalar consumers
+(\lean{exists\_sup\_reduction\_of\_cover}{Cover.lean},
+\lean{exists\_sup\_reduction}{SupReduction.lean}) chain through.
+
+We trace through \cite[\S3.2, Step~2]{DLT13} in sequence,
+indicating at each step where the content lands in the
+formalization.
 
 De~Lellis and Tasnady begin by applying Lemma~3.1 to produce, at
 each near-critical parameter $t$, a replacement family

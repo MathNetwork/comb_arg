@@ -273,18 +273,29 @@ two-case dispatch.
 \item \lean{not\_three\_overlap}{OneDim/SpacedIntervals.lean}
 : at most two among any three distinct \texttt{InitialCover}
 intervals overlap at a common point (parity rescue).
-\item \lean{saving\_bound\_closure}{OneDim/Assembly.lean}
+\item \lean{saving\_bound\_closure}{OneDim/DLTCover.lean}
 : the open-neighborhood saving bound in \texttt{LocalWitness}
 extends to the closure via continuity of $E$.
 \end{itemize}
 
-The assembly itself, which packages the Stage A--B--C output
-as a
-\texttt{Finite\discretionary{-}{}{}Cover\discretionary{-}{}{}With\discretionary{-}{}{}Witnesses}
-with $(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$, is
-Theorem~\ref{thm:core} itself, whose Lean declaration
+The assembly proceeds in two stages.
+\lean{exists\_DLTCover}{OneDim/Assembly.lean} packages the Stage~A
+\texttt{InitialCover} and the Stage~B \texttt{PartialRefinement}
+together with $\sigma$-injectivity and the termination invariant
+into a single structured output \texttt{DLTCover}, defined in
+\lean{DLTCover}{OneDim/DLTCover.lean}.
+\lean{DLTCover.toFinite}{OneDim/DLTCover.lean} then downgrades this
+to a \texttt{FiniteCoverWithWitnesses} with
+$(\delta, \varepsilon) = (1/N, 1/(4N))$ on $\unit$ by taking closures
+of refined pieces and a uniform saving floor.
+Theorem~\ref{thm:core} is the composition, whose Lean declaration
 \lean{exists\_refinement}{OneDim/Assembly.lean} chains the
-sub-lemmas above.
+sub-lemmas above. The structured intermediate \texttt{DLTCover} is
+exposed as the import target for a future geometric lift
+(\S\ref{sec:future-lift}); an alternative scalar-only proof of the
+same conclusion lives in
+\lean{exists\_refinement\_partition}{Scalar/Partition.lean}, see
+Remark~\ref{rem:why-construction}.
 
 Figure~\ref{fig:arch} shows the two-tier architecture.
 
