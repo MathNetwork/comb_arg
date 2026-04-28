@@ -3,6 +3,78 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.5.0] — 2026-04-28
+
+### Optimization pass: subtype indexing, modular split, strict tier separation, structure-field audit
+
+Four targeted optimizations on top of the v0.4 two-tier architecture.
+No new theorems are introduced; existing public-API signatures are
+unchanged. The work concentrates on (a) cleaning up the partition
+route's output, (b) modularizing its internals, (c) strictly
+separating the two tiers in the dependency graph, and (d) raising
+the audit script from honor-system stability to mechanical
+stability enforcement.
+
+#### Changed (Lean — internal refactor, public API unchanged)
+
+- **Partition output uses subtype index** (`Scalar/Partition.lean`).
+  The output `FiniteCoverWithWitnesses.ι` is now a subtype
+  `{j : Fin (M-1) // (piece j ∩ nearCritical).Nonempty}` rather
+  than the bare `Fin (M-1)`. Empty pieces (those failing the
+  near-critical intersection) are filtered out by construction;
+  the `selectedPiece` / `selectedEnergy` `if-then-else` /
+  `dite` plumbing of v0.4 is gone, replaced by a `chosenTk`
+  helper that extracts the covering witness directly from the
+  subtype's `Nonempty` proof. Output cover cardinality drops
+  from `~ 2|T| + 1` to `~ |T|`.
+- **`Scalar/Partition.lean` split into seven submodules**
+  (`Scalar/Partition/{Helpers, CoverIvl, Endpoints, Pieces,
+  WitnessSelection, Multiplicity, Coverage}.lean`). Each
+  submodule is `≤ 145` lines and scoped to a single concern;
+  the main `Scalar/Partition.lean` retains only the
+  subtype-indexed assembly and the public theorem. Internal
+  declarations move into a `CombArg.Scalar.Partition` sub-
+  namespace. Incremental compilation is faster on edits to
+  individual phases.
+- **`nearCritical` moved to `CombArg/Common/NearCritical.lean`**.
+  Previously defined under `OneDim/InitialCover.lean`, the
+  near-critical set is a tier-agnostic concept consumed by both
+  the DLT path (via `OneDim/InitialCover`) and the partition
+  path (via `Scalar/Partition/CoverIvl`). The move severs the
+  last `Scalar` → `OneDim` dependency: a `lake build
+  CombArg.Scalar.Partition` now compiles zero `OneDim/*` files.
+  The `CombArg.OneDim.nearCritical` namespace is preserved (the
+  new file uses `namespace CombArg.OneDim`); README's stable-API
+  list is unchanged.
+
+#### Added (audit)
+
+- **Structure-field stability check** in `Audit.lean`. A new
+  third audit pass walks the env-reported field list of each
+  public structure (`LocalWitness`, `FiniteCoverWithWitnesses`,
+  `OneDim.DLTCover`, `OneDim.SkippedSpacedIntervals`,
+  `OneDim.InitialCover`, `OneDim.PartialRefinement`) and
+  compares against a hard-coded baseline declared in
+  `expectedStructureFields`. Any silent field addition,
+  removal, or rename triggers a CI failure. The README's
+  stable-API contract for structures is now mechanically
+  enforced rather than honor-system.
+
+#### Found (paper-level)
+
+- **F7. Strict two-tier dependency-graph separation.**
+  Paper Remark 1.5 (`rem:why-construction`) and `design-notes
+  §5` claim the two tiers are dependency-graph independent.
+  In v0.4 there was a soft violation: `Scalar/Partition`
+  imported `OneDim/InitialCover` solely for the `nearCritical`
+  definition. v0.5's `Common/NearCritical.lean` move makes the
+  separation strict: `lake build CombArg.Scalar.Partition`
+  triggers compilation of nine CombArg files (`Cover`,
+  `Witness`, `Common.NearCritical`, and the seven
+  `Scalar.Partition.*` submodules) and zero `OneDim/*` files.
+  The architectural claim is now upgraded from "almost"
+  separated to strictly separated.
+
 ## [0.4.0] — 2026-04-28
 
 ### Two-tier architecture: structured DLT cover + alternative scalar proof

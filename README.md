@@ -77,7 +77,7 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
 
 ## Status
 
-- **Version**: 0.4.0 (April 2026).
+- **Version**: 0.5.0 (April 2026).
 - **License**: Apache 2.0.
 - **Build**: `lake build` succeeds with no warnings; zero `sorry`.
 - **Verification**: five public theorems
@@ -85,9 +85,13 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
   `OneDim.exists_refinement`, `OneDim.exists_DLTCover`,
   `Scalar.exists_refinement_partition`) depend only on the three
   standard Lean 4 / Mathlib foundational axioms (`propext`,
-  `Classical.choice`, `Quot.sound`). Run `lake exe combarg-audit`
-  for a one-command health check (axiom audit + public-API
-  listing); CI runs the same on every push.
+  `Classical.choice`, `Quot.sound`). Six public structures
+  (`LocalWitness`, `FiniteCoverWithWitnesses`,
+  `OneDim.{DLTCover,SkippedSpacedIntervals,InitialCover,PartialRefinement}`)
+  match a declared field-set baseline. Run `lake exe
+  combarg-audit` for a one-command health check (axiom audit +
+  public-API listing + structure-field stability); CI runs the
+  same on every push.
 
 ## Quick start
 
@@ -432,11 +436,14 @@ comb_arg/
 │   ├── Cover.lean             FiniteCoverWithWitnesses +
 │   │                          exists_sup_reduction_of_cover
 │   ├── SupReduction.lean      exists_sup_reduction
+│   ├── Common/                tier-agnostic shared math
+│   │   └── NearCritical.lean        nearCritical set + closedness,
+│   │                                compactness, nonemptiness
 │   ├── OneDim.lean            facade for the DLT-style tier
 │   ├── OneDim/                tier 1: structured DLT path
 │   │   ├── SpacedIntervals.lean     openInterval +
 │   │   │                            SkippedSpacedIntervals
-│   │   ├── InitialCover.lean        nearCritical + InitialCover
+│   │   ├── InitialCover.lean        InitialCover structure
 │   │   ├── CoverConstruction.lean   exists_initialCover
 │   │   ├── PartialRefinement.lean   mid-induction state
 │   │   ├── Induction.lean           step_succ_at +
@@ -446,10 +453,20 @@ comb_arg/
 │   │                                exists_refinement
 │   ├── Scalar.lean            facade for the cheap-proof tier
 │   ├── Scalar/                tier 2: alternative scalar path
-│   │   └── Partition.lean           exists_refinement_partition
+│   │   ├── Partition.lean           exists_refinement_partition
+│   │   │                            (subtype-indexed assembly)
+│   │   └── Partition/               internal proof submodules
+│   │       ├── Helpers.lean
+│   │       ├── CoverIvl.lean
+│   │       ├── Endpoints.lean
+│   │       ├── Pieces.lean
+│   │       ├── WitnessSelection.lean
+│   │       ├── Multiplicity.lean
+│   │       └── Coverage.lean
 │   └── Geometric/             placeholder for future GMT lift
 │       └── README.md
-├── Audit.lean                 lake exe combarg-audit (axiom audit)
+├── Audit.lean                 lake exe combarg-audit
+│                              (axiom + API + struct-field audit)
 ├── Skeleton.lean              lake exe combarg-skeleton
 ├── docs/
 │   ├── project-overview.md    narrative tour

@@ -164,9 +164,11 @@ downgrade; the partition shortcut is also formalized, as
 \texttt{CombArg.Scalar.exists\_refinement\_partition},
 specifically as evidence that the DLT machinery is dispensable
 at the abstract scalar level alone --- a dependency-graph fact
-verified by \texttt{lake build}: the partition module imports
-neither \texttt{OneDim/SpacedIntervals} nor
-\texttt{OneDim/Induction}.}
+verified by \texttt{lake build}: a build of
+\texttt{CombArg.Scalar.Partition} compiles \emph{zero}
+\texttt{OneDim/*} modules, with both tiers consuming only the
+shared \texttt{Cover}, \texttt{Witness}, and
+\texttt{Common.NearCritical} infrastructure.}
 \end{remark}
 
 Translation from the De~Lellis--Tasnady setting to

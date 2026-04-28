@@ -2,9 +2,15 @@
 
 **Date:** 2026-04-28
 **Status:** Zero `sorry` across all modules; zero warnings.
-v0.4 two-tier architecture applied (`OneDim/` DLT path +
-`Scalar/` partition path; `Geometric/` placeholder for future
-GMT consumers). Five public theorems audited; only the three
+v0.5 optimization pass applied on top of v0.4 two-tier
+architecture: subtype-indexed partition output (drops empty
+pieces); `Scalar/Partition.lean` split into seven submodules
+under `Scalar/Partition/`; `nearCritical` extracted to
+`CombArg/Common/NearCritical.lean` (severs the last `Scalar →
+OneDim` dependency, making the two tiers strictly separated in
+the dependency graph); `Audit.lean` extended with structure-field
+stability checks. Five public theorems audited; six public
+structures match a declared field-set baseline; only the three
 standard Lean 4 / Mathlib foundational axioms (`propext`,
 `Classical.choice`, `Quot.sound`) transitively used. Verified
 via `test/Smoke.lean` and `lake exe combarg-audit`.

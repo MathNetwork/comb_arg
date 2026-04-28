@@ -95,6 +95,14 @@ sweepout). The DLT path is the import target for
 `CombArg/Geometric/`; the Scalar path is the import target for
 consumers who only need the abstract scalar bound.
 
+The two tiers are **strictly separated** in the dependency graph
+(see Finding F7): a `lake build CombArg.Scalar.Partition` compiles
+zero `OneDim/*` files. Both tiers consume the shared `nearCritical`
+definition from `CombArg.Common.NearCritical` (extracted in v0.5
+specifically to remove the last cross-tier dependency); both
+consume the input/output types `LocalWitness` (`Witness.lean`)
+and `FiniteCoverWithWitnesses` (`Cover.lean`).
+
 This is recorded as **Finding F5** below and elaborated in
 `paper/sections/intro.tex` Remark 1.5 (`rem:why-construction`).
 
@@ -249,3 +257,48 @@ needed. The `Geometric/` placeholder will keep to this convention.
 
 See design choice §6 above for the comparison with a smoothed
 alternative.
+
+### F7. Two-tier dependency-graph separation is strict, not approximate
+
+In v0.4, paper Remark 1.5 (`rem:why-construction`) and design
+choice §5 above asserted that the `OneDim/` (DLT path) and
+`Scalar/` (cheap path) tiers are dependency-graph independent.
+This was *almost* true: `Scalar/Partition/CoverIvl.lean` imported
+`CombArg.OneDim.InitialCover` solely for the `nearCritical`
+definition, not for any of `OneDim`'s spacing / induction / parity
+machinery, but the import statement itself created a soft
+violation.
+
+In v0.5 the `nearCritical` set together with its closedness,
+compactness, and non-emptiness lemmas were extracted to
+`CombArg/Common/NearCritical.lean`. After the move,
+`Scalar/Partition/CoverIvl.lean` imports
+`CombArg.Common.NearCritical` (not any `OneDim/*` file), and
+`OneDim/InitialCover.lean` likewise imports the shared `Common`
+definition. The dependency graph is now strictly separated:
+
+```text
+$ lake build CombArg.Scalar.Partition
+…
+✔ Built CombArg.Cover
+✔ Built CombArg.Witness
+✔ Built CombArg.Common.NearCritical
+✔ Built CombArg.Scalar.Partition.Helpers
+✔ Built CombArg.Scalar.Partition.CoverIvl
+✔ Built CombArg.Scalar.Partition.Endpoints
+✔ Built CombArg.Scalar.Partition.Pieces
+✔ Built CombArg.Scalar.Partition.WitnessSelection
+✔ Built CombArg.Scalar.Partition.Multiplicity
+✔ Built CombArg.Scalar.Partition.Coverage
+✔ Built CombArg.Scalar.Partition
+```
+
+Zero `OneDim/*` modules compile when the partition route is
+isolated. The architectural claim Remark 1.5 makes about the
+two tiers is therefore upgraded from "almost separated" to
+"strictly separated, mechanically verified by `lake build`."
+
+The public API name `CombArg.OneDim.nearCritical` is preserved
+(the new `Common/NearCritical.lean` uses `namespace
+CombArg.OneDim` for the moved declarations) so the README's
+stable-API list remains valid without modification.
