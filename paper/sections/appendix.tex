@@ -18,6 +18,21 @@ sup-reducing competitor $(f', S)$. Finally, the geometric lift
 to $\Omega' \in \mathcal{A}$, followed by the inf-sup
 contradiction, occupies the closing block.
 
+\paragraph{Choice of combinatorial entry point.}
+The \texttt{exists\_sup\_reduction} call in
+Listing~\ref{lst:end-to-end} chains through Tier~1
+(\texttt{CombArg.OneDim}, the DLT-faithful path producing a
+structured \texttt{DLTCover}). A future consumer that intends to
+lift the scalar competitor back to a geometric sweepout via
+DLT-style cut-paste blending should keep this invocation, since
+the lift consumes \texttt{DLTCover}'s preserved overlap structure
+(see Remark~\ref{rem:why-construction} and \S\ref{sec:future-lift}).
+A consumer that needs only the scalar bound on $f'$ can instead
+go through \texttt{CombArg.Scalar.exists\_refinement\_partition}
+chained with \texttt{exists\_sup\_reduction\_of\_cover}; this
+shorter path imports none of the spacing / refinement / parity
+machinery (see Figure~\ref{fig:arch}).
+
 \begin{lstlisting}[caption={End-to-end script for a min-max
 contradiction.}, label=lst:end-to-end]
 import CombArg
