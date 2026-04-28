@@ -334,10 +334,8 @@ Figure~\ref{fig:arch} shows the two-tier architecture.
   \textbf{structured output}
 };
 \node[tierwrap, fit=(sA)(sB)(sC)] (T1) {};
-\node[tierhead, above=4pt of T1.north] {%
-  \textbf{Tier 1 \,---\, \texttt{CombArg.OneDim}} \\[-1pt]
-  {\scriptsize\itshape DLT-faithful path}
-};
+\node[font=\scriptsize\bfseries, text=black!65, anchor=south west]
+  at ([xshift=4pt, yshift=2pt]T1.north west) {Tier 1};
 
 % ------- Tier 2 (right) -------
 \node[partbox] (sP) at (4.7, 3.8) {%
@@ -345,10 +343,8 @@ Figure~\ref{fig:arch} shows the two-tier architecture.
   {\itshape partition by sorted endpoints}
 };
 \node[tierwrap, fit=(sP)] (T2) {};
-\node[tierhead, above=4pt of T2.north] {%
-  \textbf{Tier 2 \,---\, \texttt{CombArg.Scalar}} \\[-1pt]
-  {\scriptsize\itshape cheap path}
-};
+\node[font=\scriptsize\bfseries, text=black!65, anchor=south east]
+  at ([xshift=-4pt, yshift=2pt]T2.north east) {Tier 2};
 
 % ------- Common abstract output -------
 \node[thmwide] (fcw) at (0, -1.8) {%
@@ -381,16 +377,17 @@ Figure~\ref{fig:arch} shows the two-tier architecture.
 \caption{\label{fig:arch}\CombArg{} v0.4 two-tier architecture.
 The \texttt{LocalWitness} hypothesis feeds two independent proof
 paths producing the same abstract output. Tier~1
-(\texttt{CombArg.OneDim}) follows the DLT \S3.2 Step~1 algorithm
-in three stages culminating in the structured \texttt{DLTCover}
-(\textbf{bold} box), which preserves the spacing, $\sigma$-injectivity,
-and partial-refinement invariants needed by a future geometric
-lift to a modified sweepout (\texttt{CombArg/Geometric/}, not yet
-implemented; the lift consumes \texttt{DLTCover}, not the
-abstract output below). Tier~2 (\texttt{CombArg.Scalar}) proves
-the same conclusion directly by partition by sorted endpoints
-and imports none of Tier~1's spacing / refinement / parity
-machinery --- the dependency-graph fact behind
+(\texttt{CombArg.OneDim}) follows the one-parameter min-max
+cover construction in three stages culminating in the structured
+\texttt{DLTCover} (\textbf{bold} box), which preserves the
+spacing, $\sigma$-injectivity, and partial-refinement invariants
+needed by a future geometric lift to a modified sweepout
+(\texttt{CombArg/Geometric/}, not yet implemented; the lift
+consumes \texttt{DLTCover}, not the abstract output below).
+Tier~2 (\texttt{CombArg.Scalar}) proves the same conclusion
+directly by partition by sorted endpoints and imports none of
+Tier~1's spacing / refinement / parity machinery --- the
+dependency-graph fact behind
 Remark~\ref{rem:why-construction}. Both deliver the same
 \texttt{FiniteCoverWithWitnesses}, which the $K$-generic
 bookkeeping corollary in \texttt{Cover.lean} turns into the
