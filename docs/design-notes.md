@@ -33,7 +33,7 @@ content lives at the top level.
 
 Multi-parameter cover constructions
 (`K = unitInterval^m`, Almgren cycles) fit the same pattern but
-need their own `OneDim`-style sister namespace; not done in v0.3.
+need their own `OneDim`-style sister namespace; not done as of v0.4.
 
 ### 3. `LocalWitness` exposes only the replacement *energy*, not a family
 
@@ -60,6 +60,76 @@ larger `Mathlib.Topology.Instances.Real.Lemmas`. The savings
 compound across the dependency graph; cleaner error messages
 trace back to a single missing identifier when an import is
 missing.
+
+### 5. Two-tier architecture: DLT path vs cheap scalar path
+
+The library ships two separate proofs of the same abstract
+scalar conclusion (`FiniteCoverWithWitnesses unitInterval f m₀
+(1/N) (1/(4N))`):
+
+- **Tier 1 — `CombArg/OneDim/`** (the DLT path) follows De
+  Lellis–Tasnady §3.2 Step 1 faithfully: Lebesgue-number cover,
+  smallest-index refinement induction with set-difference Case 2,
+  parity-rescue closure two-fold, σ-injectivity. Its structured
+  output `DLTCover` exposes the Stage A initial cover + Stage B
+  partial refinement + invariants for downstream geometric
+  consumers.
+- **Tier 2 — `CombArg/Scalar/Partition.lean`** is a strictly
+  cheaper alternative: compactness gives a finite open subcover,
+  sorting all interval endpoints partitions `unitInterval` into
+  closed pieces of multiplicity ≤ 2, witness selection per piece
+  is by direct Classical choice, saving extends to the closed
+  piece by continuity. This proof imports neither
+  `OneDim/SpacedIntervals` nor `OneDim/Induction` — the
+  dependency graph confirms that the DLT spacing/parity machinery
+  is *not* arithmetically required for the abstract scalar
+  conclusion.
+
+The `Scalar/` tier is *not* a replacement for the DLT path. It
+delivers the same `FiniteCoverWithWitnesses` output but discards
+the spacing / overlap / σ-injectivity structure that the
+geometric modified-sweepout lift will need (DLT's blending in
+`J_i ∩ J_{i+1}` requires positive-measure overlap; a partition's
+measure-zero endpoint sharing breaks t-continuity of the lifted
+sweepout). The DLT path is the import target for
+`CombArg/Geometric/`; the Scalar path is the import target for
+consumers who only need the abstract scalar bound.
+
+This is recorded as **Finding F5** below and elaborated in
+`paper/sections/intro.tex` Remark 1.5 (`rem:why-construction`).
+
+### 6. Set-theoretic, not smooth
+
+The combinatorial argument (and DLT's geometric lift) is expressed
+in terms of *raw set operations* — open intervals, set differences,
+closures, unions, multiplicity counts — and the Lean formalization
+mirrors this exactly. There is no use of bump functions, smooth
+partitions of unity, mollifiers, or differential forms anywhere in
+`CombArg/`. The continuity used is plain topological continuity;
+the saving estimate is pointwise.
+
+The DLT modified-sweepout blending formula
+
+```
+Ω'_t = [Ω_t \ (U_i' ∪ U_{i+1}')] ∪ [Ω_{i,t} ∩ U_i']
+                                  ∪ [Ω_{i+1,t} ∩ U_{i+1}']
+```
+
+is itself a pure set-algebraic expression in `Ω_t` and the
+replacements; t-continuity comes from continuity of the input
+families `Ω_t`, `Ω_{i,t}` plus the t-independence of the cut
+sets `U_i'`, not from any smoothness of cut-off weights. The
+v0.4 `Geometric/` placeholder will inherit this convention.
+
+A smoothed alternative (replacing each piece by a smooth bump
+`ρ_k` with `supp ρ_k ⊆ U_k` and blending by weighted average)
+is *possible* but not faithful to DLT and would require lifting
+the saving estimate through the multiplier inequality. Set-based
+data is the more flexible primitive: a downstream consumer who
+wants smooth partition-of-unity data can always derive bump
+functions from open-set pieces (Mathlib provides this), whereas
+recovering pointwise saving from a multiplier-blurred saving is
+not direct.
 
 ## Findings the formalization surfaced
 
@@ -130,3 +200,52 @@ The Lean proof spells this out as
 combined with `closure_disjoint_of_even_gap`. This three-layer
 structure is invisible at the prose level but inescapable in the
 formalization.
+
+### F5. Two-tier verification: paper Remark 1.5 is dependency-graph fact
+
+Paper Remark 1.5 (`rem:why-construction`) claims that the abstract
+scalar Theorem 1.3 admits a strictly shorter proof, and that the
+DLT spacing / refinement / parity machinery is *over-engineered*
+relative to the abstract scalar conclusion alone — its value lies
+in producing structure that the geometric lift consumes.
+
+In v0.4 this claim is upgraded from prose to dependency-graph
+fact. `CombArg/Scalar/Partition.lean` ships a complete, sorry-free,
+axiom-clean proof of the same `FiniteCoverWithWitnesses`
+conclusion as `OneDim/Assembly.exists_refinement`, and its
+imports (`CombArg.Cover`, `CombArg.Witness`,
+`CombArg.OneDim.InitialCover` for the `nearCritical` definition,
+plus standard Mathlib) deliberately exclude
+`OneDim/SpacedIntervals`, `OneDim/PartialRefinement`,
+`OneDim/Induction`, and `OneDim/Assembly`. A `lake build
+CombArg.Scalar.Partition` confirms the Scalar tier is
+self-sufficient.
+
+Symmetrically, `OneDim.exists_DLTCover` (the structured form)
+exposes the spacing / refinement / σ-injectivity data that the
+abstract `FiniteCoverWithWitnesses` collapses into a plain
+multiplicity bound; a future `CombArg/Geometric/ModifiedSweepout`
+consuming `DLTCover` will use this preserved structure, while a
+consumer of the Scalar tier cannot reconstruct it.
+
+### F6. The combinatorial argument is set-theoretic, not smooth
+
+This is closer to a confirmation than a finding: every theorem in
+`CombArg/` is expressed and proved using only topological-set
+primitives (open / closed / closure / Ioo / Icc / set difference)
+plus pointwise continuity. No bump functions, mollifiers, smooth
+partitions of unity, or differential forms appear anywhere. The
+continuity used in the saving-extension argument
+(`saving_bound_closure`, `mem_closure_val_preimage_Ioo`) is just
+`Continuous f` plus `IsClosed.closure_subset_iff` for the
+sub-level set `{s | c ≤ g s}`.
+
+The DLT geometric lift inherits this convention: the modified
+sweepout `Ω'_t = [Ω_t ∖ (U_i' ∪ U_{i+1}')] ∪ ...` is a pure
+set-algebraic expression in `Ω_t` and the replacements, and its
+t-continuity comes from continuity of the input GMT families plus
+t-independence of the cut sets `U_i'` — no smoothness of weights
+needed. The `Geometric/` placeholder will keep to this convention.
+
+See design choice §6 above for the comparison with a smoothed
+alternative.

@@ -8,26 +8,54 @@ geometric-measure-theoretic dependencies.
 
 ## What this library provides
 
-Two public theorems.
+A **two-tier architecture** for the 1D combinatorial argument.
+Both tiers prove the same abstract scalar conclusion
+(a `FiniteCoverWithWitnesses` on `unitInterval`); they differ in
+whether they preserve the spacing / overlap structure that a
+geometric modified-sweepout lift requires.
 
-### Combinatorial main theorem — `CombArg.OneDim.exists_refinement`
+### Tier 1: structured DLT path — `CombArg.OneDim`
 
 From a continuous `f : unitInterval → ℝ` with `m₀ = sSup (range f)`,
 `N > 0`, and a `LocalWitness` at every `1/N`-near-critical
-parameter (saving `1/(4N)` each), construct a
-`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`: a
-finite family of closed pieces of `unitInterval` carrying
-per-piece replacement energies `E_l` and uniform savings
-`s_l = 1/(4N)`, satisfying
+parameter (saving `1/(4N)` each), the DLT §3.2 Step 1 algorithm
+produces:
 
-  - **(I)** `f − E_l ≥ s_l` on each piece,
-  - **(II)** every `t` lies in at most two pieces (two-fold overlap),
-  - **(III)** `{t : f t ≥ m₀ − 1/N} ⊆ ⋃ pieces`.
+- **`CombArg.OneDim.exists_DLTCover`** — a structured
+  `DLTCover f m₀ N` packaging the Stage A initial cover (with
+  skip-2 spacing condition (a)), the Stage B partial refinement,
+  σ-injectivity, and the termination invariant `∀ i, ic.I i ⊆ ⋃ k,
+  pr.J k`. This is the import target for future geometric
+  consumers (DLT modified-sweepout via positive-measure overlap
+  blending) under `CombArg.Geometric.*`.
+- **`CombArg.OneDim.exists_refinement`** — the abstract scalar
+  output, defined as `(exists_DLTCover ...).toFinite`. Returns a
+  `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`
+  satisfying
 
-This is the non-trivial content extracted from the
-De Lellis–Tasnady-style 1D cover refinement (Lebesgue-number
-cover, bounded smallest-index refinement induction, skip-2
-parity rescue).
+    - **(I)** `f − E_l ≥ s_l` on each piece,
+    - **(II)** every `t` lies in at most two pieces (two-fold overlap),
+    - **(III)** `{t : f t ≥ m₀ − 1/N} ⊆ ⋃ pieces`.
+
+  Signature unchanged from v0.3; existing consumers continue to
+  work without modification.
+
+### Tier 2: cheap scalar path — `CombArg.Scalar`
+
+- **`CombArg.Scalar.exists_refinement_partition`** — the same
+  abstract `FiniteCoverWithWitnesses` conclusion, proved by
+  partition-by-endpoints: compactness of the near-critical set
+  plus a finite open subcover, sorting interval endpoints to
+  partition `unitInterval` into closed pieces of multiplicity ≤ 2,
+  with per-piece witness selection and continuity-based extension
+  to the closed piece.
+
+This proof imports neither `OneDim/SpacedIntervals` nor
+`OneDim/Induction`; the dependency graph confirms that the DLT
+spacing/parity machinery is *not* required for the abstract
+scalar conclusion. It is required for the geometric lift.
+See `paper/sections/intro.tex` Remark 1.5 for the architectural
+rationale.
 
 ### Sup-reduction bookkeeping corollary — `CombArg.exists_sup_reduction_of_cover`
 
@@ -38,9 +66,9 @@ support, and `sSup (range f') ≤ m₀ − ε`. Three-line scalar
 arithmetic over the cover data; generic in `K`.
 
 A one-parameter specialization `CombArg.exists_sup_reduction`
-chains the two: on `K = unitInterval` with `(δ, ε) = (1/N,
-1/(4N))`, given just the witness hypothesis it produces the
-sup-reducing competitor directly.
+chains this with the DLT path: on `K = unitInterval` with
+`(δ, ε) = (1/N, 1/(4N))`, given just the witness hypothesis it
+produces the sup-reducing competitor directly.
 
 This formalization corresponds to the combinatorial core
 appearing in De Lellis–Tasnady (2013) §3.2 and analogous
@@ -49,14 +77,17 @@ De Lellis–Ramic (2017), and Marques–Neves (2014).
 
 ## Status
 
-- **Version**: 0.2.0 (April 2026); v0.3 in progress.
+- **Version**: 0.4.0 (April 2026).
 - **License**: Apache 2.0.
 - **Build**: `lake build` succeeds with no warnings; zero `sorry`.
-- **Verification**: depends only on the three standard Lean 4 /
-  Mathlib foundational axioms (`propext`, `Classical.choice`,
-  `Quot.sound`). Run `lake exe combarg-audit` for a one-command
-  health check (axiom audit + public-API listing); CI runs the
-  same on every push.
+- **Verification**: five public theorems
+  (`exists_sup_reduction`, `exists_sup_reduction_of_cover`,
+  `OneDim.exists_refinement`, `OneDim.exists_DLTCover`,
+  `Scalar.exists_refinement_partition`) depend only on the three
+  standard Lean 4 / Mathlib foundational axioms (`propext`,
+  `Classical.choice`, `Quot.sound`). Run `lake exe combarg-audit`
+  for a one-command health check (axiom audit + public-API
+  listing); CI runs the same on every push.
 
 ## Quick start
 
@@ -151,12 +182,20 @@ The runnable form lives in
 
 **Provided**:
 
-- `CombArg.OneDim.exists_refinement` — combinatorial main
-  theorem on `unitInterval`.
+- `CombArg.OneDim.exists_DLTCover` — structured DLT-style
+  cover output (Stage A + B intermediate state) on `unitInterval`.
+- `CombArg.OneDim.exists_refinement` — the abstract scalar
+  output of the DLT path, equal to `(exists_DLTCover …).toFinite`.
+- `CombArg.Scalar.exists_refinement_partition` — alternative
+  cheap proof of the abstract scalar theorem via
+  partition-by-endpoints; dependency-graph independent of the
+  DLT spacing / induction machinery.
 - `CombArg.exists_sup_reduction_of_cover` — bookkeeping corollary,
   generic `K`.
-- `CombArg.exists_sup_reduction` — one-parameter chained corollary.
+- `CombArg.exists_sup_reduction` — one-parameter chained corollary
+  (composes DLT path + bookkeeping).
 - Input structures `FiniteCoverWithWitnesses` and `LocalWitness`.
+- Structured output `OneDim.DLTCover` for geometric consumers.
 - Intermediate 1D structures `InitialCover`, `PartialRefinement`,
   `SkippedSpacedIntervals` and their geometry (skip-2 spacing,
   even-gap disjointness, parity rescue).
@@ -170,6 +209,10 @@ The runnable form lives in
 - Geometric-measure-theoretic machinery (varifolds, integral
   currents, Caccioppoli sets, etc.).
 - The full min-max existence theorem (only its combinatorial core).
+- The DLT modified-sweepout lift `Ω'_t` from a `DLTCover`. The
+  v0.4 architecture exposes the structured cover data
+  (`CombArg/Geometric/` directory placeholder), but the actual
+  blending construction is deferred.
 - Multi-parameter applications `K = unitInterval^m`. The
   bookkeeping corollary is already generic in `K`; only an
   additional cover construction is needed.
@@ -323,14 +366,21 @@ modification set `S`) back to a sweepout in `𝒜`.
 The library is currently specialized to the 1D parameter space
 `unitInterval`; multi-parameter sweepouts (`unitInterval^m`, in
 particular Almgren cycles) will need a multi-parameter cover
-construction, planned for v0.3. The output is scalar rather than
-geometric — the consumer receives `f'` with its sup bound and the
-modification set `S`, and must lift back to a sweepout in `𝒜` on
-the GMT side; the `f' = f` off `S` guarantee is designed to make
-this lift mechanical. Continuity of `replacementEnergy` in the
-inserted parameter falls on the consumer to discharge explicitly,
-since the local replacement lemma supplies it only implicitly
-through the continuity of the replaced family. The library is pinned to
+construction, scheduled post-v0.4. The output through
+`exists_sup_reduction` is scalar rather than geometric — the
+consumer receives `f'` with its sup bound and the modification set
+`S`, and must lift back to a sweepout in `𝒜` on the GMT side;
+the `f' = f` off `S` guarantee is designed to make this lift
+mechanical. For a structured cover with the spacing / overlap
+data that supports a DLT-style modified-sweepout lift directly,
+import `CombArg.OneDim.exists_DLTCover` instead — the v0.4
+two-tier architecture exposes this object as a first-class
+import target (the `Geometric/` directory placeholder marks the
+position the future lift implementation occupies). Continuity of
+`replacementEnergy` in the inserted parameter falls on the
+consumer to discharge explicitly, since the local replacement
+lemma supplies it only implicitly through the continuity of the
+replaced family. The library is pinned to
 `leanprover/lean4:v4.30.0-rc2` plus the Mathlib revision in
 `lake-manifest.json`, so bumps on either side may require
 coordination. The library itself uses only the three standard
@@ -349,20 +399,23 @@ replaced with their real definitions.
 The following names are considered stable public API and will not
 change without a major version bump:
 
+- `CombArg.OneDim.exists_DLTCover`
 - `CombArg.OneDim.exists_refinement`
+- `CombArg.Scalar.exists_refinement_partition`
 - `CombArg.exists_sup_reduction_of_cover`
 - `CombArg.exists_sup_reduction`
 - `CombArg.FiniteCoverWithWitnesses` (structure + fields)
 - `CombArg.LocalWitness` (structure + fields)
+- `CombArg.OneDim.DLTCover` (structure + fields)
 - `CombArg.OneDim.InitialCover` (structure + fields)
 - `CombArg.OneDim.PartialRefinement` (structure + fields)
 - `CombArg.OneDim.SkippedSpacedIntervals` (structure + fields)
 - `CombArg.OneDim.nearCritical`
 - `CombArg.OneDim.openInterval`
 
-Internal definitions (`step_succ_at`, `ExtendResult`,
-`terminal_twoFold`, chain-spacing lemmas, etc.) may change in
-minor releases.
+Internal definitions (`step_succ_at`, `ExtendResult`, the
+internal partition-construction helpers in `Scalar/Partition`,
+chain-spacing lemmas, etc.) may change in minor releases.
 
 ## Repository structure
 
@@ -375,26 +428,34 @@ comb_arg/
 ├── lakefile.lean, lake-manifest.json, lean-toolchain
 ├── CombArg.lean               top-level facade (re-exports)
 ├── CombArg/
-│   ├── Util.lean              ge_of_closure_of_ge,
-│   │                          exists_even_gap_of_three
 │   ├── Witness.lean           LocalWitness
-│   ├── Core.lean              FiniteCoverWithWitnesses +
+│   ├── Cover.lean             FiniteCoverWithWitnesses +
 │   │                          exists_sup_reduction_of_cover
 │   ├── SupReduction.lean      exists_sup_reduction
-│   ├── Refinement.lean        facade re-exporting submodules
-│   └── Refinement/
-│       ├── SpacedIntervals.lean     openInterval +
-│       │                            SkippedSpacedIntervals
-│       ├── InitialCover.lean        nearCritical + InitialCover
-│       ├── CoverConstruction.lean   exists_initialCover
-│       ├── PartialRefinement.lean   mid-induction state
-│       ├── Induction.lean           step_succ_at +
-│       │                            exists_terminal_refinement
-│       ├── Disjointness.lean        wrappers over SpacedIntervals
-│       └── Assembly.lean            exists_refinement
+│   ├── OneDim.lean            facade for the DLT-style tier
+│   ├── OneDim/                tier 1: structured DLT path
+│   │   ├── SpacedIntervals.lean     openInterval +
+│   │   │                            SkippedSpacedIntervals
+│   │   ├── InitialCover.lean        nearCritical + InitialCover
+│   │   ├── CoverConstruction.lean   exists_initialCover
+│   │   ├── PartialRefinement.lean   mid-induction state
+│   │   ├── Induction.lean           step_succ_at +
+│   │   │                            exists_terminal_refinement
+│   │   ├── DLTCover.lean            structured Stage A+B output
+│   │   └── Assembly.lean            exists_DLTCover +
+│   │                                exists_refinement
+│   ├── Scalar.lean            facade for the cheap-proof tier
+│   ├── Scalar/                tier 2: alternative scalar path
+│   │   └── Partition.lean           exists_refinement_partition
+│   └── Geometric/             placeholder for future GMT lift
+│       └── README.md
+├── Audit.lean                 lake exe combarg-audit (axiom audit)
+├── Skeleton.lean              lake exe combarg-skeleton
 ├── docs/
 │   ├── project-overview.md    narrative tour
-│   └── design-notes.md        design decisions (§§1–14)
+│   └── design-notes.md        design decisions + findings
+├── paper/                     LaTeX writeup (Remark 1.5
+│                              motivates the two-tier design)
 ├── examples/
 │   └── MinimalUsage.lean      worked invocation
 └── test/

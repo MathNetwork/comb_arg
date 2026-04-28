@@ -1,11 +1,13 @@
 # Project overview
 
-**Date:** 2026-04-25
-**Status:** Zero `sorry` across all modules. v0.2 API simplification
-applied (PairableCover removed, witness shape simplified, unused
-hypotheses dropped). Only the three standard Lean 4 / Mathlib
-foundational axioms (`propext`, `Classical.choice`, `Quot.sound`)
-transitively used; verified via `test/Smoke.lean`.
+**Date:** 2026-04-28
+**Status:** Zero `sorry` across all modules; zero warnings.
+v0.4 two-tier architecture applied (`OneDim/` DLT path +
+`Scalar/` partition path; `Geometric/` placeholder for future
+GMT consumers). Five public theorems audited; only the three
+standard Lean 4 / Mathlib foundational axioms (`propext`,
+`Classical.choice`, `Quot.sound`) transitively used. Verified
+via `test/Smoke.lean` and `lake exe combarg-audit`.
 
 ## Goal
 
@@ -17,8 +19,30 @@ independent of any geometric-measure-theory content.
 
 ## Public theorems
 
-The library exports two theorems (plus a one-parameter chained
-corollary).
+The library exports five theorems plus structured supporting types.
+
+### Structured DLT cover — `OneDim.exists_DLTCover`
+
+[`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean):
+
+```lean
+lemma exists_DLTCover
+    {f : unitInterval → ℝ} (hf : Continuous f)
+    (hm : m₀ = sSup (Set.range f))
+    (hN : 0 < N)
+    (witness : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
+                 LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))) :
+    Nonempty (DLTCover f m₀ N)
+```
+
+The structured form of the DLT §3.2 Step 1 algorithm. Returns a
+`DLTCover` packaging the Stage A initial cover (with skip-2
+spacing condition (a)), the Stage B partial refinement, the
+termination invariant `∀ i, ic.I i ⊆ ⋃ k, pr.J k`, and
+σ-injectivity. This is the import target for downstream
+geometric consumers (`CombArg/Geometric/`) that need the
+positive-measure overlap structure for the modified-sweepout
+lift.
 
 ### Combinatorial main theorem — `exists_refinement`
 
@@ -35,12 +59,39 @@ lemma exists_refinement
               (1 / (N : ℝ)) (1 / (4 * (N : ℝ))))
 ```
 
-Given a `LocalWitness` family on the near-critical set of
-`f : unitInterval → ℝ`, produce a `FiniteCoverWithWitnesses` with
-two-fold overlap and uniform per-piece saving `1/(4N)`. This is
-the non-trivial content extracted from the Almgren–Pitts
-combinatorial argument (Lebesgue-number cover, bounded
-smallest-index refinement, parity-rescue two-fold invariant).
+The abstract scalar output of the DLT path, defined as
+`(exists_DLTCover ...).toFinite`. Same conclusion (a
+`FiniteCoverWithWitnesses` with two-fold overlap and uniform
+per-piece saving `1/(4N)`) as in v0.3; signature unchanged for
+downstream API stability.
+
+### Alternative cheap proof — `Scalar.exists_refinement_partition`
+
+[`CombArg/Scalar/Partition.lean`](../CombArg/Scalar/Partition.lean):
+
+```lean
+theorem exists_refinement_partition
+    {f : unitInterval → ℝ} (hf : Continuous f)
+    (_hm : m₀ = sSup (Set.range f))
+    (hN : 0 < N)
+    (witness_data : ∀ t : unitInterval, f t ≥ m₀ - 1 / (N : ℝ) →
+                      LocalWitness unitInterval f t (1 / (4 * (N : ℝ)))) :
+    Nonempty (FiniteCoverWithWitnesses unitInterval f m₀
+              (1 / (N : ℝ)) (1 / (4 * (N : ℝ))))
+```
+
+The same abstract `FiniteCoverWithWitnesses` conclusion via a
+strictly cheaper proof: compactness of the near-critical set
+gives a finite open subcover; sorting all interval endpoints
+partitions `unitInterval` into closed pieces of multiplicity ≤ 2;
+saving extends to closed pieces by continuity. This proof
+imports neither `OneDim/SpacedIntervals` nor `OneDim/Induction`,
+making it a dependency-graph fact that the DLT spacing/parity
+machinery is *not* required for the abstract scalar conclusion.
+The DLT path retains the structure needed for the geometric
+lift; the partition path discards it. See
+`paper/sections/intro.tex` Remark 1.5 for the architectural
+rationale.
 
 ### Sup-reduction bookkeeping corollary — `exists_sup_reduction_of_cover`
 
@@ -125,14 +176,57 @@ A three-stage construction.
   times, producing a `PartialRefinement ic L` with
   `Function.Injective pr.σ` and `∀ i, ic.I i ⊆ ⋃ pr.J k`.
 
-* **Stage C** (`exists_refinement` assembly in
+* **Stage C — structured packaging** (`exists_DLTCover` in
   [`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean)):
+  bundle the Stage A `InitialCover`, the Stage B
+  `PartialRefinement`, σ-injectivity, and the termination
+  invariant into a single structured output `DLTCover f m₀ N`
+  defined in
+  [`CombArg/OneDim/DLTCover.lean`](../CombArg/OneDim/DLTCover.lean).
+  The structured form is the import target for downstream
+  geometric consumers.
+
+* **Stage D — abstract scalar downgrade** (`DLTCover.toFinite` in
+  [`CombArg/OneDim/DLTCover.lean`](../CombArg/OneDim/DLTCover.lean)):
   package as `FiniteCoverWithWitnesses` with
   `piece k := closure (pr.J k)`, `saving k := 1/(4N)` uniform.
-  `twoFold` via `terminal_twoFold` (parity argument on even-gap
-  chain disjointness); `saving_bound` via `saving_bound_closure`
-  (continuity-based extension from open neighborhood to closure
-  using `LocalWitness.replacementEnergy_continuous`).
+  `twoFold` via `DLTCover.twoFold_closure` (parity argument on
+  even-gap chain disjointness, using σ-injectivity);
+  `saving_bound` via `DLTCover.saving_bound_closure`
+  (continuity-based extension from open `J k` to closure, using
+  `IsClosed.closure_subset_iff` on the level set
+  `{s | 1/(4N) ≤ f s − E s}`). The public-API
+  `OneDim.exists_refinement` of v0.3 is recovered as the
+  composition `(exists_DLTCover ...).toFinite`.
+
+### Alternative scalar proof (`Scalar.exists_refinement_partition`)
+
+A second, strictly cheaper proof of the same abstract
+`FiniteCoverWithWitnesses` conclusion. The construction in
+[`CombArg/Scalar/Partition.lean`](../CombArg/Scalar/Partition.lean):
+
+* From the witness hypothesis, get a finite open subcover of
+  `nearCritical f m₀ N` by interval-preimages around each
+  near-critical witness center (via
+  `IsCompact.elim_finite_subcover`).
+* Collect all interval endpoints together with `0` and `1`,
+  sort with `Finset.sort`, and form closed pieces
+  `q_j = val⁻¹(Icc sortedEndpts[j] sortedEndpts[j+1])`.
+* For each piece intersecting `nearCritical`, select a covering
+  witness; saving extends from the open `Ioo` interior to the
+  closed piece by continuity (the
+  `mem_closure_val_preimage_Ioo` lemma reduces this to
+  `closure_Ioo` in `ℝ` via `IsInducing.subtypeVal`).
+* Multiplicity `≤ 2`: consecutive sorted-endpoint pieces share
+  only an endpoint; non-consecutive are disjoint by strict
+  monotonicity of the sorted list.
+
+This proof imports neither `OneDim/SpacedIntervals` nor
+`OneDim/Induction`; the dependency graph confirms that the DLT
+spacing/parity machinery is *not* arithmetically required for
+the abstract scalar conclusion. See
+[`design-notes.md §5`](design-notes.md) and finding F5 for the
+architectural rationale.
 
 ### Sup-reduction bookkeeping corollary (`exists_sup_reduction_of_cover`)
 
@@ -203,17 +297,52 @@ the cover but is not consumed in the bookkeeping arithmetic.
   `remaining.card`. The paper's smallest-index choice
   (`Finset.min'`) lives in this file's iteration control flow.
 
+### [`CombArg/OneDim/DLTCover.lean`](../CombArg/OneDim/DLTCover.lean)
+
+* `DLTCover f m₀ N` — structured Stage A + B output.
+  Fields: `initialCover`, `L`, `L_pos`, `refinement`,
+  `σ_injective`, `initialCover_covered`. Convenience projections
+  `J k`, `σ k`, `wit k`.
+* `DLTCover.saving_on_J`, `DLTCover.saving_bound_closure` —
+  per-piece saving on the open piece and its closure.
+* `DLTCover.twoFold_closure` — TwoFold via parity rescue +
+  σ-injectivity.
+* `DLTCover.covers_nearCritical` — coverage at the open-piece
+  level.
+* `DLTCover.toFinite` — downgrade to `FiniteCoverWithWitnesses`.
+
 ### [`CombArg/OneDim/Assembly.lean`](../CombArg/OneDim/Assembly.lean)
 
-* `terminal_twoFold` — TwoFold via parity rescue + σ-injectivity.
-* `saving_bound_closure` — saving-bound extension from `J k` to
-  `closure (J k)` via continuity.
-* `exists_refinement` — assembly into `FiniteCoverWithWitnesses`.
+* `exists_DLTCover` — chain Stage A + B into a `DLTCover`.
+* `exists_refinement` — abstract scalar output, defined as
+  `(exists_DLTCover ...).toFinite`. Signature unchanged from v0.3.
+
+### [`CombArg/Scalar/Partition.lean`](../CombArg/Scalar/Partition.lean)
+
+* Helpers: `exists_open_Ioo_subset_of_open` (open neighborhoods
+  in `unitInterval` contain `Ioo` preimages),
+  `mem_closure_val_preimage_Ioo` (the `Icc` preimage lies in the
+  closure of the `Ioo` preimage, via
+  `IsInducing.subtypeVal.closure_eq_preimage_closure_image` plus
+  `closure_Ioo`).
+* `bounds`, `coverIvl`, `endpts`, `sortedEndpts`, `pieceLo`,
+  `pieceHi`, `piece` — partition setup.
+* `exists_witness_for_piece` — witness selection per
+  near-critical-meeting piece.
+* `piece_disjoint_of_gap_ge_two`, `piece_multiplicity_le_two` —
+  multiplicity ≤ 2 via sorted-list strict monotonicity.
+* `selectedPiece`, `selectedEnergy` — assembled cover with
+  conditional witness assignment.
+* `exists_refinement_partition` — the public theorem.
 
 ## Axiom dependencies
 
-Verified via `test/Smoke.lean`'s `#print axioms` block; all three
-public theorems print
+Verified via `test/Smoke.lean`'s `#print axioms` blocks and
+`Audit.lean` (run via `lake exe combarg-audit`); all five
+public theorems
+(`exists_sup_reduction`, `exists_sup_reduction_of_cover`,
+`OneDim.exists_refinement`, `OneDim.exists_DLTCover`,
+`Scalar.exists_refinement_partition`) print
 
 ```
 depends on axioms: [propext, Classical.choice, Quot.sound]
@@ -272,8 +401,17 @@ lake build examples  # worked example
 
 ## What's next
 
-Post-v0.2 candidates:
+Post-v0.4 candidates:
 
+* `CombArg/Geometric/ModifiedSweepout.lean` — consume a `DLTCover`
+  to produce a continuous family of modified sweepouts, formalizing
+  the geometric lift step that the v0.4 architecture exposes the
+  data for. The set-theoretic blending formula
+  `Ω'_t = [Ω_t ∖ (U_i' ∪ U_{i+1}')] ∪ [Ω_{i,t} ∩ U_i'] ∪ [Ω_{i+1,t}
+  ∩ U_{i+1}']` is itself purely set-algebraic (see
+  [`design-notes.md §6`](design-notes.md)); a smooth-set toy
+  demonstration is a viable mid-term path that bypasses
+  not-yet-available Mathlib GMT machinery.
 * Multi-parameter cover construction for `K = unitInterval^m`,
   feeding the same `exists_sup_reduction_of_cover`.
 * Client instantiation against a concrete GMT setup (out of scope
