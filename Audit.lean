@@ -12,15 +12,16 @@ import Lean
 One-command health check for the `CombArg` library.  Performs:
 
 1. **Axiom audit.**  Reads the imported `CombArg` environment and
-   transitively walks the proof terms of the three public theorems
+   transitively walks the proof terms of the five public theorems
    (`exists_sup_reduction`, `exists_sup_reduction_of_cover`,
-   `OneDim.exists_refinement`).  Confirms that the only foundational
-   axioms reached are `propext`, `Classical.choice`, and
-   `Quot.sound`.  Any other axiom (e.g. `sorryAx`) causes a
+   `OneDim.exists_refinement`, `OneDim.exists_DLTCover`,
+   `Scalar.exists_refinement_partition`).  Confirms that the only
+   foundational axioms reached are `propext`, `Classical.choice`,
+   and `Quot.sound`.  Any other axiom (e.g. `sorryAx`) causes a
    nonzero exit.
 
-2. **Public-API listing.**  Prints the four public declarations of
-   the library and their kinds (`structure` vs `theorem`).
+2. **Public-API listing.**  Prints the public declarations of the
+   library and their kinds (`structure` vs `theorem`).
 
 The exit code is `0` on success and `1` on any audit failure.
 Intended for both interactive use (developer one-shot check) and
@@ -68,8 +69,14 @@ private def auditTheorem (env : Environment) (thm : Name) : IO Bool := do
 private def publicDecls : List (Name × String) :=
   [ (``CombArg.LocalWitness, "structure  (input)")
   , (``CombArg.FiniteCoverWithWitnesses, "structure  (input/output)")
+  , (``CombArg.OneDim.DLTCover,
+       "structure  (DLT-style structured output)")
+  , (``CombArg.OneDim.exists_DLTCover,
+       "theorem    (DLT construction, structured form)")
   , (``CombArg.OneDim.exists_refinement,
-       "theorem    (combinatorial main: 1D witnesses → cover)")
+       "theorem    (combinatorial main: 1D witnesses → cover, DLT path)")
+  , (``CombArg.Scalar.exists_refinement_partition,
+       "theorem    (alternative scalar proof: partition by endpoints)")
   , (``CombArg.exists_sup_reduction_of_cover,
        "theorem    (bookkeeping corollary, generic K)")
   , (``CombArg.exists_sup_reduction,
@@ -96,7 +103,9 @@ def main : IO UInt32 := do
   let theorems :=
     [ ``CombArg.exists_sup_reduction
     , ``CombArg.exists_sup_reduction_of_cover
-    , ``CombArg.OneDim.exists_refinement ]
+    , ``CombArg.OneDim.exists_refinement
+    , ``CombArg.OneDim.exists_DLTCover
+    , ``CombArg.Scalar.exists_refinement_partition ]
   let mut allOk := true
   for thm in theorems do
     let ok ← auditTheorem env thm
