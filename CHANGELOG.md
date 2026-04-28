@@ -3,6 +3,91 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.4.0] — 2026-04-28
+
+### Two-tier architecture: structured DLT cover + alternative scalar proof
+
+A purely-additive architectural pass. The DLT-style construction is
+factored into a first-class structured output `OneDim.DLTCover` so
+that a future geometric consumer (DLT modified-sweepout via positive-
+measure overlap blending) has a stable import target carrying the
+full Stage A + B intermediate state. In parallel, the abstract scalar
+theorem is given a second, strictly cheaper proof
+(`Scalar.exists_refinement_partition`) by partition-by-endpoints,
+making it machine-verifiable that the DLT machinery is *not*
+arithmetically required for the abstract `FiniteCoverWithWitnesses`
+output --- it is required for the geometric lift, which is where the
+construction's overlap structure actually load-bears.
+
+Existing consumers (`exists_sup_reduction`,
+`exists_sup_reduction_of_cover`, `OneDim.exists_refinement`) are
+**unchanged in signature** and continue to work without modification.
+
+#### Added (Lean)
+
+- **`CombArg/OneDim/DLTCover.lean`** — new structured output type
+  `DLTCover f m₀ N` packaging the Stage A initial cover (with skip-2
+  spacing condition (a)), the Stage B partial refinement, the
+  termination invariant `∀ i, ic.I i ⊆ ⋃ k, pr.J k`, and
+  σ-injectivity. Convenience projections `J k`, `σ k`, `wit k`;
+  derived lemmas `saving_on_J`, `saving_bound_closure`,
+  `twoFold_closure`, `covers_nearCritical`; downgrade
+  `toFinite : DLTCover → FiniteCoverWithWitnesses`.
+- **`CombArg.OneDim.exists_DLTCover`** — the structured version of
+  the combinatorial main theorem. Chains
+  `exists_initialCover` and `exists_terminal_refinement` and
+  packages their output into `DLTCover`. Public API.
+- **`CombArg/Scalar/Partition.lean`** + **`CombArg.Scalar`** facade
+  — alternative cheap proof of the abstract scalar theorem via
+  partition-by-endpoints. Compactness of the near-critical set
+  yields a finite open subcover, sorting interval endpoints
+  partitions `unitInterval` into closed pieces of multiplicity ≤ 2,
+  and continuity extends per-piece saving from the open `Ioo`
+  interior to the closed piece. The proof imports neither
+  `OneDim/Induction` nor `OneDim/SpacedIntervals` --- the
+  dependency graph confirms that the DLT spacing/parity machinery
+  is *not* required for the abstract scalar conclusion.
+- **`CombArg/Geometric/`** — directory placeholder for future
+  geometric consumers; a `README.md` notes that v0.4 ships only
+  the architecture, with the actual modified-sweepout lift
+  (`ModifiedSweepout.lean`) deferred.
+
+#### Changed (Lean — internal refactor, public API unchanged)
+
+- `OneDim/Assembly.lean` is now thin: `exists_DLTCover` (Stage A +
+  Stage B → `DLTCover`) plus a re-defined `exists_refinement` as
+  `(exists_DLTCover ...).toFinite`. The `terminal_twoFold` and
+  `saving_bound_closure` lemmas previously inline in Assembly
+  migrate into `DLTCover` as methods on the structured output.
+  The output of `exists_refinement` is bit-identical to v0.3.
+
+#### Added (audit + tests)
+
+- **`Audit.lean`** now audits five public theorems
+  (`exists_sup_reduction`, `exists_sup_reduction_of_cover`,
+  `OneDim.exists_refinement`, `OneDim.exists_DLTCover`,
+  `Scalar.exists_refinement_partition`); all five depend only on
+  `propext`, `Classical.choice`, `Quot.sound`. The public-API
+  listing grows from 4 to 8 declarations (adding `DLTCover`,
+  `exists_DLTCover`, `exists_refinement_partition`).
+- **`test/Smoke.lean`** adds an end-to-end invocation of
+  `Scalar.exists_refinement_partition` and `#print axioms`
+  guards on `exists_DLTCover` and `exists_refinement_partition`.
+
+#### Found (paper-level)
+
+- **F5. The two-tier architecture is verified, not asserted.** Paper
+  Remark 1.5 (`rem:why-construction`) claims that the abstract
+  scalar Theorem 1.3 admits a strictly shorter proof and that the
+  DLT machinery is over-engineered at the abstract level. v0.4
+  upgrades this from prose claim to dependency-graph fact:
+  `Scalar/Partition.lean` ships a complete, sorry-free, axiom-clean
+  proof of the same conclusion that imports none of the DLT-side
+  refinement machinery. The DLT path's value lies entirely in
+  preserving structure (spacing, σ-injectivity, J_subset) for a
+  geometric lift --- the new `DLTCover` output is the import target
+  that future geometric consumers will use.
+
 ## [0.3.0] — 2026-04-26
 
 ### Restructure for clarity + developer-tooling pass
