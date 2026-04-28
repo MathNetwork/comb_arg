@@ -1,0 +1,87 @@
+\section{Future work}
+\label{sec:future}
+
+Two natural extensions sit immediately downstream of the present
+formalization, both prepared for by the v0.4 two-tier architecture
+of \S\ref{sec:proof}.
+
+\subsection{Geometric lift to a modified sweepout}
+\label{sec:future-lift}
+
+The structured output of \S\ref{sec:proof}
+(\lean{exists\_DLTCover}{OneDim/Assembly.lean}) packages the Stage A
+initial cover with spacing condition~(a), the Stage B partial
+refinement, $\sigma$-injectivity, and the termination invariant
+$\forall i,\ I_i \subseteq \bigcup_k J_k$ as a single Lean structure
+\texttt{DLTCover}. The companion lift
+\[
+  \texttt{DLTCover}\;\longrightarrow\;
+  \{\partial \Omega'_t\}_{t \in [0,1]}\ \text{flat-continuous}
+\]
+realizes the De~Lellis--Tasnady modified sweepout
+$\Omega'_t$ defined by cut-paste blending on the positive-measure
+overlaps $J_i \cap J_{i+1}$. The blending formula
+\[
+  \Omega'_t \;=\; [\Omega_t \setminus (U_i' \cup U_{i+1}')]
+   \;\cup\; [\Omega_{i,t} \cap U_i']
+   \;\cup\; [\Omega_{i+1,t} \cap U_{i+1}']
+\]
+is purely set-algebraic, and its $t$-continuity in the flat metric
+follows from $t$-continuity of the input families
+$\{\Omega_t\}, \{\Omega_{i,t}\}$ together with $t$-independence of
+the cut sets $U_i', U_{i+1}'$; no smooth structure or partition of
+unity is required. The lift therefore becomes formally available
+once an ambient Lean library supplies a finite-perimeter / sweepout
+API with a flat-continuity notion --- a strictly geometric
+prerequisite, separate from the combinatorial argument formalized
+here.
+
+The placeholder directory \texttt{CombArg/Geometric/} marks the
+import position the future lift module will occupy.
+Remark~\ref{rem:why-construction} is the design contract:
+\texttt{DLTCover}'s preserved spacing/overlap structure, not the
+abstract scalar bound of Corollary~\ref{thm:main}, is what the
+geometric lift consumes; the cheap partition route
+(\texttt{CombArg.Scalar.exists\_refinement\_partition}) shipped as
+its companion verifies by dependency-graph fact that the DLT
+structure is essential exactly at this lift step and at no earlier
+one.
+
+\subsection{Multi-parameter sweepouts}
+\label{sec:future-multiparam}
+
+The cover construction in \S\ref{sec:proof} is specialized to the
+$1$-parameter case $K = [0,1]$. Multi-parameter min-max
+constructions ($K = [0,1]^m$ for $m \ge 2$, in particular Almgren
+cycles in Marques--Neves~\cite{MN14}) replace the skip-$2$ spacing
+of \S\ref{sec:proof} (an inequality on $1$-dimensional indices)
+with a corresponding spacing structure on an $m$-dimensional grid;
+the parity rescue (\S\ref{sec:proof}, Proposition~\ref{prop:twofold})
+that delivers the two-fold overlap invariant from skip-$2$ spacing
+needs an $m$-dimensional analogue. The bookkeeping corollary
+\lean{exists\_sup\_reduction\_of\_cover}{Cover.lean} is already
+$K$-generic in compact $K$, so only the cover construction itself
+must be redone for the multi-parameter setting.
+
+The natural development is a sister namespace
+\texttt{CombArg.MultiDim} parallel to the present
+\texttt{CombArg.OneDim}, producing a \texttt{DLTCover}-analogous
+structured output for each $m \ge 1$ that the same bookkeeping
+corollary then turns into a sup-reducing competitor on $K =
+[0,1]^m$. The two-tier architecture inherited from the
+$1$-dimensional case --- a structured DLT-style cover preserving
+geometric data and a cheaper alternative scalar proof for the same
+abstract conclusion --- is expected to carry over: in each
+dimension, the abstract scalar reduction admits a partition-style
+shortcut, while the geometric lift to a multi-parameter modified
+sweepout consumes the structured form.
+
+\medskip
+
+Together, the two directions complete the formalization arc
+sketched at the start of \S\ref{sec:integration}: this paper
+formalizes the combinatorial slice; \S\ref{sec:future-lift} crosses
+into geometric measure theory once an ambient library is in place;
+and \S\ref{sec:future-multiparam} extends the combinatorial slice
+itself across parameter dimensions. Each is independently scoped and
+does not block the other.
