@@ -14,18 +14,36 @@ unitInterval f m₀ (1/N) (1/(4N))`, but `Scalar` proofs do not
 preserve the spacing / positive-measure overlap structure that a
 geometric modified-sweepout lift requires.
 
-Files:
+## Module layout
 
 * [`Scalar.Partition`](Scalar/Partition.lean) ---
-  `exists_refinement_partition`. Partition-by-endpoints proof:
-  compactness of the near-critical set yields a finite open
-  subcover; sorting the witness-interval endpoints partitions the
-  unit interval into closed pieces of multiplicity `≤ 2`; for each
-  non-empty piece a covering witness is selected and the saving
-  bound is extended from the open `Ioo` interior to the closed
-  piece by continuity.
+  `exists_refinement_partition`, the partition-by-endpoints proof.
+  The construction is split into seven internal modules under
+  `Scalar.Partition.*`:
 
-The dependency graph confirms: `Scalar/Partition.lean` does not
+  - `Helpers` — closure-of-preimage and open-Ioo helpers (subspace
+    topology).
+  - `CoverIvl` — per-witness `(a, b)` interval data and the
+    Ioo-preimage open cover of `nearCritical`.
+  - `Endpoints` — endpoint Finset, sorted into a strictly
+    increasing list, with membership lemmas.
+  - `Pieces` — partition pieces between consecutive sorted
+    endpoints, with `mem_piece_iff` and index lookups for
+    `(bounds tk).1` / `(bounds tk).2`.
+  - `WitnessSelection` — for each piece intersecting
+    `nearCritical`, pick a covering witness `tk ∈ T` such that the
+    piece sits inside `val⁻¹(Icc a_tk b_tk)`.
+  - `Multiplicity` — pieces have multiplicity ≤ 2 (consecutive
+    pieces share only an endpoint; non-consecutive are disjoint by
+    strict monotonicity of the sorted list).
+  - `Coverage` — the pieces cover `unitInterval`, hence
+    `nearCritical`.
+
+  The main `Scalar/Partition.lean` then assembles these into a
+  subtype-indexed `FiniteCoverWithWitnesses`, dropping pieces that
+  do not intersect `nearCritical`.
+
+The dependency graph confirms: `Scalar/Partition` does not
 import `OneDim/SpacedIntervals`, `OneDim/Induction`,
 `OneDim/PartialRefinement`, or `OneDim/Assembly` --- only the
 shared infrastructure (`Cover`, `Witness`, `OneDim/InitialCover`
