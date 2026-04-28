@@ -6,6 +6,7 @@ Authors: Xinze Li
 import CombArg.OneDim.CoverConstruction
 import CombArg.OneDim.Induction
 import CombArg.OneDim.InitialCover
+import CombArg.OneDim.DLTCover
 import CombArg.OneDim.Assembly
 import CombArg.OneDim.PartialRefinement
 import CombArg.OneDim.SpacedIntervals
@@ -13,16 +14,23 @@ import CombArg.OneDim.SpacedIntervals
 /-!
 # Step 1: Interval refinement construction — facade
 
-Re-exports the six submodules under `CombArg.OneDim.*`. Downstream
+Re-exports the seven submodules under `CombArg.OneDim.*`. Downstream
 consumers can `import CombArg.OneDim` to access the complete Step 1
 API.
 
 From the witness hypothesis (a `LocalWitness` at every
-`1/N`-near-critical parameter), this module constructs a
-`FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`: a
-finite family of pieces covering the near-critical set with
-`twoFold` overlap control and a `1/(4N)` saving floor. The
-construction follows De Lellis–Tasnady (2013) §3.2 Step 1.
+`1/N`-near-critical parameter), this module produces two outputs:
+
+* a structured `DLTCover` (`exists_DLTCover`) carrying the
+  Stage A initial cover with spacing (a)+(b), the Stage B partial
+  refinement with σ-injectivity, and the termination invariant —
+  used by geometric consumers under `CombArg.Geometric.*`;
+* an abstract `FiniteCoverWithWitnesses unitInterval f m₀ (1/N) (1/(4N))`
+  (`exists_refinement`), defined as the structured output downgraded
+  via `DLTCover.toFinite` — used by scalar consumers
+  (`CombArg.exists_sup_reduction`).
+
+The construction follows De Lellis–Tasnady (2013) §3.2 Step 1.
 
 ## Module layout
 
@@ -43,9 +51,14 @@ construction follows De Lellis–Tasnady (2013) §3.2 Step 1.
 * [`OneDim.Induction`](OneDim/Induction.lean) — `ExtendResult`,
   `step_succ_at`, and `exists_terminal_refinement` (bounded
   iteration on `remaining.card`).
-* [`OneDim.Assembly`](OneDim/Assembly.lean) — `terminal_twoFold`,
-  `saving_bound_closure`, and the top-level assembly
-  `exists_refinement`.
+* [`OneDim.DLTCover`](OneDim/DLTCover.lean) — the `DLTCover`
+  structure exposing the Stage A + B output (initial cover +
+  partial refinement + σ-injectivity + termination invariant) for
+  geometric consumers, with `saving_bound_closure`,
+  `twoFold_closure`, `covers_nearCritical`, and the `toFinite`
+  downgrade to `FiniteCoverWithWitnesses`.
+* [`OneDim.Assembly`](OneDim/Assembly.lean) — the top-level
+  `exists_DLTCover` (structured) and `exists_refinement` (abstract).
 
 See also [`docs/design-notes.md`](../docs/design-notes.md) for the
 design rationale, especially §4 (specialization to `unitInterval`),
