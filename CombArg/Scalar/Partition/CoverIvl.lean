@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
 import CombArg.Witness
-import CombArg.OneDim.InitialCover
+import CombArg.Common.NearCritical
 import CombArg.Scalar.Partition.Helpers
 
 /-!

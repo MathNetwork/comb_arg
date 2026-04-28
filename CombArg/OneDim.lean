@@ -40,9 +40,11 @@ The construction follows De Lellis–Tasnady (2013) §3.2 Step 1.
   `closure_disjoint_of_even_gap`, and `not_three_overlap` lemmas
   (pure 1D geometry, independent of witnesses).
 * [`OneDim.InitialCover`](OneDim/InitialCover.lean) —
-  `nearCritical`, `InitialCover` structure, `InitialCover.I`,
+  `InitialCover` structure, `InitialCover.I`,
   `toSkippedSpacedIntervals` projection,
-  `exists_closedBall_subset_of_open`.
+  `exists_closedBall_subset_of_open`. The shared `nearCritical`
+  set lives in [`Common.NearCritical`](../Common/NearCritical.lean)
+  (the namespace remains `CombArg.OneDim` for API stability).
 * [`OneDim.CoverConstruction`](OneDim/CoverConstruction.lean) —
   `exists_initialCover` via a grid + Lebesgue-number construction.
 * [`OneDim.PartialRefinement`](OneDim/PartialRefinement.lean) —
