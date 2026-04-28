@@ -294,108 +294,106 @@ Figure~\ref{fig:arch} shows the two-tier architecture.
   font=\small,
   every node/.style={align=center},
   input/.style={draw=black, thin, rectangle, rounded corners=3pt,
-                inner sep=5pt, text width=46mm},
+                inner sep=6pt, text width=52mm},
   stage/.style={draw=black!55, thin, rectangle, rounded corners=2pt,
-                inner sep=3pt, text width=42mm, font=\scriptsize},
+                inner sep=4pt, text width=48mm, font=\scriptsize,
+                minimum height=12mm},
   stagemain/.style={draw=black, thick, rectangle, rounded corners=2pt,
-                    inner sep=3pt, text width=42mm, font=\scriptsize,
-                    fill=black!5},
-  tierbox/.style={draw=black!40, thin, rectangle, rounded corners=4pt,
-                  dashed, inner sep=8pt},
-  thm/.style={draw=black, thin, rectangle, rounded corners=3pt,
-              inner sep=5pt, text width=58mm},
-  future/.style={draw=black!50, dashed, rectangle, rounded corners=3pt,
-                 inner sep=4pt, text width=44mm, text=black!60,
-                 font=\scriptsize},
-  arr/.style={-Latex, thin, black!70},
-  futarr/.style={-Latex, thin, black!50, dashed},
-  arrlab/.style={font=\scriptsize\itshape, midway, fill=white,
-                 inner sep=2pt, text=black!60},
-  tierlab/.style={font=\scriptsize\bfseries\itshape, text=black!70}
+                    inner sep=4pt, text width=48mm, font=\scriptsize,
+                    fill=black!8, minimum height=12mm},
+  thmwide/.style={draw=black, thin, rectangle, rounded corners=3pt,
+                  inner sep=6pt, text width=66mm},
+  partbox/.style={draw=black, thin, rectangle, rounded corners=2pt,
+                  inner sep=5pt, text width=46mm, font=\scriptsize,
+                  minimum height=22mm},
+  tierwrap/.style={draw=black!30, dashed, rectangle,
+                   rounded corners=4pt, inner sep=14pt},
+  arr/.style={-Latex, thin, black!75},
+  arrlab/.style={font=\scriptsize\itshape, fill=white, inner sep=2pt,
+                 text=black!60},
+  tierhead/.style={font=\footnotesize, text=black!70, align=center}
 ]
 
-% Input
-\node[input] (input) at (0, 6.4) {%
+% ------- input -------
+\node[input] (input) at (0, 8.4) {%
   \texttt{LocalWitness} hypothesis \\
   {\scriptsize on the $1/N$-near-critical set of $f$}
 };
 
-% Tier 1 (left): DLT path with three stages
-\node[stage] (sA) at (-4.6, 4.6) {%
-  Stage A: \texttt{exists\_initialCover} \\
-  Lebesgue number $\to$ skip-$2$ spacing (a)
+% ------- Tier 1 (left) -------
+\node[stage]     (sA) at (-4.7, 5.8) {%
+  \textbf{Stage A:} \texttt{exists\_initialCover} \\[1pt]
+  Lebesgue number $\to$ skip-$2$ spacing
 };
-\node[stage] (sB) at (-4.6, 3.3) {%
-  Stage B: \texttt{exists\_terminal\_refinement} \\
-  smallest-index induction $\to$ $\sigma$ injective
+\node[stage]     (sB) at (-4.7, 3.8) {%
+  \textbf{Stage B:} \texttt{exists\_terminal\_refinement} \\[1pt]
+  smallest-index step $\to$ $\sigma$ injective
 };
-\node[stagemain] (sC) at (-4.6, 1.9) {%
-  Stage C: \texttt{exists\_DLTCover} \\
-  \textbf{structured output} (Stage A + B + invariants)
+\node[stagemain] (sC) at (-4.7, 1.8) {%
+  \textbf{Stage C:} \texttt{exists\_DLTCover} \\[1pt]
+  \textbf{structured output}
 };
-
-% Tier 1 grouping label
-\node[tierlab] at (-4.6, 5.6)
-  {Tier 1 \,---\, \texttt{CombArg.OneDim} \,---\, DLT-faithful path};
-
-% Tier 2 (right): single direct theorem
-\node[thm, text width=46mm] (sP) at (4.2, 3.3) {%
-  \texttt{exists\_refinement\_partition} \\
-  {\scriptsize partition by sorted endpoints}
+\node[tierwrap, fit=(sA)(sB)(sC)] (T1) {};
+\node[tierhead, above=4pt of T1.north] {%
+  \textbf{Tier 1 \,---\, \texttt{CombArg.OneDim}} \\[-1pt]
+  {\scriptsize\itshape DLT-faithful path}
 };
 
-% Tier 2 grouping label
-\node[tierlab] at (4.2, 5.6)
-  {Tier 2 \,---\, \texttt{CombArg.Scalar} \,---\, cheap path};
+% ------- Tier 2 (right) -------
+\node[partbox] (sP) at (4.7, 3.8) {%
+  \texttt{exists\_refinement\_partition} \\[4pt]
+  {\itshape partition by sorted endpoints}
+};
+\node[tierwrap, fit=(sP)] (T2) {};
+\node[tierhead, above=4pt of T2.north] {%
+  \textbf{Tier 2 \,---\, \texttt{CombArg.Scalar}} \\[-1pt]
+  {\scriptsize\itshape cheap path}
+};
 
-% Common abstract output
-\node[thm] (fcw) at (0, 0.0) {%
+% ------- Common abstract output -------
+\node[thmwide] (fcw) at (0, -1.8) {%
   \texttt{FiniteCoverWithWitnesses} \\
-  {\scriptsize abstract scalar output (multiplicity $\le 2$, saving $\ge 1/(4N)$)}
+  {\scriptsize abstract scalar output (mult.\ $\le 2$, saving $\ge 1/(4N)$)}
 };
 
-% Bookkeeping corollary
-\node[thm] (sup) at (0, -2.0) {%
+% ------- Bookkeeping → competitor -------
+\node[thmwide] (sup) at (0, -4.0) {%
   \texttt{exists\_sup\_reduction} \\
   {\scriptsize sup-reducing competitor $f'$ with
    $\sup f' \le m_0 - 1/(4N)$}
 };
 
-% Future: geometric lift (dashed)
-\node[future] (geom) at (-4.6, 0.0) {%
-  \emph{(future)} \texttt{Geometric/} \\
-  modified sweepout $\{\partial \Omega'_t\}$ via blending
-};
-
-% Arrows
-\draw[arr] (input.south) -| (sA.north);
-\draw[arr] (input.south) -| (sP.north);
+% ------- Arrows -------
+\coordinate (split) at (0, 7.5);
+\draw[arr] (input.south) -- (split);
+\draw[arr] (split) -| (sA.north);
+\draw[arr] (split) -| (sP.north);
 \draw[arr] (sA.south) -- (sB.north);
 \draw[arr] (sB.south) -- (sC.north);
-\draw[arr] (sC.south) -- node[arrlab, sloped, above]
-  {\texttt{toFinite}} (fcw.north west);
-\draw[arr] (sP.south) -- (fcw.north east);
+\draw[arr] (sC.south) |- node[arrlab, pos=0.65] {\texttt{toFinite}}
+  (fcw.west);
+\draw[arr] (sP.south) |- (fcw.east);
 \draw[arr] (fcw.south) --
-  node[arrlab, right=1pt] {bookkeeping (\texttt{Cover.lean})}
+  node[arrlab, right=2pt] {bookkeeping (\texttt{Cover.lean})}
   (sup.north);
-\draw[futarr] (sC.east) to[bend right=15] (geom.north);
 
 \end{tikzpicture}
 \caption{\label{fig:arch}\CombArg{} v0.4 two-tier architecture.
-The witness hypothesis feeds two independent proof paths producing
-the same abstract output: Tier~1 (\texttt{CombArg.OneDim}) follows
-the DLT \S3.2 Step~1 algorithm in three stages culminating in the
-structured \texttt{DLTCover}; Tier~2 (\texttt{CombArg.Scalar})
-proves the same conclusion directly by partition by endpoints and
-imports none of Tier~1's spacing / refinement / parity machinery
-(the dependency-graph fact behind
-Remark~\ref{rem:why-construction}). Both deliver a
-\texttt{FiniteCoverWithWitnesses} that the $K$-generic bookkeeping
-corollary in \texttt{Cover.lean} turns into a sup-reducing
-competitor $f'$. The future geometric lift consumes the
-\texttt{DLTCover} structure, not the abstract output --- the
-positive-measure overlap on $J_i \cap J_{i+1}$ that DLT's
-modified sweepout requires is preserved by Tier~1 and discarded
-by Tier~2.}
+The \texttt{LocalWitness} hypothesis feeds two independent proof
+paths producing the same abstract output. Tier~1
+(\texttt{CombArg.OneDim}) follows the DLT \S3.2 Step~1 algorithm
+in three stages culminating in the structured \texttt{DLTCover}
+(\textbf{bold} box), which preserves the spacing, $\sigma$-injectivity,
+and partial-refinement invariants needed by a future geometric
+lift to a modified sweepout (\texttt{CombArg/Geometric/}, not yet
+implemented; the lift consumes \texttt{DLTCover}, not the
+abstract output below). Tier~2 (\texttt{CombArg.Scalar}) proves
+the same conclusion directly by partition by sorted endpoints
+and imports none of Tier~1's spacing / refinement / parity
+machinery --- the dependency-graph fact behind
+Remark~\ref{rem:why-construction}. Both deliver the same
+\texttt{FiniteCoverWithWitnesses}, which the $K$-generic
+bookkeeping corollary in \texttt{Cover.lean} turns into the
+sup-reducing competitor $f'$.}
 \end{figure}
 
