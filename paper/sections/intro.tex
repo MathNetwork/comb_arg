@@ -92,16 +92,81 @@ savings $\{s_l \ge 1/(4N)\}_{l \in \iota}$ satisfying:
 
 \begin{remark}
 \label{rem:intro-core-nontrivial}
+\me{A natural compactness sketch of Theorem~\ref{thm:intro-scalar}
+runs: $f^{-1}([m_0 - 1/N, \infty))$ is compact, so finitely many
+witness neighborhoods cover it; pass to an irredundant subfamily
+and take $p_l := \overline{U_{t_i}}$. Conditions~(I) and~(III) hold
+immediately; (II) does not. Even in dimension one, sub-selection
+alone need not deliver multiplicity~$\le 2$ on \emph{closed}
+pieces: $I_1 = (0, 0.4)$, $I_2 = (0.3, 0.5)$, $I_3 = (0.4, 0.7)$
+together cover $[0.05, 0.65]$, every member is needed, and the
+open multiplicity is $\le 2$, yet $0.4 \in
+\overline{I_1} \cap \overline{I_2} \cap \overline{I_3}$. The
+witness hypothesis offers no leverage to avoid such configurations:
+nothing constrains the $U_t$ to be spaced.}
+
 The non-trivial content of Theorem~\ref{thm:intro-scalar} is the
-\emph{construction} of the cover $\{p_l\}$ from unstructured
-witness data: a Lebesgue-number argument on the compact
-near-critical set produces an initial cover satisfying the
-skip-2 spacing condition (a) of~\cite{DLT13}; a bounded
-smallest-index induction refines it to an injective
-piece-to-interval assignment; and a parity argument on the
-spacing condition delivers the two-fold overlap~(II). The
-bookkeeping corollary below (the existence of a competitor $f'$
-with reduced supremum) is a three-line arithmetic consequence.
+\emph{construction} of a cover $\{p_l\}$ \me{which precludes
+them}. A Lebesgue-number argument on the compact near-critical
+set produces an initial cover by intervals $\{I_i\}$ of controlled
+radius satisfying the skip-$2$ spacing condition~(a)
+of~\cite{DLT13}, \me{$\overline{I_i} \cap \overline{I_{i+2}}
+= \emptyset$ --- exactly ruling out the boundary collision above}.
+A bounded smallest-index induction refines $\{I_i\}$ to pieces
+$\{J_k\}$, where each new piece is either $I_{i^*}$ or
+$I_{i^*} \setminus I_{\sigma(\ell)}$; \me{the set-difference branch
+is what makes this strictly more than sub-selection}. A parity
+argument on~(a) then transports the skip-$2$ disjoint-closure
+property to the two-fold overlap~(II) on $\{\overline{J_k}\}$;
+continuity extends the per-piece saving from $J_k$ to
+$\overline{J_k}$. The bookkeeping corollary below (the existence
+of a competitor $f'$ with reduced supremum) is a three-line
+arithmetic consequence.
+\end{remark}
+
+\begin{remark}[Why the construction, not just the conclusion]
+\label{rem:why-construction}
+\me{At the abstract scalar level alone, Theorem~\ref{thm:intro-scalar}
+admits a strictly shorter proof}: a finite subcover by witness
+intervals, refined to a partition by collecting all interval
+endpoints, yields closed pieces of multiplicity~$\le 2$ (sharing
+only endpoints) carrying the witness data. \me{Such a partition
+suffices for the scalar conclusion because the multiplicity bound
+(II) is structurally recorded but \emph{not arithmetically
+load-bearing} for $\sup f' \le m_0 - 1/(4N)$ --- any cover with
+per-piece saving $\ge 1/(4N)$ delivers (c) of
+Corollary~\ref{thm:intro-core} (\texttt{Cover.lean} states this
+explicitly).}
+
+\me{What a partition discards is precisely what the formalization
+is meant to extract.} The Almgren--Pitts combinatorial argument
+as it appears in \cite{CDL03,DLT13,DLR17,DL12,MN14} is not the
+scalar conclusion of Theorem~\ref{thm:intro-scalar} but the
+\emph{construction} that proves it: overlapping intervals
+$\{I_i\}$ with spacing condition~(a), an injective refinement
+$\sigma$, and the parity rescue of two-fold overlap on closures.
+\me{The geometric lift in the ambient GMT setting --- DLT's
+modified sweepout $\{\partial \Omega'_t\}$, defined by blending
+two replacements on $J_i \cap J_{i+1}$ --- requires
+\emph{positive-measure} overlap and breaks at a partition's
+measure-zero endpoint sharing} (the blend
+$\Omega'_t = [\Omega_t \setminus (U_i' \cup U_{i+1}')] \cup
+[\Omega_{i,t} \cap U_i'] \cup [\Omega_{i+1,t} \cap U_{i+1}']$
+needs both replacements simultaneously available on a region of
+positive $t$-measure to remain $t$-continuous).
+
+\me{The library therefore ships a two-tier architecture: the
+DLT-faithful path under \texttt{CombArg.OneDim} produces a
+structured \texttt{DLTCover} that exposes the spacing /
+refinement / $\sigma$-injectivity data a geometric consumer
+needs, with the abstract scalar theorem obtained as a
+downgrade; the partition shortcut is also formalized, as
+\texttt{CombArg.Scalar.exists\_refinement\_partition},
+specifically as evidence that the DLT machinery is dispensable
+at the abstract scalar level alone --- a dependency-graph fact
+verified by \texttt{lake build}: the partition module imports
+neither \texttt{OneDim/SpacedIntervals} nor
+\texttt{OneDim/Induction}.}
 \end{remark}
 
 Translation from the De~Lellis--Tasnady setting to
