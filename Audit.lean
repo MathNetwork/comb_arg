@@ -23,6 +23,12 @@ One-command health check for the `CombArg` library.  Performs:
 2. **Public-API listing.**  Prints the public declarations of the
    library and their kinds (`structure` vs `theorem`).
 
+3. **Structure-field stability.**  Walks the field list of each
+   public structure and compares against a hard-coded baseline.
+   Silent additions or removals of public fields cause the audit to
+   fail, ensuring `README`'s stable-API contract is mechanically
+   enforced rather than honor-system.
+
 The exit code is `0` on success and `1` on any audit failure.
 Intended for both interactive use (developer one-shot check) and
 CI invocation.
@@ -63,6 +69,55 @@ private def auditTheorem (env : Environment) (thm : Name) : IO Bool := do
     return true
   else
     IO.println s!"  ✗ {thm} — unexpected axioms: {unexpected}"
+    return false
+
+/-! ## Structure-field stability -/
+
+/-- Expected fields of each public structure, as stated in the
+README's stable-API list. The audit compares the env-reported field
+set to this baseline; any drift (silent addition or removal) is a
+failure. -/
+private def expectedStructureFields : List (Name × List Name) :=
+  [ (``CombArg.LocalWitness,
+      [`neighborhood, `isOpen_neighborhood, `t_mem,
+       `replacementEnergy, `replacementEnergy_continuous,
+       `saving_bound])
+  , (``CombArg.FiniteCoverWithWitnesses,
+      [`ι, `ιFintype, `nonempty, `piece,
+       `covers_delta_near_critical, `replacementEnergy, `saving,
+       `saving_pos, `saving_bound, `twoFold, `saving_ge_eps])
+  , (``CombArg.OneDim.DLTCover,
+      [`initialCover, `L, `L_pos, `refinement, `σ_injective,
+       `initialCover_covered])
+  , (``CombArg.OneDim.SkippedSpacedIntervals,
+      [`n, `intervalCenter, `radius, `radius_pos,
+       `two_fold_spacing])
+  , (``CombArg.OneDim.InitialCover,
+      [`toSkippedSpacedIntervals, `n_pos, `witnessCenter,
+       `witnessCenter_mem_nearCritical, `wit,
+       `I_subset_neighborhood, `covers])
+  , (``CombArg.OneDim.PartialRefinement,
+      [`J, `σ, `J_subset, `processed_cover]) ]
+
+/-- Audit a single structure: confirm its env-reported field list
+matches the declared baseline. -/
+private def auditStructure (env : Environment)
+    (sname : Name) (expected : List Name) : IO Bool := do
+  let actual := getStructureFields env sname
+  let actualList := actual.toList
+  let expectedSet : NameSet := expected.foldl (·.insert ·) {}
+  let actualSet : NameSet := actual.foldl (·.insert ·) {}
+  let missing := expected.filter (fun n => !actualSet.contains n)
+  let extra := actualList.filter (fun n => !expectedSet.contains n)
+  if missing.isEmpty && extra.isEmpty then
+    IO.println s!"  ✓ {sname} ({actualList.length} fields)"
+    return true
+  else
+    IO.println s!"  ✗ {sname} — field set drifted from baseline"
+    if !missing.isEmpty then
+      IO.println s!"    missing: {missing}"
+    if !extra.isEmpty then
+      IO.println s!"    extra:   {extra}"
     return false
 
 /-- Public declarations: their names and what to call them. -/
@@ -112,12 +167,21 @@ def main : IO UInt32 := do
     if !ok then allOk := false
   IO.println ""
 
+  IO.println "Structure-field stability:"
+  for (sname, expected) in expectedStructureFields do
+    let ok ← auditStructure env sname expected
+    if !ok then allOk := false
+  IO.println ""
+
   if allOk then
     IO.println "All public theorems depend only on:"
     IO.println "  propext, Classical.choice, Quot.sound"
     IO.println ""
+    IO.println "All public structures match their declared field"
+    IO.println "baselines (see Audit.lean expectedStructureFields)."
+    IO.println ""
     IO.println "Library status: ✓ healthy"
     return 0
   else
-    IO.println "Library status: ✗ axiom audit FAILED"
+    IO.println "Library status: ✗ audit FAILED"
     return 1
