@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
 import CombArg.Cover
+import CombArg.Common.SavingClosure
 import CombArg.OneDim.PartialRefinement
 import Mathlib.Topology.Order.Compact
 
@@ -119,14 +120,13 @@ lemma saving_on_J (k : Fin D.L) (t : unitInterval) (ht : t ∈ D.J k) :
 /-- **Saving-bound extends to closure via continuity.** For
 `t ∈ closure (D.J k)`, the inequality
 `f t − (D.wit k).replacementEnergy t ≥ 1/(4N)` holds, lifted from
-the open piece via `LocalWitness.replacementEnergy_continuous`
-plus continuity of `f` --- the set `{s | 1/(4N) ≤ f s − E s}` is
-closed and contains the open piece, hence contains its closure. -/
+the open piece via the shared `Common.sub_ge_of_closure` helper
+(the level set `{s | 1/(4N) ≤ f s − E s}` is closed under continuity
+of `f` and the witness's `replacementEnergy`). -/
 lemma saving_bound_closure (hf : Continuous f)
     (k : Fin D.L) (t : unitInterval) (ht : t ∈ closure (D.J k)) :
     f t - (D.wit k).replacementEnergy t ≥ 1 / (4 * (N : ℝ)) :=
-  (isClosed_le continuous_const
-    (hf.sub (D.wit k).replacementEnergy_continuous)).closure_subset_iff.mpr
+  sub_ge_of_closure hf (D.wit k).replacementEnergy_continuous
     (fun s hs => D.saving_on_J k s hs) ht
 
 /-! ## TwoFold closure overlap (parity rescue) -/

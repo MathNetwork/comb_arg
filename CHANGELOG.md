@@ -3,6 +3,47 @@
 All notable changes to CombArg will be documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [0.6.0] — 2026-04-28
+
+### Helper extraction: shared saving-bound closure-extension lemma
+
+A small follow-up to v0.5's optimization pass: the
+saving-bound-from-open-to-closure idiom that was inlined in both
+`OneDim/DLTCover.lean` and `Scalar/Partition.lean` is extracted as
+a single shared helper `sub_ge_of_closure` in a new
+`CombArg/Common/SavingClosure.lean`.
+
+#### Added
+
+- **`CombArg/Common/SavingClosure.lean`** — the helper
+
+    ```lean
+    lemma sub_ge_of_closure
+        {K : Type*} [TopologicalSpace K] {f g : K → ℝ}
+        {U : Set K} {c : ℝ}
+        (hf : Continuous f) (hg : Continuous g)
+        (h : ∀ s ∈ U, c ≤ f s - g s)
+        {t : K} (ht : t ∈ closure U) : c ≤ f t - g t
+    ```
+
+  Packages the level-set-is-closed-under-continuity argument that
+  lifts a saving bound from a set to its closure. Shared by both
+  tiers; lives under `Common/` so neither tier imports the other
+  through it.
+
+#### Changed (Lean — internal refactor, public API unchanged)
+
+- `OneDim/DLTCover.lean`'s `saving_bound_closure` and
+  `Scalar/Partition.lean`'s `chosenTk_saving_bound` both collapse
+  to one-line applications of `sub_ge_of_closure`. The previously-
+  inlined `(isClosed_le continuous_const (hf.sub _)).closure_subset_iff.mpr ...`
+  invocations are gone; both call sites now read as
+  `sub_ge_of_closure hf <hE_continuous> <saving on U> <t ∈ closure U>`.
+
+No theorem or structure signatures change. Build: 1545 jobs,
+no warnings. Audit: 5 public theorems clean; 6 public structures
+match their field baselines. Smoke + Example: pass.
+
 ## [0.5.0] — 2026-04-28
 
 ### Optimization pass: subtype indexing, modular split, strict tier separation, structure-field audit

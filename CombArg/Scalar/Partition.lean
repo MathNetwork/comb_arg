@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Xinze Li
 -/
 import CombArg.Cover
+import CombArg.Common.SavingClosure
 import CombArg.Scalar.Partition.WitnessSelection
 import CombArg.Scalar.Partition.Multiplicity
 import CombArg.Scalar.Partition.Coverage
@@ -118,9 +119,10 @@ private lemma chosenTk_piece_subset
 
 /-- Saving bound on the piece corresponding to a covered index.
 On the open `Ioo` interior the witness's `saving_bound` gives
-`f − E ≥ 1/(4N)`; the closed-piece bound follows by
-`mem_closure_val_preimage_Ioo` plus `IsClosed.closure_subset_iff`
-on the level set `{s | 1/(4N) ≤ f s − E s}`. -/
+`f − E ≥ 1/(4N)`; the closed-piece bound follows from
+`mem_closure_val_preimage_Ioo` (placing `t` in the closure of the
+open `Ioo`-preimage) plus the shared `Common.sub_ge_of_closure`
+helper (level set `{s | 1/(4N) ≤ f s − E s}` is closed). -/
 private lemma chosenTk_saving_bound
     (hf : Continuous f)
     (T : Finset ↥(nearCritical f m₀ N))
@@ -155,9 +157,9 @@ private lemma chosenTk_saving_bound
       t ∈ closure (Subtype.val ⁻¹' Set.Ioo
         (bounds witness tk).1 (bounds witness tk).2 : Set unitInterval) :=
     mem_closure_val_preimage_Ioo h_a_lt_one h_b_pos h_a_lt_b h_t_in_Icc
-  exact (isClosed_le continuous_const
-    (hf.sub (witness tk.val tk.property).replacementEnergy_continuous)
-    ).closure_subset_iff.mpr h_sav_Ioo h_t_closure
+  exact sub_ge_of_closure hf
+    (witness tk.val tk.property).replacementEnergy_continuous
+    h_sav_Ioo h_t_closure
 
 /-- The covered-index pieces cover `nearCritical`. -/
 private lemma coveredIndex_covers
